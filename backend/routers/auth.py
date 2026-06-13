@@ -7,15 +7,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.database import get_db
 from backend.services.auth_service import google_login, google_callback
 from backend.middleware.auth_middleware import get_current_user
+from backend.config import settings
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 @router.get("/google")
 async def login_google(request: Request):
     """Initiate Google OAuth."""
-    redirect_uri = str(request.url_for('auth_callback'))
-    # If testing locally behind a proxy, you might need to force http/https
-    # redirect_uri = redirect_uri.replace("http://", "https://")
+    # Force the redirect URI to use the APP_URL defined in settings
+    # This prevents 'redirect_uri_mismatch' errors when deployed behind a reverse proxy (like Railway)
+    # which might downgrade the scheme to http instead of https.
+    redirect_uri = f"{settings.APP_URL}/api/auth/callback"
     return await google_login(request, redirect_uri)
 
 @router.get("/callback")
