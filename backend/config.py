@@ -9,7 +9,16 @@ load_dotenv()
 
 class Settings:
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "")
+    raw_db_url = os.getenv("DATABASE_URL", "")
+    if raw_db_url.startswith("postgres://"):
+        raw_db_url = raw_db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+    elif raw_db_url.startswith("postgresql://"):
+        raw_db_url = raw_db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    
+    if "sslmode=require" in raw_db_url:
+        raw_db_url = raw_db_url.replace("sslmode=require", "ssl=require")
+        
+    DATABASE_URL: str = raw_db_url
 
     # Auth
     JWT_SECRET: str = os.getenv("JWT_SECRET", "dev-secret-change-in-production")
