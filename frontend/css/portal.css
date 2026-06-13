@@ -9,11 +9,15 @@
 /* Sidebar */
 .sidebar {
   width: 260px;
-  background-color: var(--bg-surface);
-  border-right: 1px solid var(--border-color);
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
   transition: transform 0.3s;
+  position: relative;
+  z-index: 10;
 }
 
 .sidebar-header {
@@ -25,6 +29,7 @@
   font-size: 1.25rem;
   font-weight: bold;
   color: white;
+  text-shadow: 0 0 10px rgba(181, 53, 255, 0.5);
 }
 
 .sidebar-nav {
@@ -50,11 +55,14 @@
 .nav-item:hover {
   background-color: rgba(255, 255, 255, 0.05);
   color: white;
+  box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.1);
 }
 
 .nav-item.active {
-  background-color: var(--nav-active-bg, rgba(108, 99, 255, 0.15));
-  color: var(--nav-active-color, var(--brand-primary));
+  background-color: var(--nav-active-bg, rgba(181, 53, 255, 0.15));
+  color: var(--nav-active-color, var(--brand-accent));
+  box-shadow: inset 0 0 15px rgba(181, 53, 255, 0.2);
+  border-left: 3px solid var(--brand-accent);
 }
 
 .sidebar-footer {
@@ -74,11 +82,12 @@
   display: flex; align-items: center; justify-content: center;
   color: white; font-weight: bold;
   overflow: hidden;
+  box-shadow: 0 0 10px var(--brand-primary);
 }
 .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .user-info { flex-grow: 1; overflow: hidden; }
 .user-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
-.user-role { font-size: 0.75rem; color: var(--text-muted); }
+.user-role { font-size: 0.75rem; color: var(--brand-accent); }
 
 /* Main Content */
 .main-content {
@@ -87,6 +96,9 @@
   flex-direction: column;
   overflow: hidden;
   background-color: var(--bg-primary);
+  background-image: 
+    radial-gradient(circle at 100% 0%, rgba(0, 240, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(181, 53, 255, 0.05) 0%, transparent 50%);
 }
 
 .topbar {
@@ -95,8 +107,12 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  background-color: var(--bg-surface);
-  border-bottom: 1px solid var(--border-color);
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  position: relative;
+  z-index: 5;
 }
 
 .page-content {

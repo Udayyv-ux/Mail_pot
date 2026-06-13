@@ -2,18 +2,18 @@
 
 :root {
   /* Core Colors */
-  --bg-primary: #0a0a1a;
-  --bg-surface: #1a1a2e;
-  --bg-surface-light: rgba(255, 255, 255, 0.05);
+  --bg-primary: #030014;
+  --bg-surface: #0f0a29;
+  --bg-surface-light: rgba(255, 255, 255, 0.03);
   
   --text-primary: #f8f9fa;
   --text-secondary: #a0a0b0;
   --text-muted: #6c757d;
   
   /* Brand Colors */
-  --brand-primary: #6c63ff;
-  --brand-primary-hover: #5a52d5;
-  --brand-accent: #00d4aa;
+  --brand-primary: #b535ff;
+  --brand-primary-hover: #d946ef;
+  --brand-accent: #00f0ff;
   
   /* Status Colors */
   --success: #10b981;
@@ -22,21 +22,22 @@
   --info: #3b82f6;
 
   /* UI Elements */
-  --border-color: rgba(255, 255, 255, 0.1);
-  --glass-bg: rgba(26, 26, 46, 0.6);
+  --border-color: rgba(255, 255, 255, 0.06);
+  --glass-bg: rgba(15, 10, 41, 0.6);
   --glass-border: rgba(255, 255, 255, 0.08);
   
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
-  --shadow-lg: 0 10px 15px rgba(0,0,0,0.5);
-  --shadow-neon: 0 0 15px rgba(108, 99, 255, 0.5);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.6);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.8);
+  --shadow-neon: 0 0 20px rgba(181, 53, 255, 0.6), 0 0 40px rgba(181, 53, 255, 0.2);
+  --shadow-accent: 0 0 20px rgba(0, 240, 255, 0.5);
   
   /* Border Radius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 20px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 }
 
 * {
