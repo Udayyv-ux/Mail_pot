@@ -8,6 +8,7 @@ aiofiles
 # Database (PostgreSQL / Neon)
 sqlalchemy[asyncio]
 asyncpg
+psycopg2-binary
 alembic
 
 # Auth
