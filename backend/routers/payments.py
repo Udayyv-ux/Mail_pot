@@ -1,0 +1,108 @@
+"""
+Payment management API routes via Razorpay.
+"""
+from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from pydantic import BaseModel
+
+from backend.database import get_db
+from backend.middleware.auth_middleware import require_client
+from backend.models.client import Client
+from backend.models.plan import Plan
+from backend.models.payment import Payment
+from backend.services.payment_service import create_order, verify_payment, process_webhook
+
+router = APIRouter(prefix="/api/payments", tags=["payments"])
+
+async def get_client_record(user, db: AsyncSession):
+    result = await db.execute(select(Client).where(Client.user_id == user.id))
+    return result.scalar_one_or_none()
+
+class OrderRequest(BaseModel):
+    plan_id: str
+    billing_cycle: str = "monthly"
+
+@router.post("/create-order")
+async def api_create_order(req: OrderRequest, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    client = await get_client_record(current_user, db)
+    if not client:
+        raise HTTPException(404, "Client not found")
+        
+    plan = await db.get(Plan, req.plan_id)
+    if not plan:
+        raise HTTPException(404, "Plan not found")
+        
+    amount = plan.price_yearly if req.billing_cycle == "yearly" else plan.price_monthly
+    if amount <= 0:
+        raise HTTPException(400, "Invalid plan amount")
+        
+    try:
+        order = create_order(amount, receipt=f"plan_{plan.id}")
+        
+        # Save payment record
+        payment = Payment(
+            client_id=client.id,
+            plan_id=plan.id,
+            amount=amount,
+            razorpay_order_id=order["id"],
+            status="created"
+        )
+        db.add(payment)
+        await db.commit()
+        
+        return {"order_id": order["id"], "amount": amount, "currency": "INR"}
+    except Exception as e:
+        raise HTTPException(400, str(e))
+
+class VerifyRequest(BaseModel):
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    razorpay_signature: str
+
+@router.post("/verify")
+async def api_verify_payment(req: VerifyRequest, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    if verify_payment(req.razorpay_order_id, req.razorpay_payment_id, req.razorpay_signature):
+        # Find payment record
+        result = await db.execute(select(Payment).where(Payment.razorpay_order_id == req.razorpay_order_id))
+        payment = result.scalar_one_or_none()
+        
+        if payment:
+            payment.status = "paid"
+            payment.razorpay_payment_id = req.razorpay_payment_id
+            payment.razorpay_signature = req.razorpay_signature
+            
+            # Update client plan
+            client = await db.get(Client, payment.client_id)
+            if client:
+                client.plan_id = payment.plan_id
+                plan = await db.get(Plan, payment.plan_id)
+                if plan:
+                    client.daily_email_limit = plan.email_limit_daily
+                    
+            await db.commit()
+            return {"status": "success"}
+    
+    raise HTTPException(400, "Payment verification failed")
+
+@router.get("/history")
+async def payment_history(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    client = await get_client_record(current_user, db)
+    if not client:
+        return []
+        
+    result = await db.execute(select(Payment).where(Payment.client_id == client.id).order_by(Payment.created_at.desc()))
+    return result.scalars().all()
+
+@router.post("/webhook")
+async def razorpay_webhook(request: Request):
+    """Handle Razorpay Webhooks."""
+    body = await request.body()
+    signature = request.headers.get("x-razorpay-signature", "")
+    
+    if not process_webhook(body.decode(), signature):
+        raise HTTPException(400, "Invalid signature")
+        
+    # Handle events like payment.captured, payment.failed here in production
+    
+    return {"status": "ok"}
