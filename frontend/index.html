@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailPilot - Enterprise Email Automation</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/landing.css">
+</head>
+<body>
+    <div id="canvas-container">
+        <div class="nebula nebula-1"></div>
+        <div class="nebula nebula-2"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            <span id="app-name">MailPilot</span>
+        </div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#demo">Request Demo</a>
+            <a href="#" id="nav-login" class="btn btn-secondary" style="display:none">Log In</a>
+            <a href="#" id="nav-signup" class="btn btn-primary" style="display:none">Sign Up</a>
+            <a href="#" id="nav-admin-login" class="text-secondary" style="display:none; font-size: 0.85em; margin-left: 10px;">Login as Admin</a>
+            <a href="#" id="nav-portal" class="btn btn-primary" style="display:none">Go to Portal</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1 id="hero-title">Launch Your Emails Into Orbit</h1>
+            <p id="hero-subtitle">AI-powered email automation that categorizes leads, personalizes messages, and sends at scale — all on autopilot.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary btn-google" onclick="auth.login()">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" class="google-icon">
+                    <span id="hero-cta">Start Free Trial</span>
+                </button>
+                <a href="#demo" class="btn btn-secondary">Request Demo</a>
+            </div>
+        </div>
+    </header>
+
+    <section id="features">
+        <h2 class="section-title">Why choose <span>MailPilot?</span></h2>
+        <div class="features-grid" id="features-grid">
+            <!-- Populated via JS -->
+            <div class="text-center" style="width: 100%"><div class="loader"></div></div>
+        </div>
+    </section>
+
+    <section id="pricing">
+        <h2 class="section-title">Simple, <span>Transparent</span> Pricing</h2>
+        <div class="pricing-grid" id="pricing-grid">
+            <!-- Populated via JS -->
+            <div class="text-center" style="width: 100%"><div class="loader"></div></div>
+        </div>
+    </section>
+
+    <section id="demo" class="demo-section">
+        <h2 class="section-title">See It In <span>Action</span></h2>
+        <p class="text-secondary">Schedule a 1-on-1 demo with our enterprise team.</p>
+        <form id="demo-form" class="demo-form glass">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="demo-name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Work Email</label>
+                <input type="email" id="demo-email" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Company Name</label>
+                <input type="text" id="demo-company" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">How can we help?</label>
+                <textarea id="demo-message" class="form-control" rows="4"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Request Demo</button>
+        </form>
+    </section>
+
+    <footer>
+        <div class="logo justify-content-center mb-3">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            MailPilot
+        </div>
+        <div class="links">
+            <a href="/api/public/policies/terms" target="_blank">Terms of Service</a>
+            <a href="/api/public/policies/privacy" target="_blank">Privacy Policy</a>
+            <a href="/api/public/policies/refund" target="_blank">Refund Policy</a>
+        </div>
+        <p>&copy; 2026 MailPilot. All rights reserved.</p>
+    </footer>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/components.js"></script>
+    <script src="/js/landing.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+/* Admin Portal Specific Theme overrides */
+:root {
+  --brand-primary: #ef4444; /* Red accent for admin */
+  --brand-primary-hover: #dc2626;
+  --nav-active-bg: rgba(239, 68, 68, 0.15);
+  --nav-active-color: #fca5a5;
+}
+
+.chart-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  height: 300px;
+  position: relative;
+}
+
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.draggable-row {
+  cursor: grab;
+}
+.draggable-row:active {
+  cursor: grabbing;
+}

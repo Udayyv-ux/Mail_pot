@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Portal - MailPilot</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/portal.css">
+    <link rel="stylesheet" href="/css/client.css">
+</head>
+<body>
+    <div class="portal-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">MailPilot Client</div>
+            <nav class="sidebar-nav">
+                <a class="nav-item" data-route="dashboard">📊 Dashboard</a>
+                <a class="nav-item" data-route="campaigns">🚀 Campaigns</a>
+                <a class="nav-item" data-route="templates">✉️ Templates</a>
+                <a class="nav-item" data-route="settings">⚙️ Settings</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">?</div>
+                    <div class="user-info">
+                        <div class="user-name">Loading...</div>
+                        <div class="user-role">Client Account</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <h2>Client Portal</h2>
+                <button class="btn btn-secondary btn-sm" id="btn-logout">Logout</button>
+            </header>
+
+            <div class="page-content">
+                
+                <!-- Dashboard Page -->
+                <section id="page-dashboard" class="page-section active">
+                    <h2 class="mb-4">Overview</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📨</div>
+                            <div class="stat-info">
+                                <h3>Emails Sent Today</h3>
+                                <div class="stat-value"><span id="dash-emails-sent">-</span> <small class="text-muted" id="dash-emails-limit" style="font-size:1rem"></small></div>
+                                <div class="meter-container"><div class="meter-fill" id="dash-meter" style="width:0%"></div></div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🚀</div>
+                            <div class="stat-info">
+                                <h3>Active Campaigns</h3>
+                                <div class="stat-value" id="dash-campaigns">-</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📈</div>
+                            <div class="stat-info">
+                                <h3>Total Campaigns</h3>
+                                <div class="stat-value" id="dash-total">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Campaigns Page -->
+                <section id="page-campaigns" class="page-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Campaigns</h2>
+                    </div>
+
+                    <div class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 2rem;">
+                        <h3 class="mb-3">Start New Campaign</h3>
+                        <form id="form-start-campaign" class="d-flex gap-3 align-items-end" style="gap: 15px">
+                            <div class="form-group" style="margin-bottom:0; flex-grow:1">
+                                <label class="form-label">Campaign Name</label>
+                                <input type="text" id="camp-name" class="form-control" required placeholder="e.g. Q3 Real Estate Leads">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0; width:150px">
+                                <label class="form-label">Batch Size</label>
+                                <input type="number" id="camp-batch" class="form-control" value="10" min="1" max="100">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Start Campaign</button>
+                        </form>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Name</th><th>Status</th><th>Progress</th><th>Failed</th><th>Actions</th></tr></thead>
+                            <tbody id="campaign-list"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Templates Page -->
+                <section id="page-templates" class="page-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Email Templates</h2>
+                        <button class="btn btn-primary" id="btn-new-template">Create Template</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Project Category (AI Match)</th><th>Subject Line</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="template-list"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Settings Page -->
+                <section id="page-settings" class="page-section">
+                    <h2 class="mb-4">Account Settings</h2>
+                    
+                    <div style="display:grid; gap:2rem; max-width:800px">
+                        <!-- Profile -->
+                        <div class="glass" style="padding: 2rem; border-radius: var(--radius-lg);">
+                            <h3 class="mb-3">Profile & SMTP</h3>
+                            <form id="form-profile">
+                                <div class="form-group">
+                                    <label class="form-label">Company Name</label>
+                                    <input type="text" id="set-company" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">SMTP Email</label>
+                                    <input type="email" id="set-smtp-email" class="form-control" required placeholder="e.g. sender@company.com">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">SMTP App Password (Update Only)</label>
+                                    <input type="password" id="set-smtp-pass" class="form-control" placeholder="Leave blank to keep existing">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Custom Groq API Key <span id="groq-status"></span></label>
+                                    <input type="password" id="set-groq" class="form-control" placeholder="Optional. Uses system default if empty.">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Profile</button>
+                            </form>
+                        </div>
+
+                        <!-- Google Sheets -->
+                        <div class="glass" style="padding: 2rem; border-radius: var(--radius-lg);">
+                            <h3 class="mb-3">Google Sheets Integration</h3>
+                            
+                            <form id="form-sheet" class="mb-4">
+                                <div class="form-group">
+                                    <label class="form-label">Google Sheet Link or ID</label>
+                                    <input type="text" id="set-sheet" class="form-control" required placeholder="https://docs.google.com/spreadsheets/d/.../edit">
+                                </div>
+                                <button type="submit" class="btn btn-secondary">Link Sheet</button>
+                            </form>
+
+                            <hr style="border-color:var(--border-color); margin: 2rem 0">
+
+                            <form id="form-credentials">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0">Service Account JSON</label>
+                                    <span id="cred-status"></span>
+                                </div>
+                                <p class="text-muted" style="font-size:0.85rem">Paste the contents of your Google Service Account credentials.json file here. Make sure you have shared your Google Sheet with the service account email.</p>
+                                <div class="form-group">
+                                    <textarea id="set-creds" class="form-control" rows="5" placeholder="{ ... }" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-secondary">Upload Credentials</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Template Editor Modal (Custom structure inside the overlay) -->
+    <div class="modal-overlay" id="template-editor-modal">
+        <div class="modal-content" style="max-width: 1200px;">
+            <div class="modal-header">
+                <h3>Template Editor</h3>
+                <button class="modal-close modal-close-tmpl">&times;</button>
+            </div>
+            <div class="modal-body template-editor-grid">
+                <div>
+                    <input type="hidden" id="tmpl-id">
+                    <div class="form-group">
+                        <label class="form-label">AI Matching Category (Project Name)</label>
+                        <input type="text" id="tmpl-project" class="form-control" placeholder="e.g. Downtown Apartments" required>
+                        <small class="text-muted">The AI engine will use this exact name to route leads to this template.</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Subject</label>
+                        <input type="text" id="tmpl-subject" class="form-control" placeholder="Property details inside" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">HTML Body</label>
+                        <textarea id="tmpl-body" class="form-control" rows="15" style="font-family: monospace" required placeholder="<html>...</html>"></textarea>
+                        <small class="text-muted">Use <code>{first_name}</code> for personalization.</small>
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Live Preview</label>
+                    <div class="preview-container">
+                        <iframe id="tmpl-preview"></iframe>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close-tmpl">Cancel</button>
+                <button class="btn btn-primary" id="btn-save-template">Save Template</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/router.js"></script>
+    <script src="/js/components.js"></script>
+    <script src="/js/client-app.js"></script>
+</body>
+</html>

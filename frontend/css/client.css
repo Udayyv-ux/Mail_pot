@@ -1,0 +1,41 @@
+/* Client Portal Specific Theme overrides */
+:root {
+  --nav-active-bg: rgba(108, 99, 255, 0.15);
+  --nav-active-color: #a5b4fc;
+}
+
+/* Template Editor */
+.template-editor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.preview-container {
+  background: white;
+  border-radius: var(--radius-md);
+  height: 600px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+.preview-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.image-url-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+.image-url-item {
+  display: flex;
+  gap: 10px;
+}
+.image-url-item input { flex-grow: 1; }
+
+@media (max-width: 1024px) {
+  .template-editor-grid { grid-template-columns: 1fr; }
+}

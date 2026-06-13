@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin - MailPilot</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/portal.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="portal-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header" style="color: var(--brand-primary)">MailPilot ADMIN</div>
+            <nav class="sidebar-nav">
+                <a class="nav-item" data-route="dashboard">📊 Overview</a>
+                <a class="nav-item" data-route="clients">👥 Clients</a>
+                <a class="nav-item" data-route="leads">📩 Demo Leads</a>
+                <a class="nav-item" data-route="plans">💳 Pricing Plans</a>
+                <a class="nav-item" data-route="settings">⚙️ App Settings</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar" style="background-color: var(--brand-primary)">A</div>
+                    <div class="user-info">
+                        <div class="user-name">Super Admin</div>
+                        <div class="user-role">System Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <h2>Admin Console</h2>
+                <div class="d-flex align-items-center gap-3" style="gap: 15px">
+                    <span id="engine-status"></span>
+                    <button class="btn btn-warning btn-sm" id="btn-pause-engine" style="display:none">Pause Engine</button>
+                    <button class="btn btn-success btn-sm" id="btn-resume-engine" style="display:none">Resume Engine</button>
+                    <button class="btn btn-secondary btn-sm" id="btn-logout">Logout</button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                
+                <!-- Dashboard -->
+                <section id="page-dashboard" class="page-section active">
+                    <h2 class="mb-4">System Overview</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-info">
+                                <h3>Total Clients</h3>
+                                <div class="stat-value" id="dash-clients">-</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🚀</div>
+                            <div class="stat-info">
+                                <h3>Active Campaigns</h3>
+                                <div class="stat-value" id="dash-campaigns">-</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📨</div>
+                            <div class="stat-info">
+                                <h3>Total Emails Sent</h3>
+                                <div class="stat-value" id="dash-emails">-</div>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="border-color: var(--brand-primary)">
+                            <div class="stat-icon" style="color: var(--brand-primary)">💰</div>
+                            <div class="stat-info">
+                                <h3 style="color: var(--brand-primary)">Total Revenue</h3>
+                                <div class="stat-value" id="dash-revenue">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Clients -->
+                <section id="page-clients" class="page-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Client Management</h2>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>ID</th><th>Company</th><th>Emails Today</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="client-list"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Demo Leads -->
+                <section id="page-leads" class="page-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Demo Requests & Automation</h2>
+                    </div>
+                    
+                    <div class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 2rem;">
+                        <h3 class="mb-3">Mass Email Outreach (Pending Leads)</h3>
+                        <p class="text-secondary mb-3">Send an automated email to all leads currently in "pending" status. The system will add a 1-second delay between emails to protect your reputation.</p>
+                        <form id="form-demo-blast">
+                            <div class="form-group">
+                                <label class="form-label">Email Subject</label>
+                                <input type="text" id="demo-subject" class="form-control" placeholder="MailPilot Demo Access" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email Body (HTML)</label>
+                                <textarea id="demo-body" class="form-control" rows="6" placeholder="Hi {name}," required></textarea>
+                                <small class="text-muted">Use <code>{name}</code> and <code>{company}</code> for personalization.</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="btn-demo-send">Launch Outreach</button>
+                        </form>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Company</th><th>Message</th><th>Status</th></tr></thead>
+                            <tbody id="demo-list"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Pricing Plans -->
+                <section id="page-plans" class="page-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Pricing Plans</h2>
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                        <div class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg); align-self: start;">
+                            <h3 class="mb-3">Create New Plan</h3>
+                            <form id="form-plan">
+                                <div class="form-group">
+                                    <label class="form-label">Plan Name</label>
+                                    <input type="text" id="plan-name" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Description</label>
+                                    <input type="text" id="plan-desc" class="form-control" required>
+                                </div>
+                                <div class="d-flex" style="gap:10px">
+                                    <div class="form-group" style="flex:1">
+                                        <label class="form-label">Monthly ₹</label>
+                                        <input type="number" id="plan-price-mo" class="form-control" required min="0">
+                                    </div>
+                                    <div class="form-group" style="flex:1">
+                                        <label class="form-label">Yearly ₹</label>
+                                        <input type="number" id="plan-price-yr" class="form-control" required min="0">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Daily Email Limit</label>
+                                    <input type="number" id="plan-limit" class="form-control" required min="10">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Features (1 per line)</label>
+                                    <textarea id="plan-features" class="form-control" rows="4" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Create Plan</button>
+                            </form>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Name</th><th>Price/Mo</th><th>Limit</th><th>Actions</th></tr></thead>
+                                <tbody id="plan-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- App Settings (Dynamic CMS) -->
+                <section id="page-settings" class="page-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Dynamic App Settings</h2>
+                        <button class="btn btn-primary" id="btn-save-settings">Save All Settings</button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th style="width:30%">Key</th><th>Value</th><th></th></tr></thead>
+                            <tbody id="settings-list"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/router.js"></script>
+    <script src="/js/components.js"></script>
+    <script src="/js/admin-app.js"></script>
+</body>
+</html>

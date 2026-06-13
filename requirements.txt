@@ -1,0 +1,33 @@
+# Core
+fastapi
+uvicorn[standard]
+python-dotenv
+python-multipart
+aiofiles
+
+# Database (PostgreSQL / Neon)
+sqlalchemy[asyncio]
+asyncpg
+alembic
+
+# Auth
+authlib
+httpx
+itsdangerous
+python-jose[cryptography]
+
+# Payments
+razorpay
+
+# Email
+aiosmtplib
+
+# AI
+groq
+
+# Google Sheets
+gspread
+oauth2client
+
+# Encryption
+cryptography
