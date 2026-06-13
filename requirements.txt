@@ -22,6 +22,7 @@ razorpay
 
 # Email
 aiosmtplib
+beautifulsoup4
 
 # AI
 groq
