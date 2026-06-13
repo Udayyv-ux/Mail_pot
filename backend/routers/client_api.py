@@ -38,15 +38,27 @@ async def get_dashboard(db: AsyncSession = Depends(get_db), current_user = Depen
 
 @router.get("/profile")
 async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    from backend.config import settings
+    import json
+    
     client = await get_client_profile(current_user, db)
+    
+    service_email = "Admin has not configured the Service Account yet"
+    if settings.GOOGLE_SERVICE_ACCOUNT_JSON:
+        try:
+            creds = json.loads(settings.GOOGLE_SERVICE_ACCOUNT_JSON)
+            service_email = creds.get("client_email", service_email)
+        except:
+            pass
+            
     return {
         "company_name": client.company_name,
         "smtp_email": client.smtp_email,
         "smtp_host": client.smtp_host,
         "smtp_port": client.smtp_port,
         "google_sheet_id": client.google_sheet_id,
-        "has_credentials": bool(client.credentials_json),
-        "has_groq_key": bool(client.groq_api_key_enc)
+        "has_groq_key": bool(client.groq_api_key_enc),
+        "service_account_email": service_email
     }
 
 class ProfileUpdate(BaseModel):
@@ -86,12 +98,4 @@ async def update_sheet(data: SheetUpdate, db: AsyncSession = Depends(get_db), cu
     await db.commit()
     return {"status": "success", "sheet_id": sheet_id}
 
-class CredentialsUpload(BaseModel):
-    credentials_json: str
 
-@router.post("/credentials")
-async def upload_credentials(data: CredentialsUpload, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
-    client = await get_client_profile(current_user, db)
-    client.credentials_json = data.credentials_json # In a real app, encrypt this or store securely
-    await db.commit()
-    return {"status": "success"}

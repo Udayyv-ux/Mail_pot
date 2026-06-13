@@ -21,7 +21,7 @@ async def get_client_id(user, db: AsyncSession):
         raise HTTPException(404, "Client profile not found")
     return client_id
 
-@router.get("/")
+@router.get("")
 async def list_templates(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client_id = await get_client_id(current_user, db)
     result = await db.execute(select(Template).where(Template.client_id == client_id).order_by(Template.created_at.desc()))
@@ -33,7 +33,7 @@ class TemplateCreate(BaseModel):
     body_html: str
     image_urls_json: str = "[]"
 
-@router.post("/")
+@router.post("")
 async def create_template(data: TemplateCreate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client_id = await get_client_id(current_user, db)
     

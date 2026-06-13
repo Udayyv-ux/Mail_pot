@@ -20,7 +20,6 @@ class EmailTask:
     smtp_config: dict
     groq_key: str
     sheet_id: str
-    credentials_json: str
 
 class TenantRateLimiter:
     def __init__(self, rate_per_minute: int):
@@ -116,10 +115,10 @@ class QueueManager:
                                     status = "sent"
                                     error_msg = ""
                                     # 3. Update sheet
-                                    if task.sheet_id and task.credentials_json:
-                                        await update_sheet_cell(task.sheet_id, task.credentials_json, task.row_index, 4, category)
+                                    if task.sheet_id:
+                                        await update_sheet_cell(task.sheet_id, task.row_index, 4, category)
                                         await asyncio.sleep(1) # rate limit sheet API
-                                        await update_sheet_cell(task.sheet_id, task.credentials_json, task.row_index, 5, "Sent")
+                                        await update_sheet_cell(task.sheet_id, task.row_index, 5, "Sent")
                                 else:
                                     error_msg = "SMTP delivery failed"
                             

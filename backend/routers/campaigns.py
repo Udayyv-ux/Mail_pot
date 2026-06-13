@@ -26,7 +26,7 @@ async def get_client_record(user, db: AsyncSession):
         raise HTTPException(404, "Client profile not found")
     return client
 
-@router.get("/")
+@router.get("")
 async def list_campaigns(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client = await get_client_record(current_user, db)
     result = await db.execute(select(Campaign).where(Campaign.client_id == client.id).order_by(Campaign.created_at.desc()))
@@ -40,8 +40,8 @@ class CampaignStart(BaseModel):
 async def start_campaign(data: CampaignStart, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client = await get_client_record(current_user, db)
     
-    if not client.google_sheet_id or not client.credentials_json:
-        raise HTTPException(400, "Google Sheets not configured properly. Please setup ID and credentials.")
+    if not client.google_sheet_id:
+        raise HTTPException(400, "Google Sheets not configured properly. Please setup Sheet ID.")
         
     # Get Templates
     result = await db.execute(select(Template).where(Template.client_id == client.id, Template.is_active == True))
@@ -51,7 +51,7 @@ async def start_campaign(data: CampaignStart, background_tasks: BackgroundTasks,
         
     try:
         # Verify Sheet Connection
-        _, records = await get_sheet_data(client.google_sheet_id, client.credentials_json)
+        _, records = await get_sheet_data(client.google_sheet_id)
     except Exception as e:
         raise HTTPException(400, f"Failed to connect to Google Sheet: {str(e)}")
         
@@ -106,8 +106,7 @@ async def start_campaign(data: CampaignStart, background_tasks: BackgroundTasks,
                 templates=templates,
                 smtp_config=smtp_config,
                 groq_key=groq_key,
-                sheet_id=client.google_sheet_id,
-                credentials_json=client.credentials_json
+                sheet_id=client.google_sheet_id
             )
             # Enqueue to background async
             background_tasks.add_task(queue_manager.enqueue, task)

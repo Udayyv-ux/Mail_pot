@@ -154,17 +154,17 @@
 
                             <hr style="border-color:var(--border-color); margin: 2rem 0">
 
-                            <form id="form-credentials">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <label class="form-label mb-0">Service Account JSON</label>
-                                    <span id="cred-status"></span>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label mb-0">AI Engine Access</label>
+                            </div>
+                            <p class="text-muted" style="font-size:0.85rem">To allow the AI engine to read your spreadsheet and dispatch emails, you <strong>must share your Google Sheet</strong> with the system email address below as an <strong>Editor</strong>.</p>
+                            
+                            <div class="glass" style="padding: 1.5rem; background: rgba(var(--primary-rgb), 0.1); border: 1px dashed var(--primary); text-align: center; margin-bottom: 1rem;">
+                                <div id="service-account-email" style="font-family: monospace; font-size: 1.1rem; color: var(--primary); font-weight: bold; user-select: all;">
+                                    Loading...
                                 </div>
-                                <p class="text-muted" style="font-size:0.85rem">Paste the contents of your Google Service Account credentials.json file here. Make sure you have shared your Google Sheet with the service account email.</p>
-                                <div class="form-group">
-                                    <textarea id="set-creds" class="form-control" rows="5" placeholder="{ ... }" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-secondary">Upload Credentials</button>
-                            </form>
+                            </div>
+                            <p class="text-muted" style="font-size:0.8rem; text-align:center;"><em>(Click the email to select it, then copy and paste it into the "Share" button on your Google Sheet)</em></p>
                         </div>
                     </div>
                 </section>

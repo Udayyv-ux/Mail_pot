@@ -42,11 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('set-smtp-email').value = profile.smtp_email || '';
             document.getElementById('set-sheet').value = profile.google_sheet_id || '';
             
-            if (profile.has_credentials) {
-                document.getElementById('cred-status').innerHTML = components.createBadge('Connected', 'success');
-            } else {
-                document.getElementById('cred-status').innerHTML = components.createBadge('Not Configured', 'danger');
-            }
+            document.getElementById('service-account-email').innerText = profile.service_account_email || 'Not configured by admin';
             
             if (profile.has_groq_key) {
                 document.getElementById('groq-status').innerHTML = components.createBadge('Configured', 'success');
@@ -84,17 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch(e) { components.showToast(e.message, "error"); }
     });
 
-    document.getElementById('form-credentials').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        try {
-            await api.post('/client/credentials', {
-                credentials_json: document.getElementById('set-creds').value
-            });
-            components.showToast("Credentials saved", "success");
-            document.getElementById('set-creds').value = '';
-            loadSettings();
-        } catch(e) { components.showToast(e.message, "error"); }
-    });
+
 
     // --- Templates ---
     async function loadTemplates() {

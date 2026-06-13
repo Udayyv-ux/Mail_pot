@@ -27,6 +27,7 @@ class Settings:
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
+    GOOGLE_SERVICE_ACCOUNT_JSON: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
 
     # Email defaults
     DEFAULT_SMTP_EMAIL: str = os.getenv("DEFAULT_SMTP_EMAIL", "")
