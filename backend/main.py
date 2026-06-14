@@ -61,6 +61,8 @@ app.add_middleware(
 app.add_middleware(
     SessionMiddleware,
     secret_key=settings.JWT_SECRET,
+    same_site="lax",
+    https_only=False
 )
 
 # ── Register API Routers ─────────────────────────────────────────────────────

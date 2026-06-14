@@ -10,27 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
         initAdmin();
     }
 
-    // Auth
-    document.getElementById('form-admin-login').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const passkey = document.getElementById('admin-passkey').value;
-        try {
-            const res = await fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ passkey })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.detail || 'Login failed');
-            
-            localStorage.setItem('admin_token', data.access_token);
-            components.showToast("Logged in to Super Admin", "success");
-            loginScreen.style.display = 'none';
-            initAdmin();
-        } catch (err) {
-            components.showToast(err.message, "error");
-        }
-    });
+    // Auth Guard now relies on the /api/auth/google endpoint directly
+    // The google auth button is hardcoded in the HTML to do window.location.href
 
     document.getElementById('btn-admin-logout').addEventListener('click', () => {
         localStorage.removeItem('admin_token');
