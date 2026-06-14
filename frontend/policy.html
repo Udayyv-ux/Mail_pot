@@ -3,57 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Policy - MailPilot</title>
-    <link rel="stylesheet" href="/css/global.css">
-    <link rel="stylesheet" href="/css/landing.css">
+    <title>Policies - LeadFlow.ai</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: { primary: '#4f46e5', secondary: '#ec4899', dark: '#0f172a', card: '#1e293b' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0f172a; color: white; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .markdown-body h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 1.5rem; color: white; }
+        .markdown-body h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; color: #e2e8f0; }
+        .markdown-body p { margin-bottom: 1rem; color: #cbd5e1; line-height: 1.6; }
+        .markdown-body ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; color: #cbd5e1; }
+        .markdown-body a { color: #818cf8; text-decoration: underline; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<body>
-    <div id="canvas-container">
-        <div class="nebula nebula-1"></div>
-    </div>
-
-    <nav class="navbar scrolled">
-        <a href="/" class="logo" style="text-decoration:none">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-            <span id="app-name">MailPilot</span>
-        </a>
-        <div class="nav-links">
-            <a href="/" class="btn btn-secondary btn-sm">Back to Home</a>
+<body class="antialiased selection:bg-primary selection:text-white flex flex-col min-h-screen">
+    <nav class="w-full z-40 glass border-b border-white/10">
+        <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold tracking-tight">LeadFlow<span class="text-primary">.ai</span></a>
+            <a href="/" class="text-sm text-gray-400 hover:text-white transition-colors">Back to Home</a>
         </div>
     </nav>
-
-    <div style="max-width: 800px; margin: 120px auto 60px auto; padding: 2rem;">
-        <div class="glass" style="padding: 3rem; border-radius: var(--radius-xl);">
-            <h1 id="policy-title" style="margin-bottom: 2rem; color: var(--brand-primary)">Loading...</h1>
-            <div id="policy-content" style="color: var(--text-primary); font-family: 'Inter', sans-serif;">
-                <div class="loader"></div>
-            </div>
-            <div id="policy-error" class="alert alert-danger" style="display:none; margin-top:2rem">
-                Policy not found or is currently inactive.
-            </div>
+    <main class="flex-1 max-w-4xl mx-auto px-6 py-12 w-full">
+        <div id="content" class="markdown-body glass p-8 md:p-12 rounded-2xl shadow-2xl">
+            <p class="text-center text-gray-400">Loading policy...</p>
         </div>
-    </div>
+    </main>
+    <footer class="border-t border-white/10 py-6 mt-12 text-center text-gray-500 text-sm">
+        © 2026 LeadFlow.ai. All rights reserved.
+    </footer>
 
     <script src="/js/api.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const slug = urlParams.get('p');
-            
-            if (!slug) {
-                document.getElementById('policy-error').style.display = 'block';
-                document.querySelector('.loader').style.display = 'none';
-                return;
-            }
-
+            const slug = urlParams.get('p') || 'terms';
+            const contentDiv = document.getElementById('content');
             try {
-                const policy = await api.get(`/public/policies/${slug}`);
-                document.getElementById('policy-title').textContent = policy.title;
-                document.getElementById('policy-content').innerHTML = policy.content_html;
-            } catch (e) {
-                document.getElementById('policy-title').textContent = 'Error';
-                document.getElementById('policy-error').style.display = 'block';
-                document.querySelector('.loader').style.display = 'none';
+                const p = await api.get(`/public/policies/${slug}`);
+                document.title = `${p.title} - LeadFlow.ai`;
+                contentDiv.innerHTML = marked.parse(p.content_md);
+            } catch(e) {
+                contentDiv.innerHTML = `<div class="text-center"><h1 class="text-3xl font-bold mb-4">404 - Not Found</h1><p class="text-gray-400">The policy you are looking for does not exist.</p><a href="/" class="inline-block mt-6 bg-primary hover:bg-indigo-500 text-white font-bold py-2 px-6 rounded-lg transition-colors">Go Home</a></div>`;
             }
         });
     </script>

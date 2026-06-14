@@ -32,6 +32,7 @@ class TemplateCreate(BaseModel):
     subject: str
     body_html: str
     image_urls_json: str = "[]"
+    banner_url: str | None = None
 
 @router.post("")
 async def create_template(data: TemplateCreate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
@@ -44,7 +45,8 @@ async def create_template(data: TemplateCreate, db: AsyncSession = Depends(get_d
         project_name=data.project_name,
         subject=data.subject,
         body_html=data.body_html,
-        image_urls_json=data.image_urls_json
+        image_urls_json=data.image_urls_json,
+        banner_url=data.banner_url
     )
     db.add(template)
     await db.commit()
@@ -63,6 +65,7 @@ async def update_template(id: str, data: TemplateCreate, db: AsyncSession = Depe
     template.subject = data.subject
     template.body_html = data.body_html
     template.image_urls_json = data.image_urls_json
+    template.banner_url = data.banner_url
     
     await db.commit()
     return template

@@ -41,11 +41,14 @@ class Client(Base):
     trial_ends_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
+    # Feature Flags
+    features_json = Column(Text, default="{}")
+
     # Relationships
     user = relationship("User", backref="client_profile", lazy="selectin")
     plan = relationship("Plan", backref="subscribers", lazy="selectin")
     templates = relationship("Template", back_populates="client", cascade="all, delete-orphan", lazy="selectin")
-    campaigns = relationship("Campaign", back_populates="client", cascade="all, delete-orphan", lazy="selectin")
+    email_logs = relationship("EmailLog", back_populates="client", cascade="all, delete-orphan", lazy="selectin")
     payments = relationship("Payment", back_populates="client", cascade="all, delete-orphan", lazy="selectin")
 
     def __repr__(self):

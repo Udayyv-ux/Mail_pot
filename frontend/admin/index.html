@@ -3,278 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Admin - MailPilot</title>
-    <link rel="stylesheet" href="/css/global.css">
-    <link rel="stylesheet" href="/css/portal.css">
-    <link rel="stylesheet" href="/css/admin.css">
+    <title>Super Admin - LeadFlow.ai</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        primary: '#4f46e5',
+                        secondary: '#ec4899',
+                        dark: '#0f172a',
+                        card: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body { background-color: #0f172a; color: white; overflow-x: hidden; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .page-section { display: none; animation: fadeIn 0.3s ease-out; }
+        .page-section.active { display: block; }
+        
+        .nav-item { cursor: pointer; padding: 0.75rem 1rem; border-radius: 0.5rem; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem; color: #94a3b8; font-weight: 500; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: var(--secondary); color: white; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Modals */
+        .modal { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        .modal.active { display: flex; animation: fadeIn 0.2s ease-out; }
+    </style>
 </head>
-<body>
-    <div class="portal-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header" style="color: var(--brand-primary)">MailPilot ADMIN</div>
-            <nav class="sidebar-nav">
-                <a class="nav-item" data-route="dashboard">📊 Overview</a>
-                <a class="nav-item" data-route="clients">👥 Clients</a>
-                <a class="nav-item" data-route="leads">📩 Demo Leads</a>
-                <a class="nav-item" data-route="plans">💳 Pricing Plans</a>
-                <a class="nav-item" data-route="policies">📝 Legal & Pages</a>
-                <a class="nav-item" data-route="announcements">📢 Announcements</a>
-                <a class="nav-item" data-route="settings">⚙️ App Settings</a>
-            </nav>
-            <div class="sidebar-footer">
-                <div class="user-profile">
-                    <div class="user-avatar" style="background-color: var(--brand-primary)">A</div>
-                    <div class="user-info">
-                        <div class="user-name">Super Admin</div>
-                        <div class="user-role">System Administrator</div>
-                    </div>
+<body class="antialiased flex h-screen overflow-hidden selection:bg-secondary selection:text-white">
+
+    <!-- Auth Guard -->
+    <div id="admin-login-screen" class="fixed inset-0 z-50 bg-dark flex items-center justify-center">
+        <div class="glass p-8 rounded-2xl w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-6 text-center">Super Admin Login</h2>
+            <form id="form-admin-login" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Passkey</label>
+                    <input type="password" id="admin-passkey" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-secondary transition-colors" required>
                 </div>
+                <button type="submit" class="w-full bg-secondary hover:bg-pink-600 text-white font-bold py-3 rounded-lg transition-colors mt-2">Access Admin</button>
+                <div class="text-center mt-4">
+                    <a href="/" class="text-sm text-gray-500 hover:text-white">Back to site</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="w-64 glass border-r border-white/10 flex flex-col h-full z-20 shrink-0">
+        <div class="p-6 border-b border-white/10">
+            <h1 class="text-2xl font-bold tracking-tight text-secondary">Admin<span class="text-white">Portal</span></h1>
+        </div>
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <a class="nav-item active" data-route="dashboard">Dashboard</a>
+            <a class="nav-item" data-route="users">Users & Clients</a>
+            <a class="nav-item" data-route="plans">Pricing Plans</a>
+            <a class="nav-item" data-route="settings">App Settings</a>
+            <a class="nav-item" data-route="policies">Policies (CMS)</a>
+        </nav>
+        <div class="p-4 border-t border-white/10">
+            <button id="btn-admin-logout" class="w-full py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors">Lock Admin</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-full relative z-10 overflow-hidden bg-dark">
+        <header class="h-16 border-b border-white/10 flex justify-between items-center px-8 bg-card/50 backdrop-blur-md">
+            <h2 id="topbar-title" class="text-xl font-semibold">Super Admin</h2>
+            <div class="flex gap-4">
+                <button class="bg-primary/20 text-primary hover:bg-primary/30 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors" onclick="document.getElementById('notif-modal').classList.add('active')">🔔 Broadcast Notification</button>
             </div>
-        </aside>
+        </header>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="topbar">
-                <h2>Admin Console</h2>
-                <div class="d-flex align-items-center gap-3" style="gap: 15px">
-                    <span id="engine-status"></span>
-                    <button class="btn btn-warning btn-sm" id="btn-pause-engine" style="display:none">Pause Engine</button>
-                    <button class="btn btn-success btn-sm" id="btn-resume-engine" style="display:none">Resume Engine</button>
-                    <button class="btn btn-secondary btn-sm" id="btn-logout">Logout</button>
-                </div>
-            </header>
-
-            <div class="page-content">
+        <main class="flex-1 overflow-y-auto p-8 relative">
+            <!-- Dashboard Page -->
+            <section id="page-dashboard" class="page-section active">
+                <h1 class="text-3xl font-bold mb-8">Platform Overview</h1>
                 
-                <!-- Dashboard -->
-                <section id="page-dashboard" class="page-section active">
-                    <h2 class="mb-4">System Overview</h2>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon">👥</div>
-                            <div class="stat-info">
-                                <h3>Total Clients</h3>
-                                <div class="stat-value" id="dash-clients">-</div>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">🚀</div>
-                            <div class="stat-info">
-                                <h3>Active Campaigns</h3>
-                                <div class="stat-value" id="dash-campaigns">-</div>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">📨</div>
-                            <div class="stat-info">
-                                <h3>Total Emails Sent</h3>
-                                <div class="stat-value" id="dash-emails">-</div>
-                            </div>
-                        </div>
-                        <div class="stat-card" style="border-color: var(--brand-primary)">
-                            <div class="stat-icon" style="color: var(--brand-primary)">💰</div>
-                            <div class="stat-info">
-                                <h3 style="color: var(--brand-primary)">Total Revenue</h3>
-                                <div class="stat-value" id="dash-revenue">-</div>
-                            </div>
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="glass p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-gray-400 text-sm font-semibold mb-2 uppercase tracking-wider">Total Users</h3>
+                        <div class="text-4xl font-extrabold text-white" id="stat-users">0</div>
                     </div>
-                </section>
+                    <div class="glass p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-gray-400 text-sm font-semibold mb-2 uppercase tracking-wider">Active Plans</h3>
+                        <div class="text-4xl font-extrabold text-white" id="stat-plans">0</div>
+                    </div>
+                    <div class="glass p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-gray-400 text-sm font-semibold mb-2 uppercase tracking-wider">Emails Processed (24h)</h3>
+                        <div class="text-4xl font-extrabold text-white" id="stat-emails">0</div>
+                    </div>
+                    <div class="glass p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-gray-400 text-sm font-semibold mb-2 uppercase tracking-wider">Demo Requests</h3>
+                        <div class="text-4xl font-extrabold text-white" id="stat-demos">0</div>
+                    </div>
+                </div>
 
-                <!-- Clients -->
-                <section id="page-clients" class="page-section">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2>Client Management</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 glass p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-lg font-bold mb-4">Global Volume (Last 7 Days)</h3>
+                        <canvas id="admin-chart" height="100"></canvas>
                     </div>
-                    <div class="table-container">
-                        <table>
-                            <thead><tr><th>ID</th><th>Company</th><th>Emails Today</th><th>Status</th><th>Actions</th></tr></thead>
-                            <tbody id="client-list"></tbody>
-                        </table>
+                    <div class="glass p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-lg font-bold mb-4">Demo Requests</h3>
+                        <div id="demo-requests-list" class="space-y-4 max-h-80 overflow-y-auto pr-2"></div>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                <!-- Demo Leads -->
-                <section id="page-leads" class="page-section">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2>Demo Requests & Automation</h2>
-                    </div>
-                    
-                    <div class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 2rem;">
-                        <h3 class="mb-3">Mass Email Outreach (Pending Leads)</h3>
-                        <p class="text-secondary mb-3">Send an automated email to all leads currently in "pending" status. The system will add a 1-second delay between emails to protect your reputation.</p>
-                        <form id="form-demo-blast">
-                            <div class="form-group">
-                                <label class="form-label">Email Subject</label>
-                                <input type="text" id="demo-subject" class="form-control" placeholder="MailPilot Demo Access" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Email Body (HTML)</label>
-                                <textarea id="demo-body" class="form-control" rows="6" placeholder="Hi {name}," required></textarea>
-                                <small class="text-muted">Use <code>{name}</code> and <code>{company}</code> for personalization.</small>
-                            </div>
-                            <button type="submit" class="btn btn-primary" id="btn-demo-send">Launch Outreach</button>
-                        </form>
-                    </div>
+            <!-- Users Page -->
+            <section id="page-users" class="page-section">
+                <h2 class="text-3xl font-bold mb-8">Client Management</h2>
+                <div class="glass rounded-2xl border border-white/10 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-white/5 border-b border-white/10 text-gray-400 text-sm uppercase tracking-wider">
+                            <tr>
+                                <th class="p-4 font-semibold">Email</th>
+                                <th class="p-4 font-semibold">Company</th>
+                                <th class="p-4 font-semibold">Active Plan</th>
+                                <th class="p-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="client-list" class="divide-y divide-white/10">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-                    <div class="table-container">
-                        <table>
-                            <thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Company</th><th>Message</th><th>Status</th></tr></thead>
-                            <tbody id="demo-list"></tbody>
-                        </table>
-                    </div>
-                </section>
+            <!-- Plans Page -->
+            <section id="page-plans" class="page-section">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">Pricing Plans</h2>
+                    <button class="bg-white text-dark hover:bg-gray-200 font-bold py-2 px-4 rounded-lg transition-colors" onclick="openPlanModal()">+ Create Plan</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="admin-plan-list"></div>
+            </section>
 
-                <!-- Pricing Plans -->
-                <section id="page-plans" class="page-section">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2>Pricing Plans</h2>
-                    </div>
-                    
-                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
-                        <div class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg); align-self: start;">
-                            <h3 class="mb-3">Create New Plan</h3>
-                            <form id="form-plan">
-                                <div class="form-group">
-                                    <label class="form-label">Plan Name</label>
-                                    <input type="text" id="plan-name" class="form-control" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Description</label>
-                                    <input type="text" id="plan-desc" class="form-control" required>
-                                </div>
-                                <div class="d-flex" style="gap:10px">
-                                    <div class="form-group" style="flex:1">
-                                        <label class="form-label">Monthly ₹</label>
-                                        <input type="number" id="plan-price-mo" class="form-control" required min="0">
-                                    </div>
-                                    <div class="form-group" style="flex:1">
-                                        <label class="form-label">Yearly ₹</label>
-                                        <input type="number" id="plan-price-yr" class="form-control" required min="0">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Daily Email Limit</label>
-                                    <input type="number" id="plan-limit" class="form-control" required min="10">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Features (1 per line)</label>
-                                    <textarea id="plan-features" class="form-control" rows="4" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Create Plan</button>
-                            </form>
+            <!-- Settings Page -->
+            <section id="page-settings" class="page-section">
+                <h2 class="text-3xl font-bold mb-8">Global Settings</h2>
+                <div class="glass p-8 rounded-2xl border border-white/10 max-w-3xl">
+                    <form id="form-admin-settings" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Global Default Groq Key</label>
+                            <input type="password" id="admin-groq" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" placeholder="Enter API Key">
+                            <p class="text-xs text-gray-500 mt-1">Used if client doesn't provide their own.</p>
                         </div>
-                        
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>Name</th><th>Price/Mo</th><th>Limit</th><th>Actions</th></tr></thead>
-                                <tbody id="plan-list"></tbody>
-                            </table>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Google Service Account Email</label>
+                            <input type="email" id="admin-gcp-email" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" placeholder="service-account@project.iam.gserviceaccount.com">
                         </div>
-                    </div>
-                </section>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Google Service Account JSON</label>
+                            <textarea id="admin-gcp-json" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary font-mono text-xs" rows="4" placeholder="{...}"></textarea>
+                        </div>
+                        <hr class="border-white/10">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Razorpay Key ID</label>
+                            <input type="text" id="admin-rzp-key" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" placeholder="rzp_live_...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Razorpay Secret</label>
+                            <input type="password" id="admin-rzp-secret" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" placeholder="Secret Key">
+                        </div>
+                        <button type="submit" class="w-full bg-secondary hover:bg-pink-600 text-white font-bold py-3 rounded-lg transition-colors">Save Global Settings</button>
+                    </form>
+                </div>
+            </section>
 
-                <!-- Policies (Legal CMS) -->
-                <section id="page-policies" class="page-section">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2>Legal & Pages</h2>
-                    </div>
-                    
-                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
-                        <div class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg); align-self: start;">
-                            <h3 class="mb-3">Edit Page</h3>
-                            <form id="form-policy">
-                                <div class="form-group">
-                                    <label class="form-label">Page Title</label>
-                                    <input type="text" id="policy-title" class="form-control" placeholder="e.g. Terms of Service" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">URL Slug</label>
-                                    <input type="text" id="policy-slug" class="form-control" placeholder="e.g. terms" required>
-                                    <small class="text-muted">Will be accessed at /policy.html?p=slug</small>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">HTML Content</label>
-                                    <textarea id="policy-content" class="form-control" rows="12" placeholder="<h1>Terms</h1><p>...</p>" required style="font-family: monospace"></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label d-flex align-items-center" style="gap: 10px; cursor: pointer;">
-                                        <input type="checkbox" id="policy-active" checked>
-                                        Publish this page publicly
-                                    </label>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Save Page</button>
-                            </form>
-                        </div>
-                        
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>Title</th><th>Slug</th><th>Status</th><th>Actions</th></tr></thead>
-                                <tbody id="policy-list"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Announcements -->
-                <section id="page-announcements" class="page-section">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2>Client Announcements</h2>
-                    </div>
-                    
-                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
-                        <div class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg); align-self: start;">
-                            <h3 class="mb-3">New Announcement</h3>
-                            <form id="form-announcement">
-                                <div class="form-group">
-                                    <label class="form-label">Message</label>
-                                    <textarea id="ann-message" class="form-control" rows="4" placeholder="Type your announcement here..." required></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Type</label>
-                                    <select id="ann-type" class="form-control" required>
-                                        <option value="info">Info (Blue)</option>
-                                        <option value="success">Success (Green)</option>
-                                        <option value="warning">Warning (Yellow)</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Broadcast</button>
-                            </form>
-                        </div>
-                        
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>Date</th><th>Type</th><th>Message</th><th>Actions</th></tr></thead>
-                                <tbody id="announcement-list"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- App Settings (Dynamic CMS) -->
-                <section id="page-settings" class="page-section">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2>Dynamic App Settings</h2>
-                        <button class="btn btn-primary" id="btn-save-settings">Save All Settings</button>
-                    </div>
-                    
-                    <div class="table-container">
-                        <table>
-                            <thead><tr><th style="width:30%">Key</th><th>Value</th><th></th></tr></thead>
-                            <tbody id="settings-list"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-            </div>
+            <!-- Policies Page -->
+            <section id="page-policies" class="page-section">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">Legal Policies CMS</h2>
+                    <button class="bg-white text-dark hover:bg-gray-200 font-bold py-2 px-4 rounded-lg transition-colors" onclick="openPolicyModal()">+ Add Policy</button>
+                </div>
+                <div class="glass p-6 rounded-2xl border border-white/10">
+                    <div id="policy-list" class="space-y-4"></div>
+                </div>
+            </section>
         </main>
     </div>
 
+    <!-- Modals -->
+
+    <!-- Plan Modal -->
+    <div id="plan-modal" class="modal">
+        <div class="modal-content glass p-8 rounded-2xl w-full max-w-md relative">
+            <button onclick="document.getElementById('plan-modal').classList.remove('active')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl p-2">&times;</button>
+            <h2 class="text-2xl font-bold mb-6" id="plan-modal-title">Create Plan</h2>
+            <form id="form-plan" class="space-y-4">
+                <input type="hidden" id="plan-id">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Plan Name</label>
+                    <input type="text" id="plan-name" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Monthly Price ($)</label>
+                        <input type="number" id="plan-price" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Daily Email Limit</label>
+                        <input type="number" id="plan-limit" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Features (JSON Array)</label>
+                    <textarea id="plan-features" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary font-mono text-xs" rows="3" placeholder='["Unlimited sends", "AI Match"]'></textarea>
+                </div>
+                <button type="submit" class="w-full bg-secondary hover:bg-pink-600 text-white font-bold py-3 rounded-lg transition-colors mt-2">Save Plan</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Policy Modal -->
+    <div id="policy-modal" class="modal">
+        <div class="modal-content glass p-8 rounded-2xl w-full max-w-4xl relative">
+            <button onclick="document.getElementById('policy-modal').classList.remove('active')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl p-2">&times;</button>
+            <h2 class="text-2xl font-bold mb-6">Edit Policy</h2>
+            <form id="form-policy" class="space-y-4">
+                <input type="hidden" id="pol-id">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Slug (e.g. terms)</label>
+                        <input type="text" id="pol-slug" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Title</label>
+                        <input type="text" id="pol-title" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Markdown Content</label>
+                    <textarea id="pol-content" class="w-full min-h-[300px] bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary font-mono text-sm" required></textarea>
+                </div>
+                <button type="submit" class="w-full bg-secondary hover:bg-pink-600 text-white font-bold py-3 rounded-lg transition-colors">Save Policy</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Broadcast Modal -->
+    <div id="notif-modal" class="modal">
+        <div class="modal-content glass p-8 rounded-2xl w-full max-w-md relative">
+            <button onclick="document.getElementById('notif-modal').classList.remove('active')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl p-2">&times;</button>
+            <h2 class="text-2xl font-bold mb-6">Broadcast Announcement</h2>
+            <form id="form-notif" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Message</label>
+                    <textarea id="notif-msg" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="w-full bg-primary hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition-colors mt-2">Send to All Users</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Client Manage Features Modal -->
+    <div id="client-features-modal" class="modal">
+        <div class="modal-content glass p-8 rounded-2xl w-full max-w-md relative">
+            <button onclick="document.getElementById('client-features-modal').classList.remove('active')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl p-2">&times;</button>
+            <h2 class="text-2xl font-bold mb-6">Manage Client Features</h2>
+            <p class="text-gray-400 text-sm mb-4" id="cf-email"></p>
+            <form id="form-client-features" class="space-y-4">
+                <input type="hidden" id="cf-id">
+                
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="cf-ai" class="w-5 h-5 accent-secondary">
+                    <span class="text-white">Enable AI Matcher</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="cf-whitelabel" class="w-5 h-5 accent-secondary">
+                    <span class="text-white">White-label Domains</span>
+                </label>
+
+                <button type="submit" class="w-full bg-secondary hover:bg-pink-600 text-white font-bold py-3 rounded-lg transition-colors mt-4">Save Configuration</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+    <script>
+        // Custom Toast
+        window.showToast = (msg, type='info') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bg = type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : 'bg-primary';
+            toast.className = `${bg} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-y-10 opacity-0`;
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('translate-y-10', 'opacity-0'); }, 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+        window.components = { showToast, formatDate: (dateStr) => new Date(dateStr).toLocaleString() };
+    </script>
     <script src="/js/api.js"></script>
-    <script src="/js/auth.js"></script>
-    <script src="/js/router.js"></script>
-    <script src="/js/components.js"></script>
-    <script src="/js/admin-app.js"></script>
+    <script src="/js/admin-app.js?v=2"></script>
 </body>
 </html>

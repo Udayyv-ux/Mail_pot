@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: mailpilot-engine
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 8080

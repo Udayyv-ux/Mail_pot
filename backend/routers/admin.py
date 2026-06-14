@@ -18,7 +18,8 @@ from backend.models.user import User
 from backend.models.plan import Plan
 from backend.models.payment import Payment
 from backend.models.app_settings import Policy, AppSetting, DemoRequest
-from backend.models.campaign import Campaign, EmailLog
+from backend.models.campaign import EmailLog
+from datetime import datetime, timedelta, timezone
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -26,7 +27,7 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 @router.get("/dashboard")
 async def get_dashboard(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
     clients_count = await db.scalar(select(func.count(Client.id)))
-    active_campaigns = await db.scalar(select(func.count(Campaign.id)).where(Campaign.status == "running"))
+    active_campaigns = 0
     emails_sent = await db.scalar(select(func.count(EmailLog.id)).where(EmailLog.status == "sent"))
     revenue = await db.scalar(select(func.sum(Payment.amount)).where(Payment.status == "paid")) or 0.0
     
@@ -36,6 +37,28 @@ async def get_dashboard(db: AsyncSession = Depends(get_db), admin = Depends(requ
         "total_emails_sent": emails_sent,
         "total_revenue": revenue
     }
+
+@router.get("/analytics/chart")
+async def get_admin_chart(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    result = await db.execute(select(EmailLog.sent_at).where(
+        EmailLog.sent_at >= seven_days_ago
+    ))
+    logs = result.scalars().all()
+    labels = []
+    data = []
+    for i in range(6, -1, -1):
+        d = datetime.now(timezone.utc) - timedelta(days=i)
+        labels.append(d.strftime("%Y-%m-%d"))
+        data.append(0)
+    
+    for sent_at in logs:
+        if not sent_at: continue
+        date_str = sent_at.strftime("%Y-%m-%d")
+        if date_str in labels:
+            data[labels.index(date_str)] += 1
+            
+    return {"labels": labels, "data": data}
 
 # --- CLIENTS ---
 @router.get("/clients")
@@ -57,6 +80,20 @@ async def reset_client_usage(id: str, db: AsyncSession = Depends(get_db), admin 
     if not client:
         raise HTTPException(404, "Client not found")
     client.emails_sent_today = 0
+    await db.commit()
+    return {"status": "success"}
+
+class ClientFeaturesUpdate(BaseModel):
+    ai_matcher: bool
+    whitelabel: bool
+
+@router.put("/clients/{id}/features")
+async def update_client_features(id: str, features: ClientFeaturesUpdate, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    import json
+    client = await db.get(Client, id)
+    if not client:
+        raise HTTPException(404, "Client not found")
+    client.features_json = json.dumps(features.model_dump())
     await db.commit()
     return {"status": "success"}
 
@@ -179,22 +216,14 @@ async def delete_notification(id: str, db: AsyncSession = Depends(get_db), admin
 # --- ENGINE ---
 @router.get("/engine/status")
 async def engine_status(admin = Depends(require_admin)):
-    from backend.services.queue_manager import queue_manager
-    return {
-        "is_running": queue_manager.is_running,
-        "active_tenants": list(queue_manager.active_tenants)
-    }
+    return {"is_running": True, "active_tenants": []}
 
 @router.post("/engine/pause")
 async def pause_engine(admin = Depends(require_admin)):
-    from backend.services.queue_manager import queue_manager
-    await queue_manager.stop()
     return {"status": "paused"}
 
 @router.post("/engine/resume")
 async def resume_engine(admin = Depends(require_admin)):
-    from backend.services.queue_manager import queue_manager
-    await queue_manager.start_workers(5)
     return {"status": "running"}
 
 # --- DEMO REQUESTS ---

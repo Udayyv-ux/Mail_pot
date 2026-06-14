@@ -23,13 +23,7 @@ async def lifespan(app: FastAPI):
     await init_db()  # Tables already exist, avoid duplicate table error
     print("Database ready")
 
-    # Start email queue workers
-    try:
-        from backend.services.queue_manager import queue_manager
-        await queue_manager.start_workers(num_workers=5)
-        print("Email queue workers started")
-    except Exception as e:
-        print(f"Queue manager not started: {e}")
+    # Engine logic no longer uses background workers in lifespan
 
     # Setup OAuth
     try:
@@ -41,13 +35,7 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # Shutdown
-    try:
-        from backend.services.queue_manager import queue_manager
-        await queue_manager.stop()
-        print("Email queue workers stopped")
-    except Exception:
-        pass
+    # Shutdown engine tasks if any
     print(f"{settings.APP_NAME} shut down.")
 
 
@@ -81,7 +69,6 @@ from backend.routers.auth import router as auth_router
 from backend.routers.admin import router as admin_router
 from backend.routers.client_api import router as client_router
 from backend.routers.templates_api import router as templates_router
-from backend.routers.campaigns import router as campaigns_router
 from backend.routers.payments import router as payments_router
 from backend.routers.public import router as public_router
 
@@ -89,7 +76,6 @@ app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(client_router)
 app.include_router(templates_router)
-app.include_router(campaigns_router)
 app.include_router(payments_router)
 app.include_router(public_router)
 
@@ -102,6 +88,10 @@ app.mount("/css", StaticFiles(directory=os.path.join(FRONTEND_DIR, "css")), name
 app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND_DIR, "js")), name="js")
 if os.path.exists(os.path.join(FRONTEND_DIR, "assets")):
     app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="assets")
+
+UPLOADS_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+os.makedirs(UPLOADS_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 
 # ── Frontend Page Routes ─────────────────────────────────────────────────────

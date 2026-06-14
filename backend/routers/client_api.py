@@ -9,7 +9,12 @@ from pydantic import BaseModel
 from backend.database import get_db
 from backend.middleware.auth_middleware import require_client
 from backend.models.client import Client
-from backend.models.campaign import Campaign, EmailLog
+from backend.models.campaign import EmailLog
+from datetime import datetime, timedelta, timezone
+from fastapi import UploadFile, File, BackgroundTasks
+import os
+import uuid
+from backend.services.email_engine import run_blast_engine
 from backend.utils.encryption import encrypt_value
 
 router = APIRouter(prefix="/api/client", tags=["client"])
@@ -25,8 +30,8 @@ async def get_client_profile(user, db: AsyncSession):
 async def get_dashboard(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client = await get_client_profile(current_user, db)
     
-    active_campaigns = await db.scalar(select(func.count(Campaign.id)).where(Campaign.client_id == client.id, Campaign.status == "running"))
-    total_campaigns = await db.scalar(select(func.count(Campaign.id)).where(Campaign.client_id == client.id))
+    active_campaigns = 0
+    total_campaigns = 0
     
     return {
         "emails_sent_today": client.emails_sent_today,
@@ -104,3 +109,49 @@ async def get_client_notifications(db: AsyncSession = Depends(get_db), current_u
     # Fetch active notifications
     result = await db.execute(select(Notification).where(Notification.is_active == True).order_by(Notification.created_at.desc()))
     return result.scalars().all()
+
+@router.get("/analytics/chart")
+async def get_client_chart(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    client = await get_client_profile(current_user, db)
+    seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    result = await db.execute(select(EmailLog.sent_at).where(
+        EmailLog.client_id == client.id, 
+        EmailLog.sent_at >= seven_days_ago
+    ))
+    logs = result.scalars().all()
+    labels = []
+    data = []
+    for i in range(6, -1, -1):
+        d = datetime.now(timezone.utc) - timedelta(days=i)
+        labels.append(d.strftime("%Y-%m-%d"))
+        data.append(0)
+    
+    for sent_at in logs:
+        if not sent_at: continue
+        date_str = sent_at.strftime("%Y-%m-%d")
+        if date_str in labels:
+            data[labels.index(date_str)] += 1
+            
+    return {"labels": labels, "data": data}
+
+@router.post("/upload")
+async def upload_image(file: UploadFile = File(...), current_user = Depends(require_client)):
+    ext = file.filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
+    os.makedirs(uploads_dir, exist_ok=True)
+    file_path = os.path.join(uploads_dir, filename)
+    with open(file_path, "wb") as f:
+        content = await file.read()
+        f.write(content)
+    return {"url": f"/uploads/{filename}"}
+
+class BlastRequest(BaseModel):
+    batch_size: int = 10
+    delay_seconds: int = 3
+
+@router.post("/blast")
+async def trigger_blast(req: BlastRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    client = await get_client_profile(current_user, db)
+    background_tasks.add_task(run_blast_engine, client.id, req.batch_size, req.delay_seconds)
+    return {"status": "success", "message": "Blast engine started"}

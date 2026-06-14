@@ -3,261 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Portal - MailPilot</title>
-    <link rel="stylesheet" href="/css/global.css?v=6">
-    <link rel="stylesheet" href="/css/portal.css?v=6">
-    <link rel="stylesheet" href="/css/client.css?v=6">
+    <title>Client Portal - LeadFlow.ai</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        primary: '#4f46e5',
+                        secondary: '#ec4899',
+                        dark: '#0f172a',
+                        card: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body { background-color: #0f172a; color: white; overflow-x: hidden; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .page-section { display: none; animation: fadeIn 0.3s ease-out; }
+        .page-section.active { display: block; }
+        
+        .nav-item { cursor: pointer; padding: 0.75rem 1rem; border-radius: 0.5rem; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem; color: #94a3b8; font-weight: 500; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: var(--primary); color: white; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Modals */
+        .modal { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        .modal.active { display: flex; animation: fadeIn 0.2s ease-out; }
+    </style>
 </head>
-<body>
-    <div class="portal-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">MailPilot Client</div>
-            <nav class="sidebar-nav">
-                <a class="nav-item" data-route="dashboard">📊 Dashboard</a>
-                <a class="nav-item" data-route="campaigns">🚀 Campaigns</a>
-                <a class="nav-item" data-route="templates">✉️ Templates</a>
-                <a class="nav-item" data-route="billing">💳 Billing & Plan</a>
-                <a class="nav-item" data-route="settings">⚙️ Settings</a>
-            </nav>
-            <div class="sidebar-footer">
-                <div class="user-profile">
-                    <div class="user-avatar">?</div>
-                    <div class="user-info">
-                        <div class="user-name">Loading...</div>
-                        <div class="user-role">Client Account</div>
+<body class="antialiased flex h-screen overflow-hidden selection:bg-primary selection:text-white">
+
+    <!-- Sidebar -->
+    <aside class="w-64 glass border-r border-white/10 flex flex-col h-full z-20 shrink-0">
+        <div class="p-6 border-b border-white/10">
+            <h1 class="text-2xl font-bold tracking-tight">LeadFlow<span class="text-primary">.ai</span></h1>
+        </div>
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <a class="nav-item active" data-route="dashboard">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                Dashboard
+            </a>
+            <a class="nav-item" data-route="templates">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                Templates
+            </a>
+            <a class="nav-item" data-route="billing">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                Billing & Plan
+            </a>
+            <a class="nav-item" data-route="settings">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                Settings
+            </a>
+        </nav>
+        <div class="p-4 border-t border-white/10 text-center">
+            <div class="text-xs text-gray-500 mb-2" id="client-email-display">client@example.com</div>
+            <button id="btn-logout" class="w-full py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors">Sign Out</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-full relative z-10 overflow-hidden bg-dark">
+        <!-- Topbar -->
+        <header class="h-16 border-b border-white/10 flex justify-between items-center px-8 bg-card/50 backdrop-blur-md">
+            <h2 id="topbar-title" class="text-xl font-semibold">Dashboard</h2>
+            
+            <div class="flex items-center gap-4">
+                <div id="notification-bell" class="relative cursor-pointer text-gray-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    <span id="notification-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
+                    
+                    <div id="notification-dropdown" class="hidden absolute right-0 top-10 w-80 glass rounded-xl shadow-2xl border border-white/10 z-50">
+                        <div class="p-4 border-b border-white/10"><h4 class="font-bold">Announcements</h4></div>
+                        <div id="notification-list" class="max-h-64 overflow-y-auto p-2"></div>
                     </div>
                 </div>
             </div>
-        </aside>
+        </header>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="topbar">
-                <h2>Client Portal</h2>
-                <div style="display: flex; gap: 1rem; align-items: center;">
-                    <div id="notification-bell" style="position:relative; cursor:pointer; font-size:1.5rem;">
-                        🔔
-                        <span id="notification-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:var(--danger); color:white; font-size:0.7rem; padding:2px 6px; border-radius:50%; font-weight:bold;">0</span>
-                        
-                        <!-- Dropdown -->
-                        <div id="notification-dropdown" class="glass" style="display:none; position:absolute; right:0; top:40px; width:300px; padding:1rem; border-radius:var(--radius-lg); z-index:100; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-                            <h4 style="margin-bottom:1rem; font-size:1rem; border-bottom:1px solid var(--border-color); padding-bottom:0.5rem;">Announcements</h4>
-                            <div id="notification-list" style="max-height:300px; overflow-y:auto; font-size:0.9rem;">
-                                <div class="text-muted text-center">No new notifications</div>
-                            </div>
-                        </div>
+        <!-- Pages Area -->
+        <main class="flex-1 overflow-y-auto p-8 relative">
+            
+            <!-- Dashboard Page -->
+            <section id="page-dashboard" class="page-section active">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2">Welcome back! 👋</h1>
+                        <p class="text-gray-400">Here's what's happening with your outreach today.</p>
                     </div>
-                    <button class="btn btn-secondary btn-sm" id="btn-logout">Logout</button>
+                    <button class="bg-primary hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-xl shadow-[0_0_15px_rgba(79,70,229,0.4)] transition-transform hover:scale-105 flex items-center gap-2" onclick="document.getElementById('blast-modal').classList.add('active')">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                        Send New Blast
+                    </button>
                 </div>
-            </header>
-
-            <div class="page-content">
                 
-                <!-- Dashboard Page -->
-                <section id="page-dashboard" class="page-section active">
-                    <h2 class="mb-4">Overview</h2>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon">📨</div>
-                            <div class="stat-info">
-                                <h3>Emails Sent Today</h3>
-                                <div class="stat-value"><span id="dash-emails-sent">-</span> <small class="text-muted" id="dash-emails-limit" style="font-size:1rem"></small></div>
-                                <div class="meter-container"><div class="meter-fill" id="dash-meter" style="width:0%"></div></div>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">🚀</div>
-                            <div class="stat-info">
-                                <h3>Active Campaigns</h3>
-                                <div class="stat-value" id="dash-campaigns">-</div>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">📈</div>
-                            <div class="stat-info">
-                                <h3>Total Campaigns</h3>
-                                <div class="stat-value" id="dash-total">-</div>
-                            </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="glass p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-gray-400 text-sm font-semibold mb-2 uppercase tracking-wider">Emails Sent Today</h3>
+                        <div class="text-4xl font-extrabold text-white" id="dash-emails-sent">0</div>
+                        <div class="text-sm text-gray-500 mt-2">Daily Limit: <span id="dash-emails-limit">0</span></div>
+                        <div class="w-full bg-dark rounded-full h-2 mt-4 overflow-hidden">
+                            <div id="dash-meter" class="bg-primary h-2 rounded-full transition-all duration-1000" style="width: 0%"></div>
                         </div>
                     </div>
-                </section>
-
-                <!-- Campaigns Page -->
-                <section id="page-campaigns" class="page-section">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2>Campaigns</h2>
+                    <div class="glass p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-gray-400 text-sm font-semibold mb-2 uppercase tracking-wider">Active Templates</h3>
+                        <div class="text-4xl font-extrabold text-white" id="dash-templates">0</div>
                     </div>
+                    <div class="glass p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-gray-400 text-sm font-semibold mb-2 uppercase tracking-wider">Total Sent All Time</h3>
+                        <div class="text-4xl font-extrabold text-white" id="dash-total">0</div>
+                    </div>
+                </div>
 
-                    <div class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 2rem;">
-                        <h3 class="mb-3">Start New Campaign</h3>
-                        <form id="form-start-campaign" class="d-flex gap-3 align-items-end" style="gap: 15px">
-                            <div class="form-group" style="margin-bottom:0; flex-grow:1">
-                                <label class="form-label">Campaign Name</label>
-                                <input type="text" id="camp-name" class="form-control" required placeholder="e.g. Q3 Real Estate Leads">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 glass p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-lg font-bold mb-4">Outreach Volume (Last 7 Days)</h3>
+                        <canvas id="email-chart" height="100"></canvas>
+                    </div>
+                    <div class="glass p-6 rounded-2xl border border-white/10 flex flex-col">
+                        <h3 class="text-lg font-bold mb-4">Recent Activity</h3>
+                        <div id="recent-activity-list" class="flex-1 overflow-y-auto space-y-4 pr-2">
+                            <div class="text-center text-gray-500 mt-10">No recent activity</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Templates Page -->
+            <section id="page-templates" class="page-section">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">Email Templates</h2>
+                    <button class="bg-white text-dark hover:bg-gray-200 font-bold py-2 px-4 rounded-lg transition-colors" id="btn-new-template">+ Create Template</button>
+                </div>
+                <div class="glass rounded-2xl border border-white/10 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-white/5 border-b border-white/10 text-gray-400 text-sm uppercase tracking-wider">
+                            <tr><th class="p-4 font-semibold">Project Name</th><th class="p-4 font-semibold">Subject</th><th class="p-4 font-semibold">Status</th><th class="p-4 font-semibold text-right">Actions</th></tr>
+                        </thead>
+                        <tbody id="template-list" class="divide-y divide-white/10">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Billing Page -->
+            <section id="page-billing" class="page-section">
+                <h2 class="text-3xl font-bold mb-8">Billing & Plan</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                    <div class="glass p-8 rounded-2xl border border-white/10">
+                        <h3 class="text-gray-400 text-sm font-semibold mb-2 uppercase tracking-wider">Current Plan</h3>
+                        <div class="text-4xl font-extrabold text-primary mb-2" id="billing-current-plan">Free Plan</div>
+                        <p class="text-gray-400">Daily limit: <span id="billing-current-limit" class="text-white font-bold">0 / day</span></p>
+                    </div>
+                </div>
+                <h3 class="text-xl font-bold mb-6">Available Upgrades</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="billing-plan-list">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Settings Page -->
+            <section id="page-settings" class="page-section">
+                <h2 class="text-3xl font-bold mb-8">Account Settings</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Profile & SMTP -->
+                    <div class="glass p-8 rounded-2xl border border-white/10">
+                        <h3 class="text-xl font-bold mb-6">Profile & SMTP Setup</h3>
+                        <form id="form-profile" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-1">Company / Sender Name</label>
+                                <input type="text" id="set-company" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-primary" placeholder="e.g. John Doe Realty">
                             </div>
-                            <div class="form-group" style="margin-bottom:0; width:150px">
-                                <label class="form-label">Batch Size</label>
-                                <input type="number" id="camp-batch" class="form-control" value="10" min="1" max="100">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-1">SMTP Email</label>
+                                    <input type="email" id="set-smtp-email" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-primary" placeholder="hello@domain.com">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-1">App Password</label>
+                                    <input type="password" id="set-smtp-pass" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-primary" placeholder="Leave blank to keep">
+                                </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Start Campaign</button>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-1">Groq API Key (Optional)</label>
+                                <input type="password" id="set-groq" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-primary" placeholder="Enter custom Groq Key">
+                                <p class="text-xs text-gray-500 mt-1">Status: <span id="groq-status">Using System Default</span></p>
+                            </div>
+                            <button type="submit" class="w-full bg-primary hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition-colors mt-4">Save Profile Configuration</button>
                         </form>
                     </div>
 
-                    <div class="table-container">
-                        <table>
-                            <thead><tr><th>Name</th><th>Status</th><th>Progress</th><th>Failed</th><th>Actions</th></tr></thead>
-                            <tbody id="campaign-list"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- Templates Page -->
-                <section id="page-templates" class="page-section">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2>Email Templates</h2>
-                        <button class="btn btn-primary" id="btn-new-template">Create Template</button>
-                    </div>
-                    <div class="table-container">
-                        <table>
-                            <thead><tr><th>Project Category (AI Match)</th><th>Subject Line</th><th>Status</th><th>Actions</th></tr></thead>
-                            <tbody id="template-list"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- Settings Page -->
-                <section id="page-settings" class="page-section">
-                    <h2 class="mb-4">Account Settings</h2>
-                    
-                    <div style="display:grid; gap:2rem; max-width:800px">
-                        <!-- Profile -->
-                        <div class="glass" style="padding: 2rem; border-radius: var(--radius-lg);">
-                            <h3 class="mb-3">Profile & SMTP</h3>
-                            <form id="form-profile">
-                                <div class="form-group">
-                                    <label class="form-label">Company Name</label>
-                                    <input type="text" id="set-company" class="form-control" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">SMTP Email</label>
-                                    <input type="email" id="set-smtp-email" class="form-control" required placeholder="e.g. sender@company.com">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">SMTP App Password (Update Only)</label>
-                                    <input type="password" id="set-smtp-pass" class="form-control" placeholder="Leave blank to keep existing">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Custom Groq API Key <span id="groq-status"></span></label>
-                                    <input type="password" id="set-groq" class="form-control" placeholder="Optional. Uses system default if empty.">
-                                </div>
-                                <button type="submit" class="btn btn-primary">Save Profile</button>
-                            </form>
+                    <!-- Google Sheets -->
+                    <div class="glass p-8 rounded-2xl border border-white/10">
+                        <h3 class="text-xl font-bold mb-6">Google Sheets Integration</h3>
+                        <p class="text-gray-400 text-sm mb-4">Share your target Google Sheet with this Service Account email so our system can read it:</p>
+                        <div class="bg-dark/50 border border-white/10 p-3 rounded-lg font-mono text-sm text-secondary mb-6 break-all" id="service-account-email">
+                            Not configured by admin
                         </div>
-
-                        <!-- Google Sheets -->
-                        <div class="glass" style="padding: 2rem; border-radius: var(--radius-lg);">
-                            <h3 class="mb-3">Google Sheets Integration</h3>
-                            
-                            <form id="form-sheet" class="mb-4">
-                                <div class="form-group">
-                                    <label class="form-label">Google Sheet Link or ID</label>
-                                    <input type="text" id="set-sheet" class="form-control" required placeholder="https://docs.google.com/spreadsheets/d/.../edit">
-                                </div>
-                                <button type="submit" class="btn btn-secondary">Link Sheet</button>
-                            </form>
-
-                            <hr style="border-color:var(--border-color); margin: 2rem 0">
-
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="form-label mb-0">AI Engine Access</label>
-                            </div>
-                            <p class="text-muted" style="font-size:0.85rem">To allow the AI engine to read your spreadsheet and dispatch emails, you <strong>must share your Google Sheet</strong> with the system email address below as an <strong>Editor</strong>.</p>
-                            
-                            <div class="glass" style="padding: 1.5rem; background: rgba(var(--primary-rgb), 0.1); border: 1px dashed var(--primary); text-align: center; margin-bottom: 1rem;">
-                                <div id="service-account-email" style="font-family: monospace; font-size: 1.1rem; color: var(--primary); font-weight: bold; user-select: all;">
-                                    Loading...
-                                </div>
-                            </div>
-                            <p class="text-muted" style="font-size:0.8rem; text-align:center;"><em>(Click the email to select it, then copy and paste it into the "Share" button on your Google Sheet)</em></p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Billing Page -->
-                <section id="page-billing" class="page-section">
-                    <h2 class="mb-4">Billing & Plan</h2>
-                    
-                    <div class="glass" style="padding: 2rem; border-radius: var(--radius-lg); margin-bottom: 2rem;">
-                        <div class="d-flex justify-content-between align-items-center">
+                        <form id="form-sheet" class="space-y-4">
                             <div>
-                                <h3 style="color: var(--brand-primary); margin-bottom:0.5rem">Current Plan</h3>
-                                <p class="text-muted" id="billing-current-plan">Loading...</p>
+                                <label class="block text-sm font-medium text-gray-400 mb-1">Google Sheet URL or ID</label>
+                                <input type="text" id="set-sheet" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-primary" placeholder="https://docs.google.com/spreadsheets/d/...">
                             </div>
-                            <div style="text-align:right">
-                                <h3 style="margin-bottom:0.5rem">Daily Limit</h3>
-                                <p class="text-muted" id="billing-current-limit">-</p>
-                            </div>
-                        </div>
+                            <button type="submit" class="w-full bg-white text-dark hover:bg-gray-200 font-bold py-3 rounded-lg transition-colors mt-4">Link Google Sheet</button>
+                        </form>
                     </div>
-
-                    <h3 class="mb-3">Available Upgrades</h3>
-                    <div class="table-container">
-                        <table>
-                            <thead><tr><th>Plan Name</th><th>Features</th><th>Price/Mo</th><th>Price/Yr</th><th>Action</th></tr></thead>
-                            <tbody id="billing-plan-list"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-            </div>
+                </div>
+            </section>
         </main>
     </div>
 
-    <!-- Template Editor Modal (Custom structure inside the overlay) -->
-    <div class="modal-overlay" id="template-editor-modal">
-        <div class="modal-content" style="max-width: 1200px;">
-            <div class="modal-header">
-                <h3>Template Editor</h3>
-                <button class="modal-close modal-close-tmpl">&times;</button>
-            </div>
-            <div class="modal-body template-editor-grid">
-                <div>
+    <!-- Modals -->
+
+    <!-- Template Editor Modal -->
+    <div id="template-editor-modal" class="modal">
+        <div class="modal-content glass p-8 rounded-2xl w-full max-w-4xl relative max-h-[90vh] overflow-hidden flex flex-col">
+            <button onclick="document.getElementById('template-editor-modal').classList.remove('active')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl p-2">&times;</button>
+            <h2 class="text-2xl font-bold mb-6">Edit Template</h2>
+            <div class="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden">
+                <div class="flex-1 flex flex-col gap-4 overflow-y-auto pr-2">
                     <input type="hidden" id="tmpl-id">
-                    <div class="form-group">
-                        <label class="form-label">AI Matching Category (Project Name)</label>
-                        <input type="text" id="tmpl-project" class="form-control" placeholder="e.g. Downtown Apartments" required>
-                        <small class="text-muted">The AI engine will use this exact name to route leads to this template.</small>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Project Name / Category</label>
+                        <input type="text" id="tmpl-project" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-primary" placeholder="e.g. Kondapur Apartments">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Email Subject</label>
-                        <input type="text" id="tmpl-subject" class="form-control" placeholder="Property details inside" required>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Subject Line</label>
+                        <input type="text" id="tmpl-subject" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-primary" placeholder="Exclusive offer for {first_name}...">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">HTML Body</label>
-                        <textarea id="tmpl-body" class="form-control" rows="15" style="font-family: monospace" required placeholder="<html>...</html>"></textarea>
-                        <small class="text-muted">Use <code>{first_name}</code> for personalization.</small>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Banner Image (Optional)</label>
+                        <input type="file" id="tmpl-banner" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-indigo-500 cursor-pointer">
+                        <input type="hidden" id="tmpl-banner-url">
+                        <div id="tmpl-banner-preview" class="mt-2 hidden">
+                            <img src="" class="h-20 rounded border border-white/10 object-cover">
+                        </div>
                     </div>
+                    <div class="flex-1 flex flex-col">
+                        <label class="block text-sm font-medium text-gray-400 mb-1">HTML Body</label>
+                        <textarea id="tmpl-body" class="w-full flex-1 min-h-[200px] bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-primary font-mono text-sm" placeholder="<p>Hi {first_name},</p>"></textarea>
+                    </div>
+                    <button class="w-full bg-primary hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition-colors mt-2" id="btn-save-template">Save Template</button>
                 </div>
-                <div>
-                    <label class="form-label">Live Preview</label>
-                    <div class="preview-container">
-                        <iframe id="tmpl-preview"></iframe>
-                    </div>
+                <div class="flex-1 bg-white rounded-xl overflow-hidden flex flex-col">
+                    <div class="bg-gray-100 px-4 py-2 text-xs font-bold text-gray-500 border-b">LIVE PREVIEW</div>
+                    <iframe id="tmpl-preview" class="w-full flex-1 border-0 bg-white"></iframe>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary modal-close-tmpl">Cancel</button>
-                <button class="btn btn-primary" id="btn-save-template">Save Template</button>
             </div>
         </div>
     </div>
 
+    <!-- Send Blast Modal -->
+    <div id="blast-modal" class="modal">
+        <div class="modal-content glass p-8 rounded-2xl w-full max-w-md relative">
+            <button onclick="document.getElementById('blast-modal').classList.remove('active')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl p-2">&times;</button>
+            <h2 class="text-2xl font-bold mb-2 text-center">Send Email Blast 🚀</h2>
+            <p class="text-gray-400 text-center text-sm mb-6">Our AI will instantly process your linked Google Sheet and dispatch the matching templates.</p>
+            <form id="form-send-blast" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Batch Size</label>
+                    <input type="number" id="blast-batch" value="50" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-primary" required>
+                    <p class="text-xs text-gray-500 mt-1">Number of emails to send in this blast run.</p>
+                </div>
+                <button type="submit" class="w-full bg-primary hover:bg-indigo-500 text-white font-bold py-4 rounded-xl transition-transform hover:scale-105 shadow-[0_0_15px_rgba(79,70,229,0.5)] mt-4 text-lg">Fire Away!</button>
+            </form>
+        </div>
+    </div>
+
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
-    <script src="/js/router.js"></script>
-    <script src="/js/components.js?v=4"></script>
-    <script src="/js/client-app.js?v=3"></script>
+    
+    <script>
+        // Custom Toast
+        window.showToast = (msg, type='info') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bg = type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : 'bg-primary';
+            toast.className = `${bg} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-y-10 opacity-0`;
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('translate-y-10', 'opacity-0'); }, 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+        
+        window.components = { showToast, formatDate: (dateStr) => new Date(dateStr).toLocaleString() };
+    </script>
+    <script src="/js/client-app.js?v=4"></script>
 </body>
 </html>
