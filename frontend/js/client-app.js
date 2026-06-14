@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         routes: {},
         on(path, callback) { this.routes[path] = callback; },
         async navigate(path) {
+            if (!path) return;
+            window.location.hash = path;
+            
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             
@@ -30,7 +33,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     this.navigate(el.dataset.route);
                 });
             });
-            this.navigate('dashboard');
+            
+            window.addEventListener('hashchange', () => {
+                const path = window.location.hash.replace('#', '') || 'dashboard';
+                this.navigate(path);
+            });
+            
+            const initialPath = window.location.hash.replace('#', '') || 'dashboard';
+            this.navigate(initialPath);
         }
     };
 
