@@ -101,12 +101,12 @@ app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 @app.get("/")
 async def landing_page():
     """Serve the space-themed landing page."""
-    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 @app.get("/policy.html")
 async def policy_page():
     """Serve the policy viewer page."""
-    return FileResponse(os.path.join(FRONTEND_DIR, "policy.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "policy.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
 @app.get("/client")
@@ -117,7 +117,7 @@ async def client_portal_redirect():
 @app.get("/client/")
 async def client_portal():
     """Serve the client portal SPA."""
-    return FileResponse(os.path.join(FRONTEND_DIR, "client", "index.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "client", "index.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
 @app.get("/admin")
@@ -128,7 +128,7 @@ async def admin_portal_redirect():
 @app.get("/admin/")
 async def admin_portal():
     """Serve the super admin portal SPA."""
-    return FileResponse(os.path.join(FRONTEND_DIR, "admin", "index.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "admin", "index.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
 # ── Health Check ──────────────────────────────────────────────────────────────
