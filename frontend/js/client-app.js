@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    if (!auth.getToken()) {
+    if (!api.getToken()) {
         window.location.href = '/';
         return;
     }
@@ -415,7 +415,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     router.on('settings', loadSettings);
     
     // Set display email
-    const payload = auth.getPayload();
+    let payload = null;
+    try {
+        const token = api.getToken();
+        if(token) payload = JSON.parse(atob(token.split('.')[1]));
+    } catch(e) {}
+    
     if(payload) document.getElementById('client-email-display').textContent = payload.sub;
 
     router.init();
