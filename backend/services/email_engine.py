@@ -73,21 +73,32 @@ async def send_template_email(to_email: str, first_name: str, template, smtp_con
     # Process images if needed (not fully robust but handles basic cases)
     image_urls = json.loads(template.image_urls_json) if template.image_urls_json else []
     
-    try:
-        use_tls = (smtp_port == 465)
-        start_tls = (smtp_port == 587)
-        
-        await aiosmtplib.send(
-            msg,
-            hostname=smtp_host,
-            port=smtp_port,
-            use_tls=use_tls,
-            start_tls=start_tls,
-            username=smtp_email,
-            password=smtp_password
-        )
-        return True, ""
-    except Exception as e:
-        error_str = str(e)
-        print(f"Email Error to {to_email}: {error_str}")
-        return False, error_str
+    ports_to_try = []
+    if smtp_port:
+        ports_to_try.append(int(smtp_port))
+    for p in [465, 587, 25]:
+        if p not in ports_to_try:
+            ports_to_try.append(p)
+            
+    last_error = ""
+    for port in ports_to_try:
+        try:
+            use_tls = (port == 465)
+            start_tls = (port == 587 or port == 25)
+            
+            await aiosmtplib.send(
+                msg,
+                hostname=smtp_host,
+                port=port,
+                use_tls=use_tls,
+                start_tls=start_tls,
+                username=smtp_email,
+                password=smtp_password
+            )
+            return True, ""
+        except Exception as e:
+            last_error = f"Port {port}: {str(e)}"
+            print(f"Email Error to {to_email} on port {port}: {last_error}")
+            continue
+            
+    return False, f"All ports failed. Last error: {last_error}"
