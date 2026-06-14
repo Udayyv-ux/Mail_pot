@@ -10,9 +10,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Router
     const router = {
         routes: {},
+        currentRoute: null,
         on(path, callback) { this.routes[path] = callback; },
         async navigate(path) {
             if (!path) return;
+            if (this.currentRoute === path) return;
+            this.currentRoute = path;
             window.location.hash = path;
             
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));

@@ -78,7 +78,9 @@ async def list_clients(db: AsyncSession = Depends(get_db), admin = Depends(requi
 
 @router.get("/clients/{id}")
 async def get_client(id: str, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
-    client = await db.get(Client, id)
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(select(Client).options(selectinload(Client.user), selectinload(Client.plan)).where(Client.id == id))
+    client = result.scalar_one_or_none()
     if not client:
         raise HTTPException(404, "Client not found")
     return client

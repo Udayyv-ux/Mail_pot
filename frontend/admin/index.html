@@ -289,6 +289,21 @@
         </div>
     </div>
 
+    <!-- Client Details Modal -->
+    <div id="client-details-modal" class="modal">
+        <div class="modal-content glass p-8 rounded-2xl w-full max-w-2xl relative">
+            <button onclick="document.getElementById('client-details-modal').classList.remove('active')" 
+class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl p-2">&times;</button>
+            <h2 class="text-2xl font-bold mb-2">Client Details</h2>
+            <div id="cd-content" class="mt-6">
+                <!-- Injected via JS -->
+            </div>
+            <div class="mt-6 text-right">
+                <button onclick="document.getElementById('client-details-modal').classList.remove('active')" class="text-gray-400 hover:text-white transition-colors">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Client Manage Features Modal -->
     <div id="client-features-modal" class="modal">
         <div class="modal-content glass p-8 rounded-2xl w-full max-w-md relative">

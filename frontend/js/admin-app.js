@@ -24,9 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Router
     const router = {
         routes: {},
+        currentRoute: null,
         on(path, callback) { this.routes[path] = callback; },
         async navigate(path) {
             if (!path) return;
+            if (this.currentRoute === path) return;
+            this.currentRoute = path;
             window.location.hash = path;
             
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
@@ -182,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td class="p-4 text-gray-300"><span class="bg-primary/20 text-primary px-2 py-1 rounded-full text-xs">${c.plan || 'Free'}</span></td>
                     <td class="p-4 text-right">
                         <button onclick="resetUsage('${c.id}')" class="text-xs bg-dark/50 hover:bg-white/10 text-gray-300 py-1 px-3 rounded transition-colors mr-2">Reset Usage</button>
+                        <button class="text-secondary hover:text-pink-400 font-semibold text-sm" onclick="viewClientDetails('${c.id}')">Details</button>
                         <button class="text-secondary hover:text-pink-400 font-semibold text-sm" onclick="openClientFeatures('${c.id}', '${c.company_name || "Client"}')">Features</button>
                     </td>
                 `;
@@ -191,6 +195,40 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Load users error:", e);
         }
     }
+
+    window.viewClientDetails = async (id) => {
+        try {
+            const client = await api.get(`/admin/clients/${id}`);
+            const modal = document.getElementById('client-details-modal');
+            const content = document.getElementById('cd-content');
+            
+            content.innerHTML = `
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div><span class="text-gray-400">Company:</span> <span class="text-white">${client.company_name || 'N/A'}</span></div>
+                    <div><span class="text-gray-400">Email:</span> <span class="text-white">${client.user?.email || 'N/A'}</span></div>
+                    <div><span class="text-gray-400">Plan:</span> <span class="text-white">${client.plan?.name || 'Free'}</span></div>
+                    <div><span class="text-gray-400">Status:</span> <span class="text-green-400">${client.status}</span></div>
+                    <div><span class="text-gray-400">Daily Limit:</span> <span class="text-white">${client.daily_email_limit}</span></div>
+                    <div><span class="text-gray-400">Sent Today:</span> <span class="text-white">${client.emails_sent_today}</span></div>
+                    
+                    <div class="col-span-2 mt-4"><strong class="text-white">Sheet Integration</strong></div>
+                    <div class="col-span-2"><span class="text-gray-400">Sheet ID:</span> <span class="text-white break-all">${client.google_sheet_id || 'Not Connected'}</span></div>
+                    <div><span class="text-gray-400">Target Cols:</span> <span class="text-white">${client.target_columns || 'Name, Email, Inquiry'}</span></div>
+                    <div><span class="text-gray-400">Status Col:</span> <span class="text-white">${client.status_column || 'Status'}</span></div>
+                    
+                    <div class="col-span-2 mt-4"><strong class="text-white">Custom Overrides</strong></div>
+                    <div><span class="text-gray-400">SMTP Host:</span> <span class="text-white">${client.smtp_host || 'Using Global'}</span></div>
+                    <div><span class="text-gray-400">SMTP Port:</span> <span class="text-white">${client.smtp_port || 'Using Global'}</span></div>
+                    <div><span class="text-gray-400">SMTP Email:</span> <span class="text-white">${client.smtp_email || 'Using Global'}</span></div>
+                    <div><span class="text-gray-400">Groq Key:</span> <span class="text-white">${client.groq_api_key_enc ? 'Configured' : 'Using Global'}</span></div>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        } catch(e) {
+            console.error("View details error:", e);
+        }
+    };
 
     window.openClientFeatures = async (id, name) => {
         const cfId = document.getElementById('cf-id');
