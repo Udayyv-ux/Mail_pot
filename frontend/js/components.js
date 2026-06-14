@@ -25,10 +25,11 @@ const components = {
     },
 
     showModal(title, contentHTML, onConfirm = null) {
-        let overlay = document.querySelector('.modal-overlay');
+        let overlay = document.getElementById('generic-modal-overlay');
         if (!overlay) {
             overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
+            overlay.id = 'generic-modal-overlay';
             overlay.innerHTML = `
                 <div class="modal-content">
                     <div class="modal-header">
@@ -67,7 +68,7 @@ const components = {
     },
 
     hideModal() {
-        const overlay = document.querySelector('.modal-overlay');
+        const overlay = document.getElementById('generic-modal-overlay');
         if (overlay) {
             overlay.classList.remove('active');
         }
