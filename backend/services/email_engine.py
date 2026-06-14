@@ -132,7 +132,7 @@ async def run_blast_engine(client_id: str, batch_size: int, delay_seconds: int):
 
     from backend.services.sheets_service import get_sheet_data, update_sheet_cell
     try:
-        rows = await get_sheet_data(client.google_sheet_id)
+        _, rows = await get_sheet_data(client.google_sheet_id)
     except Exception as e:
         print(f"Failed to fetch sheet: {e}")
         return

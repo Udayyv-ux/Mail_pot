@@ -11,7 +11,9 @@ from backend.middleware.auth_middleware import require_client
 from backend.models.client import Client
 from backend.models.plan import Plan
 from backend.models.payment import Payment
+from backend.models.app_settings import AppSetting
 from backend.services.payment_service import create_order, verify_payment, process_webhook
+from backend.config import settings
 
 router = APIRouter(prefix="/api/payments", tags=["payments"])
 

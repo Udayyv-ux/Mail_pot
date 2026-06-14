@@ -83,3 +83,6 @@ const components = {
         return new Date(dateString).toLocaleString();
     }
 };
+
+// Global alias for convenience
+window.showToast = (msg, type) => components.showToast(msg, type);

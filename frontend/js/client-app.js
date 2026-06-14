@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // Parse OAuth tokens from URL first, then check auth
     auth.checkUrlTokens();
     const user = await auth.getCurrentUser();
     if (!user) {
@@ -14,8 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             
-            const pageId = `page-${path}`;
-            const pageEl = document.getElementById(pageId);
+            const pageEl = document.getElementById(`page-${path}`);
             if (pageEl) pageEl.classList.add('active');
             
             const navEl = document.querySelector(`.nav-item[data-route="${path}"]`);
@@ -40,41 +40,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadDashboard() {
         try {
             const data = await api.get('/client/dashboard');
-            document.getElementById('dash-templates').textContent = data.active_templates;
+            // data has: emails_sent_today, daily_limit, active_campaigns, total_campaigns, company_name
+            const el = (id) => document.getElementById(id);
             
-            const limits = await api.get('/client/limits');
-            document.getElementById('dash-emails-sent').textContent = limits.emails_sent_today;
-            document.getElementById('dash-emails-limit').textContent = limits.daily_limit;
+            if(el('dash-emails-sent')) el('dash-emails-sent').textContent = data.emails_sent_today || 0;
+            if(el('dash-emails-limit')) el('dash-emails-limit').textContent = data.daily_limit || 0;
+            if(el('dash-total')) el('dash-total').textContent = data.emails_sent_today || 0;
+            if(el('dash-templates')) el('dash-templates').textContent = '-';
             
-            let percentage = (limits.emails_sent_today / limits.daily_limit) * 100;
+            let percentage = data.daily_limit > 0 ? (data.emails_sent_today / data.daily_limit) * 100 : 0;
             if(percentage > 100) percentage = 100;
-            document.getElementById('dash-meter').style.width = percentage + '%';
-            
-            // Total sent (We will calculate this from logs or just leave 0 for now if backend doesn't provide it)
-            // Assuming backend adds total_sent_all_time later
-            document.getElementById('dash-total').textContent = limits.total_sent || 0;
+            if(el('dash-meter')) el('dash-meter').style.width = percentage + '%';
 
             // Load Chart Data
             loadAnalyticsChart();
         } catch(e) {
-            components.showToast("Failed to load dashboard stats", "error");
+            console.error("Dashboard load error:", e);
+            if(window.showToast) showToast("Failed to load dashboard stats", "error");
         }
     }
 
     async function loadAnalyticsChart() {
         try {
             const stats = await api.get('/client/analytics/chart');
-            const ctx = document.getElementById('email-chart').getContext('2d');
+            const canvas = document.getElementById('email-chart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
             
             if(emailChart) emailChart.destroy();
             
             emailChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: stats.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: stats.labels || [],
                     datasets: [{
                         label: 'Emails Sent',
-                        data: stats.data || [0,0,0,0,0,0,0],
+                        data: stats.data || [],
                         borderColor: '#4f46e5',
                         backgroundColor: 'rgba(79, 70, 229, 0.1)',
                         borderWidth: 3,
@@ -97,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         } catch(e) {
-            console.log("Analytics error:", e);
+            console.log("Analytics chart error:", e);
         }
     }
 
@@ -106,10 +107,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const templates = await api.get('/client/templates');
             const tbody = document.getElementById('template-list');
+            if(!tbody) return;
             tbody.innerHTML = '';
             
             if(templates.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No templates found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No templates found. Create your first one!</td></tr>';
                 return;
             }
             
@@ -131,11 +133,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 tbody.appendChild(tr);
             });
         } catch(e) {
-            components.showToast("Failed to load templates", "error");
+            if(window.showToast) showToast("Failed to load templates", "error");
         }
     }
 
-    document.getElementById('btn-new-template').addEventListener('click', () => {
+    document.getElementById('btn-new-template')?.addEventListener('click', () => {
         document.getElementById('tmpl-id').value = '';
         document.getElementById('tmpl-project').value = '';
         document.getElementById('tmpl-subject').value = '';
@@ -146,11 +148,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         updatePreview();
     });
 
-    document.getElementById('tmpl-body').addEventListener('input', updatePreview);
+    document.getElementById('tmpl-body')?.addEventListener('input', updatePreview);
     function updatePreview() {
-        const html = document.getElementById('tmpl-body').value;
-        const bannerUrl = document.getElementById('tmpl-banner-url').value;
-        const doc = document.getElementById('tmpl-preview').contentWindow.document;
+        const bodyEl = document.getElementById('tmpl-body');
+        const bannerUrlEl = document.getElementById('tmpl-banner-url');
+        const previewEl = document.getElementById('tmpl-preview');
+        if(!bodyEl || !previewEl) return;
+        
+        const html = bodyEl.value;
+        const bannerUrl = bannerUrlEl ? bannerUrlEl.value : '';
+        const doc = previewEl.contentWindow.document;
         doc.open();
         
         let finalHtml = html;
@@ -162,7 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Banner Upload Handler
-    document.getElementById('tmpl-banner').addEventListener('change', async (e) => {
+    document.getElementById('tmpl-banner')?.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if(!file) return;
         
@@ -170,8 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         formData.append('file', file);
         
         try {
-            // Need to use raw fetch because our api.js assumes JSON
-            const token = auth.getToken();
+            const token = api.getToken();
             const res = await fetch('/api/client/upload', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
@@ -185,13 +191,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             preview.querySelector('img').src = data.url;
             preview.classList.remove('hidden');
             updatePreview();
-            components.showToast("Banner uploaded!", "success");
+            if(window.showToast) showToast("Banner uploaded!", "success");
         } catch(err) {
-            components.showToast(err.message, "error");
+            if(window.showToast) showToast(err.message, "error");
         }
     });
 
-    document.getElementById('btn-save-template').addEventListener('click', async () => {
+    document.getElementById('btn-save-template')?.addEventListener('click', async () => {
         const id = document.getElementById('tmpl-id').value;
         const project = document.getElementById('tmpl-project').value;
         const subject = document.getElementById('tmpl-subject').value;
@@ -207,10 +213,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await api.post(`/client/templates`, payload);
             }
             document.getElementById('template-editor-modal').classList.remove('active');
-            components.showToast("Template saved!", "success");
+            if(window.showToast) showToast("Template saved!", "success");
             loadTemplates();
         } catch(e) {
-            components.showToast(e.message, "error");
+            if(window.showToast) showToast(e.message, "error");
         }
     });
 
@@ -247,16 +253,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Billing ---
     async function loadBilling() {
         try {
-            const currentPlan = await api.get('/client/billing/current-plan');
-            document.getElementById('billing-current-plan').textContent = currentPlan.name;
-            document.getElementById('billing-current-limit').textContent = `${currentPlan.daily_limit} / day`;
+            // Get profile to find current plan info
+            const profile = await api.get('/client/profile');
+            const el = (id) => document.getElementById(id);
+            
+            if(el('billing-current-plan')) el('billing-current-plan').textContent = profile.plan_name || 'Free Plan';
+            if(el('billing-current-limit')) el('billing-current-limit').textContent = (profile.daily_limit || 50) + ' / day';
             
             const plans = await api.get('/public/plans');
             const container = document.getElementById('billing-plan-list');
+            if(!container) return;
             container.innerHTML = '';
             
             plans.forEach(plan => {
-                if(plan.id === currentPlan.id) return;
                 let features = [];
                 try { features = JSON.parse(plan.features_json); } catch(e){}
                 
@@ -273,34 +282,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                 container.appendChild(card);
             });
         } catch(e) {
-            components.showToast("Failed to load billing", "error");
+            console.error("Billing load error:", e);
         }
     }
 
     window.upgradePlan = async (planId, planName, amount) => {
         try {
-            components.showToast(`Initiating upgrade to ${planName}...`, "info");
+            if(window.showToast) showToast(`Initiating upgrade to ${planName}...`, "info");
             const order = await api.post('/payments/create-order', { plan_id: planId });
             
             const options = {
                 "key": order.razorpay_key_id,
                 "amount": amount * 100,
-                "currency": "USD",
+                "currency": "INR",
                 "name": "LeadFlow.ai",
                 "description": `Upgrade to ${planName}`,
-                "order_id": order.id,
+                "order_id": order.order_id,
                 "handler": async function (response) {
                     try {
                         await api.post('/payments/verify', {
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                            plan_id: planId
+                            razorpay_signature: response.razorpay_signature
                         });
-                        components.showToast("Payment successful! Plan upgraded.", "success");
+                        if(window.showToast) showToast("Payment successful! Plan upgraded.", "success");
                         loadBilling();
                     } catch(e) {
-                        components.showToast("Payment verification failed", "error");
+                        if(window.showToast) showToast("Payment verification failed", "error");
                     }
                 },
                 "theme": { "color": "#4f46e5" }
@@ -308,26 +316,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             const rzp = new Razorpay(options);
             rzp.open();
         } catch(e) {
-            components.showToast(e.message, "error");
+            if(window.showToast) showToast(e.message, "error");
         }
     };
 
     // --- Settings ---
     async function loadSettings() {
         try {
-            const data = await api.get('/client/settings');
-            document.getElementById('set-company').value = data.company_name || '';
-            document.getElementById('set-smtp-email').value = data.smtp_email || '';
-            document.getElementById('set-sheet').value = data.google_sheet_url || '';
+            // Uses /client/profile endpoint which exists in the backend
+            const data = await api.get('/client/profile');
+            const el = (id) => document.getElementById(id);
             
-            const adminSettings = await api.get('/public/settings');
-            document.getElementById('service-account-email').textContent = adminSettings.service_account_email || 'Not configured by admin';
+            if(el('set-company')) el('set-company').value = data.company_name || '';
+            if(el('set-smtp-email')) el('set-smtp-email').value = data.smtp_email || '';
+            if(el('set-sheet')) el('set-sheet').value = data.google_sheet_id || '';
+            if(el('service-account-email')) el('service-account-email').textContent = data.service_account_email || 'Not configured by admin';
+            if(el('groq-status')) el('groq-status').textContent = data.has_groq_key ? 'Custom Key Active ✓' : 'Using System Default';
         } catch(e) {
-            components.showToast("Failed to load settings", "error");
+            console.error("Settings load error:", e);
         }
     }
 
-    document.getElementById('form-profile').addEventListener('submit', async(e) => {
+    document.getElementById('form-profile')?.addEventListener('submit', async(e) => {
         e.preventDefault();
         const payload = {
             company_name: document.getElementById('set-company').value,
@@ -337,26 +347,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
         try {
             await api.put('/client/profile', payload);
-            components.showToast("Profile settings saved", "success");
+            if(window.showToast) showToast("Profile settings saved", "success");
             document.getElementById('set-smtp-pass').value = '';
             document.getElementById('set-groq').value = '';
         } catch(err) {
-            components.showToast(err.message, "error");
+            if(window.showToast) showToast(err.message, "error");
         }
     });
 
-    document.getElementById('form-sheet').addEventListener('submit', async(e) => {
+    document.getElementById('form-sheet')?.addEventListener('submit', async(e) => {
         e.preventDefault();
         try {
-            await api.put('/client/sheet', { url: document.getElementById('set-sheet').value });
-            components.showToast("Google Sheet linked successfully", "success");
+            await api.put('/client/sheet', { sheet_url_or_id: document.getElementById('set-sheet').value });
+            if(window.showToast) showToast("Google Sheet linked successfully", "success");
         } catch(err) {
-            components.showToast(err.message, "error");
+            if(window.showToast) showToast(err.message, "error");
         }
     });
 
     // --- Send Blast Form ---
-    document.getElementById('form-send-blast').addEventListener('submit', async(e) => {
+    document.getElementById('form-send-blast')?.addEventListener('submit', async(e) => {
         e.preventDefault();
         const btn = e.target.querySelector('button');
         const oldText = btn.textContent;
@@ -365,28 +375,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         const batchSize = document.getElementById('blast-batch').value;
         try {
             await api.post('/client/blast', { batch_size: parseInt(batchSize) });
-            components.showToast("Blast triggered successfully! Emails are sending in the background.", "success");
+            if(window.showToast) showToast("Blast triggered! Emails are sending in the background.", "success");
             document.getElementById('blast-modal').classList.remove('active');
-            setTimeout(loadDashboard, 2000); // Reload stats shortly after
+            setTimeout(loadDashboard, 2000);
         } catch(err) {
-            components.showToast(err.message, "error");
+            if(window.showToast) showToast(err.message, "error");
         } finally {
             btn.textContent = oldText; btn.disabled = false;
         }
     });
 
     // Logout
-    document.getElementById('btn-logout').addEventListener('click', () => {
+    document.getElementById('btn-logout')?.addEventListener('click', () => {
         auth.logout();
-        window.location.href = '/';
     });
 
-    // Notifications Fetching
+    // Notifications
     async function fetchNotifications() {
         try {
             const notifs = await api.get('/client/notifications');
             const badge = document.getElementById('notification-badge');
             const list = document.getElementById('notification-list');
+            if(!badge || !list) return;
             list.innerHTML = '';
             
             if(notifs.length > 0) {
@@ -395,7 +405,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 notifs.forEach(n => {
                     const div = document.createElement('div');
                     div.className = 'p-3 border-b border-white/10 text-sm text-gray-300';
-                    div.innerHTML = `<span class="block text-white font-bold mb-1">${components.formatDate(n.created_at)}</span>${n.message}`;
+                    div.innerHTML = `<span class="block text-white font-bold mb-1">${new Date(n.created_at).toLocaleString()}</span>${n.message}`;
                     list.appendChild(div);
                 });
             } else {
@@ -405,25 +415,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch(e) {}
     }
 
-    document.getElementById('notification-bell').addEventListener('click', () => {
-        document.getElementById('notification-dropdown').classList.toggle('hidden');
+    document.getElementById('notification-bell')?.addEventListener('click', () => {
+        document.getElementById('notification-dropdown')?.classList.toggle('hidden');
     });
 
     // Initialize Routes
     router.on('dashboard', loadDashboard);
     router.on('templates', loadTemplates);
     router.on('billing', loadBilling);
-    // router.on('campaigns') removed completely
     router.on('settings', loadSettings);
     
-    // Set display email
-    let payload = null;
-    try {
-        const token = api.getToken();
-        if(token) payload = JSON.parse(atob(token.split('.')[1]));
-    } catch(e) {}
+    // Set display email from user object
+    const emailDisplay = document.getElementById('client-email-display');
+    if(emailDisplay) emailDisplay.textContent = user.email || '';
     
-    if(payload) document.getElementById('client-email-display').textContent = payload.sub;
+    // Set user name
+    const nameDisplay = document.getElementById('client-name-display');
+    if(nameDisplay) nameDisplay.textContent = user.name || '';
 
     router.init();
     fetchNotifications();
