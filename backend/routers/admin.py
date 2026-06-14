@@ -109,6 +109,73 @@ async def update_settings(settings: List[SettingUpdate], db: AsyncSession = Depe
     await db.commit()
     return {"status": "success"}
 
+# --- POLICIES (LEGAL CMS) ---
+class PolicyCreateUpdate(BaseModel):
+    title: str
+    slug: str
+    content_html: str
+    is_active: bool = True
+
+@router.get("/policies")
+async def list_policies(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    result = await db.execute(select(Policy).order_by(Policy.updated_at.desc()))
+    return result.scalars().all()
+
+@router.post("/policies")
+async def save_policy(policy_data: PolicyCreateUpdate, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    # Check if exists by slug
+    result = await db.execute(select(Policy).where(Policy.slug == policy_data.slug))
+    existing = result.scalar_one_or_none()
+    
+    if existing:
+        existing.title = policy_data.title
+        existing.content_html = policy_data.content_html
+        existing.is_active = policy_data.is_active
+    else:
+        new_policy = Policy(**policy_data.model_dump())
+        db.add(new_policy)
+        
+    await db.commit()
+    return {"status": "success"}
+
+@router.delete("/policies/{slug}")
+async def delete_policy(slug: str, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    result = await db.execute(select(Policy).where(Policy.slug == slug))
+    policy = result.scalar_one_or_none()
+    if policy:
+        await db.delete(policy)
+        await db.commit()
+    return {"status": "success"}
+
+# --- NOTIFICATIONS (ANNOUNCEMENTS) ---
+class NotificationCreate(BaseModel):
+    message: str
+    type: str = "info"
+    is_active: bool = True
+
+@router.get("/notifications")
+async def list_notifications(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    from backend.models.app_settings import Notification
+    result = await db.execute(select(Notification).order_by(Notification.created_at.desc()))
+    return result.scalars().all()
+
+@router.post("/notifications")
+async def create_notification(notif: NotificationCreate, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    from backend.models.app_settings import Notification
+    new_notif = Notification(**notif.model_dump())
+    db.add(new_notif)
+    await db.commit()
+    return {"status": "success"}
+
+@router.delete("/notifications/{id}")
+async def delete_notification(id: str, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    from backend.models.app_settings import Notification
+    notif = await db.get(Notification, id)
+    if notif:
+        await db.delete(notif)
+        await db.commit()
+    return {"status": "success"}
+
 # --- ENGINE ---
 @router.get("/engine/status")
 async def engine_status(admin = Depends(require_admin)):

@@ -38,8 +38,13 @@ async def api_create_order(req: OrderRequest, db: AsyncSession = Depends(get_db)
         raise HTTPException(400, "Invalid plan amount")
         
     try:
-        order = create_order(amount, receipt=f"plan_{plan.id}")
+        order = await create_order(amount, db=db, receipt=f"plan_{plan.id}")
         
+        # Fetch public key for frontend
+        result_key = await db.execute(select(AppSetting).where(AppSetting.key == "razorpay_key_id"))
+        db_key = result_key.scalar_one_or_none()
+        razorpay_key_id = db_key.value if db_key and db_key.value else settings.RAZORPAY_KEY_ID
+
         # Save payment record
         payment = Payment(
             client_id=client.id,
@@ -51,7 +56,7 @@ async def api_create_order(req: OrderRequest, db: AsyncSession = Depends(get_db)
         db.add(payment)
         await db.commit()
         
-        return {"order_id": order["id"], "amount": amount, "currency": "INR"}
+        return {"order_id": order["id"], "amount": amount, "currency": "INR", "razorpay_key_id": razorpay_key_id}
     except Exception as e:
         raise HTTPException(400, str(e))
 
@@ -62,7 +67,8 @@ class VerifyRequest(BaseModel):
 
 @router.post("/verify")
 async def api_verify_payment(req: VerifyRequest, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
-    if verify_payment(req.razorpay_order_id, req.razorpay_payment_id, req.razorpay_signature):
+    is_valid = await verify_payment(req.razorpay_order_id, req.razorpay_payment_id, req.razorpay_signature, db=db)
+    if is_valid:
         # Find payment record
         result = await db.execute(select(Payment).where(Payment.razorpay_order_id == req.razorpay_order_id))
         payment = result.scalar_one_or_none()
@@ -95,12 +101,13 @@ async def payment_history(db: AsyncSession = Depends(get_db), current_user = Dep
     return result.scalars().all()
 
 @router.post("/webhook")
-async def razorpay_webhook(request: Request):
+async def razorpay_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     """Handle Razorpay Webhooks."""
     body = await request.body()
     signature = request.headers.get("x-razorpay-signature", "")
     
-    if not process_webhook(body.decode(), signature):
+    is_valid = await process_webhook(body.decode(), signature, db=db)
+    if not is_valid:
         raise HTTPException(400, "Invalid signature")
         
     # Handle events like payment.captured, payment.failed here in production

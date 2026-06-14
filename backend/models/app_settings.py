@@ -54,3 +54,15 @@ class DemoRequest(Base):
 
     def __repr__(self):
         return f"<DemoRequest {self.email} ({self.status})>"
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    message = Column(Text, nullable=False)
+    type = Column(String, default="info") # info, warning, success
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<Notification {self.type}>"

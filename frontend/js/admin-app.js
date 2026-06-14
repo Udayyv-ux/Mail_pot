@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     router.on('clients', loadClients);
     router.on('leads', loadLeads);
     router.on('plans', loadPlans);
+    router.on('policies', loadPolicies);
+    router.on('announcements', loadAnnouncements);
     router.on('settings', loadSettings);
     router.init();
 
@@ -156,6 +158,103 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.deletePlan = async (id) => {
         if(!confirm("Delete this plan?")) return;
         try { await api.delete(`/admin/plans/${id}`); loadPlans(); } catch(e){}
+    }
+
+    // Policies (Legal CMS)
+    async function loadPolicies() {
+        try {
+            const policies = await api.get('/admin/policies');
+            const tbody = document.getElementById('policy-list');
+            tbody.innerHTML = '';
+            policies.forEach(p => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${p.title}</strong></td>
+                        <td><code>${p.slug}</code></td>
+                        <td>${components.createBadge(p.is_active ? 'Published' : 'Draft', p.is_active ? 'success' : 'secondary')}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="editPolicy('${p.slug}', '${p.title.replace(/'/g, "\\'")}', '${p.is_active}')">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deletePolicy('${p.slug}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            // We can't pass the full HTML content easily in an onclick string, so we'll fetch it if they edit.
+            window._policies = policies; // store globally for quick edit lookup
+        } catch(e){}
+    }
+
+    window.editPolicy = (slug, title, isActive) => {
+        const policy = window._policies.find(p => p.slug === slug);
+        if(!policy) return;
+        document.getElementById('policy-title').value = policy.title;
+        document.getElementById('policy-slug').value = policy.slug;
+        document.getElementById('policy-content').value = policy.content_html;
+        document.getElementById('policy-active').checked = policy.is_active;
+    };
+
+    document.getElementById('form-policy').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            await api.post('/admin/policies', {
+                title: document.getElementById('policy-title').value,
+                slug: document.getElementById('policy-slug').value.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
+                content_html: document.getElementById('policy-content').value,
+                is_active: document.getElementById('policy-active').checked
+            });
+            components.showToast("Page saved successfully", "success");
+            e.target.reset();
+            loadPolicies();
+        } catch(e) { components.showToast(e.message, "error"); }
+    });
+
+    window.deletePolicy = async (slug) => {
+        if(!confirm("Delete this page? This cannot be undone.")) return;
+        try { await api.delete(`/admin/policies/${slug}`); loadPolicies(); } catch(e){}
+    }
+
+    // Announcements
+    async function loadAnnouncements() {
+        try {
+            const notifs = await api.get('/admin/notifications');
+            const tbody = document.getElementById('announcement-list');
+            tbody.innerHTML = '';
+            notifs.forEach(n => {
+                let badgeClass = 'primary';
+                if(n.type === 'success') badgeClass = 'success';
+                if(n.type === 'warning') badgeClass = 'warning';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td><small class="text-muted">${components.formatDate(n.created_at)}</small></td>
+                        <td>${components.createBadge(n.type.toUpperCase(), badgeClass)}</td>
+                        <td style="max-width: 300px; word-wrap: break-word;">${n.message}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteAnnouncement('${n.id}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch(e){}
+    }
+
+    document.getElementById('form-announcement').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            await api.post('/admin/notifications', {
+                message: document.getElementById('ann-message').value,
+                type: document.getElementById('ann-type').value,
+                is_active: true
+            });
+            components.showToast("Announcement Broadcasted!", "success");
+            e.target.reset();
+            loadAnnouncements();
+        } catch(e) { components.showToast(e.message, "error"); }
+    });
+
+    window.deleteAnnouncement = async (id) => {
+        if(!confirm("Delete this announcement?")) return;
+        try { await api.delete(`/admin/notifications/${id}`); loadAnnouncements(); } catch(e){}
     }
 
     // Settings

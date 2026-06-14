@@ -12,8 +12,55 @@ document.addEventListener('DOMContentLoaded', async () => {
     router.on('dashboard', loadDashboard);
     router.on('campaigns', loadCampaigns);
     router.on('templates', loadTemplates);
+    router.on('billing', loadBilling);
     router.on('settings', loadSettings);
     router.init();
+
+    // --- Notifications ---
+    let notifDropdownOpen = false;
+    document.getElementById('notification-bell').addEventListener('click', () => {
+        notifDropdownOpen = !notifDropdownOpen;
+        document.getElementById('notification-dropdown').style.display = notifDropdownOpen ? 'block' : 'none';
+        if(notifDropdownOpen) document.getElementById('notification-badge').style.display = 'none'; // Mark read
+    });
+
+    async function loadNotifications() {
+        try {
+            const notifs = await api.get('/client/notifications');
+            const list = document.getElementById('notification-list');
+            if (notifs.length === 0) {
+                list.innerHTML = '<div class="text-muted text-center">No new notifications</div>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            notifs.forEach(n => {
+                let color = 'var(--text-primary)';
+                if(n.type === 'warning') color = 'var(--warning)';
+                if(n.type === 'success') color = 'var(--success)';
+                if(n.type === 'info') color = 'var(--info)';
+                
+                list.innerHTML += `
+                    <div style="padding: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 5px;">
+                        <strong style="color: ${color}; text-transform: uppercase; font-size: 0.75rem;">${n.type}</strong>
+                        <p style="margin: 5px 0 0 0;">${n.message}</p>
+                        <small class="text-muted">${components.formatDate(n.created_at)}</small>
+                    </div>
+                `;
+            });
+            
+            // Show badge if there are notifications (we assume they are all unread on first load for simplicity)
+            const badge = document.getElementById('notification-badge');
+            if (notifs.length > 0 && !notifDropdownOpen) {
+                badge.style.display = 'block';
+                badge.textContent = notifs.length;
+            }
+        } catch(e) {}
+    }
+    
+    // Load immediately and poll every 60s
+    loadNotifications();
+    setInterval(loadNotifications, 60000);
 
     // --- Dashboard ---
     async function loadDashboard() {
@@ -33,6 +80,97 @@ document.addEventListener('DOMContentLoaded', async () => {
             components.showToast("Failed to load dashboard", "error");
         }
     }
+
+    // --- Billing ---
+    async function loadBilling() {
+        try {
+            const me = await api.get('/client/profile');
+            let currentPlanName = "Free Plan";
+            document.getElementById('billing-current-limit').textContent = `${me.daily_email_limit || 0} / day`;
+
+            const plans = await api.get('/public/plans');
+            const tbody = document.getElementById('billing-plan-list');
+            tbody.innerHTML = '';
+            
+            plans.forEach(plan => {
+                if (me.plan_id === plan.id) {
+                    currentPlanName = plan.name;
+                    document.getElementById('billing-current-plan').textContent = currentPlanName;
+                }
+                
+                let features = [];
+                try { features = JSON.parse(plan.features_json); } catch(e){}
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${plan.name}</strong></td>
+                        <td>${features.join(', ')}</td>
+                        <td>$${plan.price_monthly}</td>
+                        <td>$${plan.price_yearly}</td>
+                        <td>
+                            ${me.plan_id === plan.id 
+                                ? `<span class="badge badge-success">Current Plan</span>` 
+                                : `<button class="btn btn-primary btn-sm" onclick="upgradePlan('${plan.id}', '${plan.name}')">Upgrade</button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            if (!me.plan_id) {
+                document.getElementById('billing-current-plan').textContent = currentPlanName;
+            }
+        } catch(e) {}
+    }
+
+    window.upgradePlan = async (planId, planName) => {
+        try {
+            components.showToast(`Initiating upgrade to ${planName}...`, "info");
+            
+            const order = await api.post('/payments/create-order', {
+                plan_id: planId,
+                billing_cycle: "monthly"
+            });
+            
+            if (!order.razorpay_key_id) {
+                components.showToast("Billing is not configured by the admin.", "error");
+                return;
+            }
+            
+            const options = {
+                "key": order.razorpay_key_id,
+                "amount": order.amount * 100,
+                "currency": order.currency,
+                "name": "MailPilot",
+                "description": `Upgrade to ${planName}`,
+                "order_id": order.order_id,
+                "handler": async function (response) {
+                    try {
+                        await api.post('/payments/verify', {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature
+                        });
+                        components.showToast("Payment Successful! Plan Upgraded.", "success");
+                        loadBilling();
+                        loadDashboard(); // Refresh limits
+                    } catch(e) {
+                        components.showToast("Verification failed.", "error");
+                    }
+                },
+                "theme": { "color": "#6366f1" }
+            };
+
+            const rzp1 = new Razorpay(options);
+            rzp1.on('payment.failed', function (response){
+                components.showToast("Payment failed", "error");
+            });
+            rzp1.open();
+            
+        } catch (e) {
+            components.showToast(e.message, "error");
+        }
+    };
 
     // --- Settings ---
     async function loadSettings() {
@@ -220,8 +358,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('camp-name').value = '';
             loadCampaigns();
             router.navigate('campaigns');
-        } catch(e) { 
-            components.showToast(e.message, "error"); 
+        } catch(e) {
+            components.showToast(e.message, "error");
         } finally {
             btn.textContent = "Start Campaign"; btn.disabled = false;
         }
@@ -248,6 +386,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             html += '</table>';
             components.showModal("Campaign Logs", html);
-        } catch(e){}
+        } catch(e) {
+            console.error(e);
+            components.showToast("Failed to load logs: " + e.message, "error");
+        }
     };
 });

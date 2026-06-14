@@ -98,4 +98,9 @@ async def update_sheet(data: SheetUpdate, db: AsyncSession = Depends(get_db), cu
     await db.commit()
     return {"status": "success", "sheet_id": sheet_id}
 
-
+@router.get("/notifications")
+async def get_client_notifications(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    from backend.models.app_settings import Notification
+    # Fetch active notifications
+    result = await db.execute(select(Notification).where(Notification.is_active == True).order_by(Notification.created_at.desc()))
+    return result.scalars().all()

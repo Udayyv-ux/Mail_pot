@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy - MailPilot</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/landing.css">
+</head>
+<body>
+    <div id="canvas-container">
+        <div class="nebula nebula-1"></div>
+    </div>
+
+    <nav class="navbar scrolled">
+        <a href="/" class="logo" style="text-decoration:none">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            <span id="app-name">MailPilot</span>
+        </a>
+        <div class="nav-links">
+            <a href="/" class="btn btn-secondary btn-sm">Back to Home</a>
+        </div>
+    </nav>
+
+    <div style="max-width: 800px; margin: 120px auto 60px auto; padding: 2rem;">
+        <div class="glass" style="padding: 3rem; border-radius: var(--radius-xl);">
+            <h1 id="policy-title" style="margin-bottom: 2rem; color: var(--brand-primary)">Loading...</h1>
+            <div id="policy-content" style="color: var(--text-primary); font-family: 'Inter', sans-serif;">
+                <div class="loader"></div>
+            </div>
+            <div id="policy-error" class="alert alert-danger" style="display:none; margin-top:2rem">
+                Policy not found or is currently inactive.
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const slug = urlParams.get('p');
+            
+            if (!slug) {
+                document.getElementById('policy-error').style.display = 'block';
+                document.querySelector('.loader').style.display = 'none';
+                return;
+            }
+
+            try {
+                const policy = await api.get(`/public/policies/${slug}`);
+                document.getElementById('policy-title').textContent = policy.title;
+                document.getElementById('policy-content').innerHTML = policy.content_html;
+            } catch (e) {
+                document.getElementById('policy-title').textContent = 'Error';
+                document.getElementById('policy-error').style.display = 'block';
+                document.querySelector('.loader').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

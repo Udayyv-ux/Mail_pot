@@ -18,6 +18,8 @@
                 <a class="nav-item" data-route="clients">👥 Clients</a>
                 <a class="nav-item" data-route="leads">📩 Demo Leads</a>
                 <a class="nav-item" data-route="plans">💳 Pricing Plans</a>
+                <a class="nav-item" data-route="policies">📝 Legal & Pages</a>
+                <a class="nav-item" data-route="announcements">📢 Announcements</a>
                 <a class="nav-item" data-route="settings">⚙️ App Settings</a>
             </nav>
             <div class="sidebar-footer">
@@ -168,6 +170,83 @@
                             <table>
                                 <thead><tr><th>Name</th><th>Price/Mo</th><th>Limit</th><th>Actions</th></tr></thead>
                                 <tbody id="plan-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Policies (Legal CMS) -->
+                <section id="page-policies" class="page-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Legal & Pages</h2>
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                        <div class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg); align-self: start;">
+                            <h3 class="mb-3">Edit Page</h3>
+                            <form id="form-policy">
+                                <div class="form-group">
+                                    <label class="form-label">Page Title</label>
+                                    <input type="text" id="policy-title" class="form-control" placeholder="e.g. Terms of Service" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">URL Slug</label>
+                                    <input type="text" id="policy-slug" class="form-control" placeholder="e.g. terms" required>
+                                    <small class="text-muted">Will be accessed at /policy.html?p=slug</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">HTML Content</label>
+                                    <textarea id="policy-content" class="form-control" rows="12" placeholder="<h1>Terms</h1><p>...</p>" required style="font-family: monospace"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label d-flex align-items-center" style="gap: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="policy-active" checked>
+                                        Publish this page publicly
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Save Page</button>
+                            </form>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Title</th><th>Slug</th><th>Status</th><th>Actions</th></tr></thead>
+                                <tbody id="policy-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Announcements -->
+                <section id="page-announcements" class="page-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Client Announcements</h2>
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                        <div class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg); align-self: start;">
+                            <h3 class="mb-3">New Announcement</h3>
+                            <form id="form-announcement">
+                                <div class="form-group">
+                                    <label class="form-label">Message</label>
+                                    <textarea id="ann-message" class="form-control" rows="4" placeholder="Type your announcement here..." required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Type</label>
+                                    <select id="ann-type" class="form-control" required>
+                                        <option value="info">Info (Blue)</option>
+                                        <option value="success">Success (Green)</option>
+                                        <option value="warning">Warning (Yellow)</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Broadcast</button>
+                            </form>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Date</th><th>Type</th><th>Message</th><th>Actions</th></tr></thead>
+                                <tbody id="announcement-list"></tbody>
                             </table>
                         </div>
                     </div>

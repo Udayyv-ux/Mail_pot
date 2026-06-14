@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
     # Startup
     print(f"Starting {settings.APP_NAME}...")
-    # await init_db()  # Tables already exist, avoid duplicate table error
+    await init_db()  # Tables already exist, avoid duplicate table error
     print("Database ready")
 
     # Start email queue workers
@@ -110,6 +110,11 @@ if os.path.exists(os.path.join(FRONTEND_DIR, "assets")):
 async def landing_page():
     """Serve the space-themed landing page."""
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+@app.get("/policy.html")
+async def policy_page():
+    """Serve the policy viewer page."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "policy.html"))
 
 
 @app.get("/client")

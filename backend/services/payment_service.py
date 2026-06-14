@@ -3,16 +3,29 @@ Razorpay integration service.
 """
 import razorpay
 from fastapi import HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from backend.config import settings
+from backend.models.app_settings import AppSetting
 
-def _get_client():
-    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
-        raise HTTPException(status_code=500, detail="Razorpay credentials not configured")
-    return razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+async def _get_client(db: AsyncSession):
+    # Try DB first
+    result_id = await db.execute(select(AppSetting).where(AppSetting.key == "razorpay_key_id"))
+    result_secret = await db.execute(select(AppSetting).where(AppSetting.key == "razorpay_key_secret"))
+    
+    db_id = result_id.scalar_one_or_none()
+    db_secret = result_secret.scalar_one_or_none()
+    
+    key_id = db_id.value if db_id and db_id.value else settings.RAZORPAY_KEY_ID
+    key_secret = db_secret.value if db_secret and db_secret.value else settings.RAZORPAY_KEY_SECRET
 
-def create_order(amount: float, currency: str = "INR", receipt: str = "") -> dict:
+    if not key_id or not key_secret:
+        raise HTTPException(status_code=500, detail="Razorpay credentials not configured. Please set them in Admin App Settings.")
+    return razorpay.Client(auth=(key_id, key_secret))
+
+async def create_order(amount: float, db: AsyncSession, currency: str = "INR", receipt: str = "") -> dict:
     """Create a new order in Razorpay."""
-    client = _get_client()
+    client = await _get_client(db)
     data = {
         "amount": int(amount * 100), # Razorpay expects paise
         "currency": currency,
@@ -24,9 +37,9 @@ def create_order(amount: float, currency: str = "INR", receipt: str = "") -> dic
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to create order: {str(e)}")
 
-def verify_payment(order_id: str, payment_id: str, signature: str) -> bool:
+async def verify_payment(order_id: str, payment_id: str, signature: str, db: AsyncSession) -> bool:
     """Verify payment signature."""
-    client = _get_client()
+    client = await _get_client(db)
     try:
         client.utility.verify_payment_signature({
             'razorpay_order_id': order_id,
@@ -37,15 +50,20 @@ def verify_payment(order_id: str, payment_id: str, signature: str) -> bool:
     except Exception:
         return False
 
-def process_webhook(body: str, signature: str) -> bool:
+async def process_webhook(body: str, signature: str, db: AsyncSession) -> bool:
     """Verify webhook signature."""
-    if not settings.RAZORPAY_WEBHOOK_SECRET:
+    # Webhook secret is usually static, but we can check DB too
+    result_wh = await db.execute(select(AppSetting).where(AppSetting.key == "razorpay_webhook_secret"))
+    db_wh = result_wh.scalar_one_or_none()
+    wh_secret = db_wh.value if db_wh and db_wh.value else settings.RAZORPAY_WEBHOOK_SECRET
+
+    if not wh_secret:
         return False
         
-    client = _get_client()
+    client = await _get_client(db)
     try:
         client.utility.verify_webhook_signature(
-            body, signature, settings.RAZORPAY_WEBHOOK_SECRET
+            body, signature, wh_secret
         )
         return True
     except Exception:
