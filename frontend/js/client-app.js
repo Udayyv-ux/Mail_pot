@@ -236,11 +236,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.viewLogs = async (id) => {
         try {
             const logs = await api.get(`/client/campaigns/${id}/logs`);
-            let html = '<table class="table" style="width:100%;text-align:left;"><tr><th>Email</th><th>Status</th><th>Template</th><th>Time</th></tr>';
+            let html = '<table class="table" style="width:100%;text-align:left;"><tr><th>Email</th><th>Status</th><th>Error Details</th><th>Template</th><th>Time</th></tr>';
             logs.forEach(l => {
                 html += `<tr>
                     <td>${l.recipient_email}</td>
                     <td>${l.status==='sent' ? '✅ Sent' : '❌ Failed'}</td>
+                    <td style="color:var(--danger); font-size:0.85rem; max-width:200px; word-wrap:break-word;">${l.error_message || '-'}</td>
                     <td>${l.template_used || '-'}</td>
                     <td>${components.formatDate(l.sent_at)}</td>
                 </tr>`;
