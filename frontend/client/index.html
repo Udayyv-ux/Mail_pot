@@ -31,20 +31,27 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        body { background-color: #0f172a; color: white; overflow-x: hidden; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .page-section { display: none; animation: fadeIn 0.3s ease-out; }
+        body { background-color: #020617; color: #f8fafc; overflow-x: hidden; }
+        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 8px 32px 0 rgba(0,0,0,0.3); }
+        .page-section { display: none; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .page-section.active { display: block; }
         
-        .nav-item { cursor: pointer; padding: 0.75rem 1rem; border-radius: 0.5rem; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem; color: #94a3b8; font-weight: 500; }
-        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
-        .nav-item.active { background: var(--primary); color: white; }
+        .nav-item { cursor: pointer; padding: 0.875rem 1rem; border-radius: 0.75rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 0.75rem; color: #94a3b8; font-weight: 600; }
+        .nav-item:hover { background: rgba(255,255,255,0.03); color: white; transform: translateX(4px); }
+        .nav-item.active { background: linear-gradient(to right, rgba(79,70,229,0.1), transparent); color: #818cf8; border-left: 3px solid #818cf8; border-radius: 0 0.75rem 0.75rem 0; }
         
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         
         /* Modals */
-        .modal { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
-        .modal.active { display: flex; animation: fadeIn 0.2s ease-out; }
+        .modal { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(2,6,23,0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
+        .modal.active { display: flex; animation: fadeIn 0.3s ease-out; }
+        
+        /* Table enhancements */
+        table { border-spacing: 0; }
+        th { border-bottom: 1px solid rgba(255,255,255,0.05); }
+        tr { transition: background 0.2s; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+
     </style>
 </head>
 <body class="antialiased flex h-screen overflow-hidden selection:bg-primary selection:text-white">
@@ -294,7 +301,7 @@
 
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
-    
+    <script src="/js/router.js"></script>
     <script>
         // Custom Toast
         window.showToast = (msg, type='info') => {

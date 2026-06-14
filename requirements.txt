@@ -32,4 +32,4 @@ gspread
 oauth2client
 
 # Encryption
-cryptography
+cryptographyitsdangerous

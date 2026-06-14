@@ -50,6 +50,10 @@ app = FastAPI(
 
 # ── Middleware ────────────────────────────────────────────────────────────────
 
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
