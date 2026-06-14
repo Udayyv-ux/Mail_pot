@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from pydantic import BaseModel
+from typing import Optional
 
 from backend.database import get_db
 from backend.middleware.auth_middleware import require_client
@@ -14,7 +15,6 @@ from datetime import datetime, timedelta, timezone
 from fastapi import UploadFile, File, BackgroundTasks
 import os
 import uuid
-from backend.services.email_engine import run_blast_engine
 from backend.utils.encryption import encrypt_value
 
 router = APIRouter(prefix="/api/client", tags=["client"])
