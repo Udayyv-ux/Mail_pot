@@ -16,7 +16,7 @@ from backend.config import settings
 from backend.database import SessionLocal
 from backend.models.client import Client
 from backend.models.template import Template
-from backend.models.campaign import EmailLog
+from backend.models.email_log import EmailLog
 from backend.utils.encryption import decrypt_value
 
 def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> str:

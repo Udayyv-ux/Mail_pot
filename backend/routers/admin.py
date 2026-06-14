@@ -18,7 +18,7 @@ from backend.models.user import User
 from backend.models.plan import Plan
 from backend.models.payment import Payment
 from backend.models.app_settings import Policy, AppSetting, DemoRequest
-from backend.models.campaign import EmailLog
+from backend.models.email_log import EmailLog
 from datetime import datetime, timedelta, timezone
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])

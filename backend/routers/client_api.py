@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from backend.database import get_db
 from backend.middleware.auth_middleware import require_client
 from backend.models.client import Client
-from backend.models.campaign import EmailLog
+from backend.models.email_log import EmailLog
 from datetime import datetime, timedelta, timezone
 from fastapi import UploadFile, File, BackgroundTasks
 import os
