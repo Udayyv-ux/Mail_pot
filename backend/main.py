@@ -107,19 +107,22 @@ async def startup():
     from backend.database import engine, Base
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        # Add new columns manually to existing tables (sqlite & postgres)
-        for col, col_def in [("target_columns", "VARCHAR DEFAULT 'Name, Email, Inquiry'"), ("status_column", "VARCHAR DEFAULT 'Status'")]:
-            try:
+    # Add new columns manually to existing tables (sqlite & postgres)
+    # Each gets its own transaction so a failure in one doesn't abort the others (Postgres specific)
+    for col, col_def in [("target_columns", "VARCHAR DEFAULT 'Name, Email, Inquiry'"), ("status_column", "VARCHAR DEFAULT 'Status'")]:
+        try:
+            async with engine.begin() as conn:
                 from sqlalchemy import text
                 await conn.execute(text(f"ALTER TABLE clients ADD COLUMN {col} {col_def}"))
-            except Exception:
-                pass # column already exists
-        
-        try:
-            from sqlalchemy import text
-            await conn.execute(text(f"ALTER TABLE templates ADD COLUMN banner_url VARCHAR"))
         except Exception:
             pass # column already exists
+    
+    try:
+        async with engine.begin() as conn:
+            from sqlalchemy import text
+            await conn.execute(text(f"ALTER TABLE templates ADD COLUMN banner_url VARCHAR"))
+    except Exception:
+        pass # column already exists
 
     # Start the 24/7 background engine
     from backend.services.email_engine import run_247_engine

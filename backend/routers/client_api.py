@@ -58,11 +58,9 @@ async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends
             
     return {
         "company_name": client.company_name,
-        "smtp_email": client.smtp_email,
-        "smtp_host": client.smtp_host,
-        "smtp_port": client.smtp_port,
         "google_sheet_id": client.google_sheet_id,
-        "has_groq_key": bool(client.groq_api_key_enc),
+        "target_columns": client.target_columns,
+        "status_column": client.status_column,
         "service_account_email": service_email
     }
 
