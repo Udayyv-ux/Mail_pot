@@ -110,7 +110,7 @@ class QueueManager:
                             
                             if target_template:
                                 # 2. Send email
-                                success = await send_template_email(task.to_email, task.name, target_template, task.smtp_config)
+                                success, exact_error = await send_template_email(task.to_email, task.name, target_template, task.smtp_config)
                                 if success:
                                     status = "sent"
                                     error_msg = ""
@@ -120,7 +120,7 @@ class QueueManager:
                                         await asyncio.sleep(1) # rate limit sheet API
                                         await update_sheet_cell(task.sheet_id, task.row_index, 5, "Sent")
                                 else:
-                                    error_msg = "SMTP delivery failed"
+                                    error_msg = f"SMTP Failed: {exact_error}"
                             
                             # 4. Log to DB
                             async with SessionLocal() as db:

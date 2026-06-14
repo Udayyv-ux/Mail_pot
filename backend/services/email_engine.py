@@ -82,7 +82,8 @@ async def send_template_email(to_email: str, first_name: str, template, smtp_con
             username=smtp_email,
             password=smtp_password
         )
-        return True
+        return True, ""
     except Exception as e:
-        print(f"Email Error to {to_email}: {e}")
-        return False
+        error_str = str(e)
+        print(f"Email Error to {to_email}: {error_str}")
+        return False, error_str
