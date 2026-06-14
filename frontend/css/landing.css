@@ -149,22 +149,34 @@ section { padding: 6rem 5%; }
   display: flex;
   flex-direction: column;
   position: relative;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.pricing-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 240, 255, 0.15), inset 0 0 15px rgba(0, 240, 255, 0.05);
+  border-color: rgba(0, 240, 255, 0.3);
 }
 .pricing-card.featured {
   border: 2px solid var(--brand-primary);
   transform: scale(1.05);
   box-shadow: var(--shadow-neon);
+  z-index: 2;
+}
+.pricing-card.featured:hover {
+  transform: scale(1.05) translateY(-10px);
+  box-shadow: 0 20px 40px rgba(181, 53, 255, 0.3), inset 0 0 20px rgba(181, 53, 255, 0.2);
 }
 .featured-badge {
   position: absolute;
   top: -15px; left: 50%;
   transform: translateX(-50%);
-  background: var(--brand-primary);
+  background: linear-gradient(90deg, var(--brand-primary), var(--brand-accent));
   color: white;
   padding: 5px 15px;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: bold;
+  box-shadow: 0 4px 10px rgba(181, 53, 255, 0.4);
 }
 .price { font-size: 3rem; font-weight: 700; margin: 1rem 0; color: white; }
 .price span { font-size: 1rem; color: var(--text-secondary); font-weight: normal; }
