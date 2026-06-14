@@ -123,7 +123,9 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2 glass p-6 rounded-2xl border border-white/10">
                         <h3 class="text-lg font-bold mb-4">Global Volume (Last 7 Days)</h3>
-                        <canvas id="admin-chart" height="100"></canvas>
+                        <div class="relative h-64 w-full">
+                            <canvas id="admin-chart"></canvas>
+                        </div>
                     </div>
                     <div class="glass p-6 rounded-2xl border border-white/10">
                         <h3 class="text-lg font-bold mb-4">Demo Requests</h3>
@@ -349,6 +351,6 @@ class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl p-2">&times
     </script>
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
-    <script src="/js/admin-app.js?v=5"></script>
+    <script src="/js/admin-app.js?v=6"></script>
 </body>
 </html>
