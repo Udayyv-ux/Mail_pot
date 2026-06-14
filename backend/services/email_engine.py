@@ -74,11 +74,15 @@ async def send_template_email(to_email: str, first_name: str, template, smtp_con
     image_urls = json.loads(template.image_urls_json) if template.image_urls_json else []
     
     try:
+        use_tls = (smtp_port == 465)
+        start_tls = (smtp_port == 587)
+        
         await aiosmtplib.send(
             msg,
             hostname=smtp_host,
             port=smtp_port,
-            start_tls=True,
+            use_tls=use_tls,
+            start_tls=start_tls,
             username=smtp_email,
             password=smtp_password
         )
