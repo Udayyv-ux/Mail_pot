@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
         try {
             if (id) await api.put(`/client/templates/${id}`, data);
-            else await api.post(`/client/templates/`, data);
+            else await api.post(`/client/templates`, data);
             
             components.showToast("Template saved", "success");
             document.getElementById('template-editor-modal').classList.remove('active');
