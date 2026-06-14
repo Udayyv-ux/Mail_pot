@@ -123,6 +123,21 @@ async def startup():
             await conn.execute(text(f"ALTER TABLE templates ADD COLUMN banner_url VARCHAR"))
     except Exception:
         pass # column already exists
+        
+    try:
+        async with engine.begin() as conn:
+            from sqlalchemy import text
+            await conn.execute(text(f"ALTER TABLE email_logs ADD COLUMN client_id VARCHAR"))
+    except Exception:
+        pass # column already exists
+
+    for col, col_def in [("recipient_name", "VARCHAR"), ("template_used", "VARCHAR"), ("category_assigned", "VARCHAR"), ("error_message", "TEXT")]:
+        try:
+            async with engine.begin() as conn:
+                from sqlalchemy import text
+                await conn.execute(text(f"ALTER TABLE email_logs ADD COLUMN {col} {col_def}"))
+        except Exception:
+            pass
 
     # Start the 24/7 background engine
     from backend.services.email_engine import run_247_engine
