@@ -1,21 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const adminToken = localStorage.getItem('admin_token');
+    auth.checkUrlTokens();
     const loginScreen = document.getElementById('admin-login-screen');
 
-    if (!adminToken) {
-        loginScreen.style.display = 'flex';
-    } else {
-        loginScreen.style.display = 'none';
-        initAdmin();
-    }
+    auth.getCurrentUser().then(user => {
+        if (!user || user.role !== 'admin') {
+            if (user && user.role !== 'admin') {
+                window.location.href = '/client/';
+                return;
+            }
+            loginScreen.style.display = 'flex';
+        } else {
+            loginScreen.style.display = 'none';
+            initAdmin();
+        }
+    });
 
     // Auth Guard now relies on the /api/auth/google endpoint directly
     // The google auth button is hardcoded in the HTML to do window.location.href
 
     document.getElementById('btn-admin-logout').addEventListener('click', () => {
-        localStorage.removeItem('admin_token');
-        window.location.reload();
+        auth.logout();
     });
 
     // Custom API wrapper for Admin

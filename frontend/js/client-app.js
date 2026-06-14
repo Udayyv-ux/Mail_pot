@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    if (!api.getToken()) {
+    auth.checkUrlTokens();
+    const user = await auth.getCurrentUser();
+    if (!user) {
         window.location.href = '/';
         return;
     }
