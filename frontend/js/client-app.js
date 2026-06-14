@@ -337,19 +337,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // --- Profile & Settings Form ---
     document.getElementById('form-profile')?.addEventListener('submit', async(e) => {
         e.preventDefault();
         const payload = {
             company_name: document.getElementById('set-company').value,
-            smtp_email: document.getElementById('set-smtp-email').value,
-            smtp_password: document.getElementById('set-smtp-pass').value || undefined,
-            groq_api_key: document.getElementById('set-groq').value || undefined
+            target_columns: document.getElementById('set-target-cols').value,
+            status_column: document.getElementById('set-status-col').value
         };
         try {
             await api.put('/client/profile', payload);
-            if(window.showToast) showToast("Profile settings saved", "success");
-            document.getElementById('set-smtp-pass').value = '';
-            document.getElementById('set-groq').value = '';
+            if(window.showToast) showToast("Profile updated", "success");
         } catch(err) {
             if(window.showToast) showToast(err.message, "error");
         }
@@ -365,25 +363,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // --- Send Blast Form ---
-    document.getElementById('form-send-blast')?.addEventListener('submit', async(e) => {
-        e.preventDefault();
-        const btn = e.target.querySelector('button');
-        const oldText = btn.textContent;
-        btn.textContent = "Processing..."; btn.disabled = true;
-        
-        const batchSize = document.getElementById('blast-batch').value;
-        try {
-            await api.post('/client/blast', { batch_size: parseInt(batchSize) });
-            if(window.showToast) showToast("Blast triggered! Emails are sending in the background.", "success");
-            document.getElementById('blast-modal').classList.remove('active');
-            setTimeout(loadDashboard, 2000);
-        } catch(err) {
-            if(window.showToast) showToast(err.message, "error");
-        } finally {
-            btn.textContent = oldText; btn.disabled = false;
-        }
-    });
+
 
     // Logout
     document.getElementById('btn-logout')?.addEventListener('click', () => {

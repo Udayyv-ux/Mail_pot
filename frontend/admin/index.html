@@ -169,7 +169,17 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-400 mb-1">Global Default Groq Key</label>
                             <input type="password" id="admin-groq" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" placeholder="Enter API Key">
-                            <p class="text-xs text-gray-500 mt-1">Used if client doesn't provide their own.</p>
+                            <p class="text-xs text-gray-500 mt-1">Used for categorizing leads.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Global Resend API Key (HTTP Email Blasting)</label>
+                            <input type="password" id="admin-resend" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" placeholder="re_...">
+                            <p class="text-xs text-gray-500 mt-1">Bypasses blocked SMTP ports. All emails sent via HTTP API.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Global Sender Identity (From Email)</label>
+                            <input type="email" id="admin-sender" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" placeholder="hello@yourverifieddomain.com">
+                            <p class="text-xs text-gray-500 mt-1">Must be verified on Resend. Replies will go directly to your clients.</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-400 mb-1">Google Service Account Email</label>

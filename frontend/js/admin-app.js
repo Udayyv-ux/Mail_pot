@@ -120,13 +120,16 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if(adminChart) adminChart.destroy();
             
+            const labels = stats?.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const data = stats?.data || [0,0,0,0,0,0,0];
+            
             adminChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: stats.labels || [],
+                    labels: labels,
                     datasets: [{
                         label: 'Total Platform Emails Sent',
-                        data: stats.data || [],
+                        data: data,
                         backgroundColor: '#ec4899',
                         borderRadius: 4
                     }]
@@ -164,10 +167,11 @@ document.addEventListener('DOMContentLoaded', () => {
             clients.forEach(c => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="p-4 text-white">${c.company_name || '-'}</td>
-                    <td class="p-4 text-gray-400">${c.status || 'active'}</td>
-                    <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold bg-primary/20 text-primary">${c.emails_sent_today || 0} sent today</span></td>
-                    <td class="p-4 text-right space-x-2">
+                    <td class="p-4 text-white font-medium">${c.email}</td>
+                    <td class="p-4 text-gray-300">${c.company_name || 'N/A'}</td>
+                    <td class="p-4 text-gray-300"><span class="bg-primary/20 text-primary px-2 py-1 rounded-full text-xs">${c.plan || 'Free'}</span></td>
+                    <td class="p-4 text-right">
+                        <button onclick="resetUsage('${c.id}')" class="text-xs bg-dark/50 hover:bg-white/10 text-gray-300 py-1 px-3 rounded transition-colors mr-2">Reset Usage</button>
                         <button class="text-secondary hover:text-pink-400 font-semibold text-sm" onclick="openClientFeatures('${c.id}', '${c.company_name || "Client"}')">Features</button>
                     </td>
                 `;
@@ -307,30 +311,28 @@ document.addEventListener('DOMContentLoaded', () => {
             // Returns: array of { id, key, value, category, description }
             const settings = await api.get('/admin/settings');
             const map = {};
-            if(Array.isArray(settings)) {
-                settings.forEach(s => map[s.key] = s.value);
-            }
-            
-            const el = (id) => document.getElementById(id);
-            if(el('admin-groq')) el('admin-groq').value = map['default_groq_api_key'] || '';
-            if(el('admin-gcp-email')) el('admin-gcp-email').value = map['gcp_service_account_email'] || '';
-            if(el('admin-gcp-json')) el('admin-gcp-json').value = map['gcp_service_account_json'] || '';
-            if(el('admin-rzp-key')) el('admin-rzp-key').value = map['razorpay_key_id'] || '';
-            if(el('admin-rzp-secret')) el('admin-rzp-secret').value = map['razorpay_key_secret'] || '';
-        } catch(e) {
-            console.error("Load settings error:", e);
-        }
+            settings.forEach(s => {
+                if(s.key === 'GROQ_API_KEY') document.getElementById('admin-groq').value = s.value;
+                if(s.key === 'RESEND_API_KEY') document.getElementById('admin-resend').value = s.value;
+                if(s.key === 'SENDER_EMAIL') document.getElementById('admin-sender').value = s.value;
+                if(s.key === 'GCP_SERVICE_EMAIL') document.getElementById('admin-gcp-email').value = s.value;
+                if(s.key === 'GCP_CREDENTIALS_JSON') document.getElementById('admin-gcp-json').value = s.value;
+                if(s.key === 'RAZORPAY_KEY_ID') document.getElementById('admin-rzp-key').value = s.value;
+                if(s.key === 'RAZORPAY_SECRET') document.getElementById('admin-rzp-secret').value = s.value;
+            });
+        } catch(e) {}
     }
 
     document.getElementById('form-admin-settings')?.addEventListener('submit', async(e) => {
         e.preventDefault();
-        // Backend endpoint: PUT /api/admin/settings expects array of {key, value}
         const payload = [
-            { key: 'default_groq_api_key', value: document.getElementById('admin-groq').value },
-            { key: 'gcp_service_account_email', value: document.getElementById('admin-gcp-email').value },
-            { key: 'gcp_service_account_json', value: document.getElementById('admin-gcp-json').value },
-            { key: 'razorpay_key_id', value: document.getElementById('admin-rzp-key').value },
-            { key: 'razorpay_key_secret', value: document.getElementById('admin-rzp-secret').value },
+            {key: 'GROQ_API_KEY', value: document.getElementById('admin-groq').value},
+            {key: 'RESEND_API_KEY', value: document.getElementById('admin-resend').value},
+            {key: 'SENDER_EMAIL', value: document.getElementById('admin-sender').value},
+            {key: 'GCP_SERVICE_EMAIL', value: document.getElementById('admin-gcp-email').value},
+            {key: 'GCP_CREDENTIALS_JSON', value: document.getElementById('admin-gcp-json').value},
+            {key: 'RAZORPAY_KEY_ID', value: document.getElementById('admin-rzp-key').value},
+            {key: 'RAZORPAY_SECRET', value: document.getElementById('admin-rzp-secret').value}
         ];
         try {
             await api.put('/admin/settings', payload);

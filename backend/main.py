@@ -102,6 +102,24 @@ app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 # ── Frontend Page Routes ─────────────────────────────────────────────────────
 
+@app.on_event("startup")
+async def startup():
+    from backend.database import engine, Base
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        # Add new columns manually to existing tables (sqlite & postgres)
+        for col, col_def in [("target_columns", "VARCHAR DEFAULT 'Name, Email, Inquiry'"), ("status_column", "VARCHAR DEFAULT 'Status'")]:
+            try:
+                from sqlalchemy import text
+                await conn.execute(text(f"ALTER TABLE clients ADD COLUMN {col} {col_def}"))
+            except Exception:
+                pass # column already exists
+
+    # Start the 24/7 background engine
+    from backend.services.email_engine import run_247_engine
+    import asyncio
+    asyncio.create_task(run_247_engine())
+
 @app.get("/")
 async def landing_page():
     """Serve the space-themed landing page."""

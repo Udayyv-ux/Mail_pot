@@ -19,18 +19,11 @@ class Client(Base):
     is_demo = Column(Boolean, default=False)
     status = Column(String, default="active")  # active, suspended, trial
 
-    # Email configuration (encrypted values)
-    smtp_email = Column(String, nullable=True)
-    smtp_password_enc = Column(Text, nullable=True)
-    smtp_host = Column(String, default="smtp.gmail.com")
-    smtp_port = Column(Integer, default=587)
-
-    # AI configuration
-    groq_api_key_enc = Column(Text, nullable=True)
-
-    # Google Sheets
+    # Google Sheets Configuration
     google_sheet_id = Column(String, nullable=True)
     credentials_json = Column(Text, nullable=True)  # service account JSON (encrypted)
+    target_columns = Column(String, default="Name, Email, Inquiry")
+    status_column = Column(String, default="Status")
 
     # Usage tracking
     daily_email_limit = Column(Integer, default=50)

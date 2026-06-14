@@ -67,23 +67,19 @@ async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends
     }
 
 class ProfileUpdate(BaseModel):
-    company_name: str = None
-    smtp_email: str = None
-    smtp_password: str = None
-    groq_api_key: str = None
+    company_name: Optional[str] = None
+    target_columns: Optional[str] = None
+    status_column: Optional[str] = None
 
 @router.put("/profile")
-async def update_profile(data: ProfileUpdate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+async def update_profile(profile: ProfileUpdate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client = await get_client_profile(current_user, db)
-    
-    if data.company_name:
-        client.company_name = data.company_name
-    if data.smtp_email:
-        client.smtp_email = data.smtp_email
-    if data.smtp_password:
-        client.smtp_password_enc = encrypt_value(data.smtp_password)
-    if data.groq_api_key:
-        client.groq_api_key_enc = encrypt_value(data.groq_api_key)
+    if profile.company_name is not None:
+        client.company_name = profile.company_name
+    if profile.target_columns is not None:
+        client.target_columns = profile.target_columns
+    if profile.status_column is not None:
+        client.status_column = profile.status_column
         
     await db.commit()
     return {"status": "success"}
@@ -145,13 +141,3 @@ async def upload_image(file: UploadFile = File(...), current_user = Depends(requ
         content = await file.read()
         f.write(content)
     return {"url": f"/uploads/{filename}"}
-
-class BlastRequest(BaseModel):
-    batch_size: int = 10
-    delay_seconds: int = 3
-
-@router.post("/blast")
-async def trigger_blast(req: BlastRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
-    client = await get_client_profile(current_user, db)
-    background_tasks.add_task(run_blast_engine, client.id, req.batch_size, req.delay_seconds)
-    return {"status": "success", "message": "Blast engine started"}

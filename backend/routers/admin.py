@@ -63,9 +63,18 @@ async def get_admin_chart(db: AsyncSession = Depends(get_db), admin = Depends(re
 # --- CLIENTS ---
 @router.get("/clients")
 async def list_clients(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
-    result = await db.execute(select(Client).join(User))
+    # Need to join User and Plan to get email and plan name
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(select(Client).options(selectinload(Client.user), selectinload(Client.plan)))
     clients = result.scalars().all()
-    return [{"id": c.id, "company_name": c.company_name, "status": c.status, "emails_sent_today": c.emails_sent_today} for c in clients]
+    return [{
+        "id": c.id, 
+        "email": c.user.email if c.user else "N/A",
+        "company_name": c.company_name, 
+        "plan": c.plan.name if c.plan else "Free",
+        "status": c.status, 
+        "emails_sent_today": c.emails_sent_today
+    } for c in clients]
 
 @router.get("/clients/{id}")
 async def get_client(id: str, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
