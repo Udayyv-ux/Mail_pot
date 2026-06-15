@@ -17,6 +17,11 @@ async def get_active_plans(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Plan).where(Plan.is_active == True).order_by(Plan.sort_order))
     return result.scalars().all()
 
+@router.get("/policies")
+async def list_policies(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Policy).where(Policy.is_active == True))
+    return result.scalars().all()
+
 @router.get("/policies/{slug}")
 async def get_policy(slug: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Policy).where(Policy.slug == slug, Policy.is_active == True))

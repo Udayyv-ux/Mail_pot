@@ -131,11 +131,8 @@
     <footer class="border-t border-white/10 pt-12 pb-8">
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="text-2xl font-bold">LeadFlow<span class="text-primary">.ai</span></div>
-            <div class="flex gap-6 text-gray-400 text-sm">
-                <a href="/policy.html?p=terms" class="hover:text-white transition-colors">Terms</a>
-                <a href="/policy.html?p=privacy" class="hover:text-white transition-colors">Privacy</a>
-                <a href="/policy.html?p=about" class="hover:text-white transition-colors">About Us</a>
-                <a href="/admin/index.html" class="hover:text-white transition-colors">Admin Portal</a>
+            <div id="footer-policies" class="flex gap-6 text-gray-400 text-sm">
+                <!-- Dynamically populated from super admin policies -->
             </div>
             <div class="text-gray-500 text-sm">© 2026 LeadFlow.ai. All rights reserved.</div>
         </div>
@@ -230,8 +227,28 @@
                 });
             } catch(e) {}
         }
+        // Load Public Policies
+        async function loadPublicPolicies() {
+            try {
+                const policies = await api.get('/public/policies');
+                const container = document.getElementById('footer-policies');
+                if(!container) return;
+                container.innerHTML = '';
+                
+                policies.forEach(p => {
+                    const a = document.createElement('a');
+                    a.href = `/policy.html?p=${p.slug}`;
+                    a.className = 'hover:text-white transition-colors';
+                    a.textContent = p.title;
+                    container.appendChild(a);
+                });
+            } catch(e) {
+                console.error("Failed to load policies", e);
+            }
+        }
         
         loadPublicPlans();
+        loadPublicPolicies();
     </script>
 </body>
 </html>
