@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('tmpl-body').value = '<p>Hi {first_name},</p>\n\n<p>Your message here</p>';
         document.getElementById('tmpl-banner-url').value = '';
         document.getElementById('tmpl-banner-preview').classList.add('hidden');
-        document.getElementById('template-editor-modal').classList.add('active');
+        document.getElementById('template-editor-modal').showModal();
         updatePreview();
     });
 
@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 await api.post(`/client/templates`, payload);
             }
-            document.getElementById('template-editor-modal').classList.remove('active');
+            document.getElementById('template-editor-modal').close();
             if(window.showToast) showToast("Template saved!", "success");
             loadTemplates();
         } catch(e) {
@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('tmpl-banner-preview').classList.add('hidden');
             }
             
-            document.getElementById('template-editor-modal').classList.add('active');
+            document.getElementById('template-editor-modal').showModal();
             updatePreview();
         } catch(e) {}
     };
