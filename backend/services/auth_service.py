@@ -26,7 +26,11 @@ def setup_oauth(app):
         client_id=settings.GOOGLE_CLIENT_ID,
         client_secret=settings.GOOGLE_CLIENT_SECRET,
         server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-        client_kwargs={'scope': 'openid email profile'}
+        client_kwargs={
+            'scope': 'openid email profile https://www.googleapis.com/auth/gmail.send',
+            'prompt': 'consent',
+            'access_type': 'offline'
+        }
     )
 
 async def google_login(request: Request, redirect_uri: str):
@@ -48,6 +52,9 @@ async def google_callback(request: Request, db: AsyncSession):
     name = user_info.get("name", "")
     google_id = user_info.get("sub")
     picture = user_info.get("picture")
+    
+    access_token = token.get("access_token")
+    refresh_token = token.get("refresh_token")
 
     # Find existing user or create
     result = await db.execute(select(User).where(User.email == email))
@@ -65,6 +72,8 @@ async def google_callback(request: Request, db: AsyncSession):
             email=email,
             name=name,
             google_id=google_id,
+            google_access_token=access_token,
+            google_refresh_token=refresh_token,
             avatar_url=picture,
             role=role
         )
@@ -84,6 +93,10 @@ async def google_callback(request: Request, db: AsyncSession):
         # Update details if needed
         if not user.google_id:
             user.google_id = google_id
+        if access_token:
+            user.google_access_token = access_token
+        if refresh_token:
+            user.google_refresh_token = refresh_token
         if picture and user.avatar_url != picture:
             user.avatar_url = picture
             

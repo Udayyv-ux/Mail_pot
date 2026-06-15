@@ -39,6 +39,13 @@ async def lifespan(app: FastAPI):
             from sqlalchemy import text
             await conn.execute(text(f"ALTER TABLE templates ADD COLUMN banner_url VARCHAR"))
     except Exception: pass
+    
+    for col, col_def in [("google_access_token", "VARCHAR"), ("google_refresh_token", "VARCHAR")]:
+        try:
+            async with engine.begin() as conn:
+                from sqlalchemy import text
+                await conn.execute(text(f"ALTER TABLE users ADD COLUMN {col} {col_def}"))
+        except Exception: pass
         
     try:
         async with engine.begin() as conn:

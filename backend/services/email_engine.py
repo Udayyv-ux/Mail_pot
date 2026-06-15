@@ -51,34 +51,68 @@ def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> str:
         print(f"AI Categorization Error: {e}")
         return categories[0]
 
-async def send_email_via_resend(to_email: str, first_name: str, template, client_email: str, api_key: str, global_sender: str) -> tuple[bool, str]:
-    if not api_key:
-        return False, "Global Resend API key is missing. Admin must configure it."
+import base64
+from email.message import EmailMessage
+
+async def refresh_google_token(user, db) -> str | None:
+    if not user.google_refresh_token:
+        return user.google_access_token
+        
+    try:
+        async with httpx.AsyncClient() as http_client:
+            resp = await http_client.post(
+                "https://oauth2.googleapis.com/token",
+                data={
+                    "client_id": settings.GOOGLE_CLIENT_ID,
+                    "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                    "refresh_token": user.google_refresh_token,
+                    "grant_type": "refresh_token"
+                },
+                timeout=10.0
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                new_access_token = data.get("access_token")
+                if new_access_token:
+                    user.google_access_token = new_access_token
+                    await db.commit()
+                    return new_access_token
+            return user.google_access_token
+    except Exception as e:
+        print(f"Token refresh failed: {e}")
+        return user.google_access_token
+
+async def send_email_via_gmail_api(to_email: str, first_name: str, template, access_token: str) -> tuple[bool, str]:
+    if not access_token:
+        return False, "Client user has not authenticated with Google or access token is missing."
     
     subject = template.subject
     html_body = template.body_html.replace("{first_name}", first_name or "There")
     if getattr(template, 'banner_url', None):
         html_body = f'<img src="{template.banner_url}" style="max-width:100%;"><br><br>' + html_body
 
-    payload = {
-        "from": global_sender or "hello@example.com",
-        "to": [to_email],
-        "reply_to": client_email,
-        "subject": subject,
-        "html": html_body
-    }
+    msg = EmailMessage()
+    msg['To'] = to_email
+    msg['Subject'] = subject
+    msg.set_content("Please view this email in an HTML-compatible client.")
+    msg.add_alternative(html_body, subtype='html')
+    
+    raw = base64.urlsafe_b64encode(msg.as_bytes()).decode('utf-8')
+    payload = {"raw": raw}
 
     try:
         async with httpx.AsyncClient() as http_client:
             resp = await http_client.post(
-                "https://api.resend.com/emails",
-                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                "https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send",
+                headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"},
                 json=payload,
                 timeout=15.0
             )
-            if resp.status_code in [200, 201]:
+            if resp.status_code == 200:
                 return True, ""
-            return False, f"Resend API Error: {resp.text}"
+            elif resp.status_code == 401:
+                return False, "Gmail API Unauthorized. Token may be expired or revoked."
+            return False, f"Gmail API Error: {resp.text}"
     except Exception as e:
         return False, f"HTTP Error: {str(e)}"
 
@@ -107,7 +141,12 @@ async def run_247_engine():
                     # Need client email for Reply-To
                     db_client = await db.get(Client, client.id)
                     await db.refresh(db_client, ['user'])
-                    client_email = db_client.user.email if db_client.user else "reply@example.com"
+                    client_user = db_client.user
+                    client_email = client_user.email if client_user else "reply@example.com"
+                    
+                    access_token = None
+                    if client_user:
+                        access_token = await refresh_google_token(client_user, db)
                 
                 if not templates: continue
                 
@@ -155,8 +194,8 @@ async def run_247_engine():
                     category = categorize_with_ai(inquiry, templates, groq_key)
                     target_template = next((t for t in templates if t.project_name == category), templates[0])
                     
-                    print(f"📤 Sending '{target_template.project_name}' email to {email} via Resend...")
-                    success, err = await send_email_via_resend(email, name, target_template, client_email, resend_key, global_sender)
+                    print(f"📤 Sending '{target_template.project_name}' email to {email} via Gmail API...")
+                    success, err = await send_email_via_gmail_api(email, name, target_template, access_token)
                     
                     if success:
                         print(f"✅ Successfully sent to {email}")

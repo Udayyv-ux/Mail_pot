@@ -21,6 +21,8 @@ class User(Base):
     email = Column(String, unique=True, nullable=False, index=True)
     name = Column(String, nullable=False, default="")
     google_id = Column(String, unique=True, nullable=True)
+    google_access_token = Column(String, nullable=True)
+    google_refresh_token = Column(String, nullable=True)
     avatar_url = Column(String, nullable=True)
     role = Column(SAEnum(UserRole), default=UserRole.CLIENT, nullable=False)
     is_active = Column(Boolean, default=True)
