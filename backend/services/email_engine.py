@@ -102,8 +102,9 @@ async def run_247_engine():
                     templates_res = await db.execute(select(Template).where(Template.client_id == client.id, Template.is_active == True))
                     templates = templates_res.scalars().all()
                     # Need client email for Reply-To
-                    await db.refresh(client, ['user'])
-                    client_email = client.user.email if client.user else "reply@example.com"
+                    db_client = await db.get(Client, client.id)
+                    await db.refresh(db_client, ['user'])
+                    client_email = db_client.user.email if db_client.user else "reply@example.com"
                 
                 if not templates: continue
                 
