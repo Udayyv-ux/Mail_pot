@@ -45,6 +45,7 @@ def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> str:
             model="llama-3.1-8b-instant",
         )
         decision = response.choices[0].message.content.strip()
+        print(f"🤖 AI Categorized '{lead_info}' -> '{decision}'")
         return decision if decision in categories else categories[0]
     except Exception as e:
         print(f"AI Categorization Error: {e}")
@@ -83,6 +84,7 @@ async def send_email_via_resend(to_email: str, first_name: str, template, client
 
 async def run_247_engine():
     """Background loop that polls all clients every 60 seconds."""
+    print("🚀 24/7 Autonomous Engine Started...")
     while True:
         try:
             async with SessionLocal() as db:
@@ -96,6 +98,7 @@ async def run_247_engine():
             
             for client in clients:
                 if client.emails_sent_today >= client.daily_email_limit:
+                    print(f"⚠️ Skipping client {client.id} - Daily limit reached ({client.emails_sent_today}/{client.daily_email_limit})")
                     continue # Rate limited
                     
                 async with SessionLocal() as db:
@@ -109,11 +112,15 @@ async def run_247_engine():
                 if not templates: continue
                 
                 try:
+                    print(f"🔍 Scanning Google Sheet for Client {client.id}...")
                     _, rows = await get_sheet_data(client.google_sheet_id)
-                except Exception:
+                except Exception as e:
+                    print(f"❌ Failed to read sheet for Client {client.id}: {e}")
                     continue # Skip if sheet fails
                     
-                if not rows or len(rows) < 2: continue
+                if not rows or len(rows) < 2: 
+                    print(f"ℹ️ No leads found in sheet for Client {client.id}")
+                    continue
                 
                 headers = rows[0]
                 target_cols = [c.strip() for c in (client.target_columns or "Name, Email, Inquiry").split(',')]
@@ -143,10 +150,18 @@ async def run_247_engine():
                     name = row[name_idx] if name_idx != -1 else ""
                     inquiry = row[inquiry_idx] if inquiry_idx != -1 else ""
                     
+                    print(f"📩 Found new lead: {email} | Status: {status}")
+                    
                     category = categorize_with_ai(inquiry, templates, groq_key)
                     target_template = next((t for t in templates if t.project_name == category), templates[0])
                     
+                    print(f"📤 Sending '{target_template.project_name}' email to {email} via Resend...")
                     success, err = await send_email_via_resend(email, name, target_template, client_email, resend_key, global_sender)
+                    
+                    if success:
+                        print(f"✅ Successfully sent to {email}")
+                    else:
+                        print(f"❌ Failed to send to {email}: {err}")
                     
                     # Log to DB
                     async with SessionLocal() as db:
