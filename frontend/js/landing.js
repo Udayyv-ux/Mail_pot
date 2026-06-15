@@ -49,19 +49,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Fallbacks if not configured yet
         if(!stepsData) stepsData = [
-            {step_num: "01", title: "Create your account", description: "Sign up in 60 seconds. No credit card required. Your workspace is provisioned instantly."},
-            {step_num: "02", title: "Get 10 free starter credits", description: "Use credits for AI reconciliation, bulk exports, SMS notifications and report generation."},
-            {step_num: "03", title: "Set up your workspace", description: "Add your organisation details, care team, clients and funding sources \u2014 guided step-by-step."},
-            {step_num: "04", title: "Manage billing & finance", description: "Issue invoices, approve timesheets, run payroll and track expenses \u2014 all in one dashboard."},
-            {step_num: "05", title: "Scale with team & subscriptions", description: "Invite your full team, upgrade your plan, add credits and integrate with your existing tools."}
+            {step_num: "01", title: "Connect your Google Sheet", description: "Paste your Google Sheet URL. We automatically read your leads instantly without complex setup."},
+            {step_num: "02", title: "Define your templates", description: "Create various email templates for different types of clients or outreach scenarios."},
+            {step_num: "03", title: "AI matches the message", description: "Our AI engine analyzes each lead's notes and automatically selects the most relevant email template."},
+            {step_num: "04", title: "Review & Send", description: "Approve the AI-selected templates and send them. We throttle sending speeds to protect your domain."},
+            {step_num: "05", title: "Track in your Sheet", description: "We log the email status and replies right back into your original Google Sheet."}
         ];
         
         if(!faqData) faqData = [
-            {question: "What is LeadFlow.ai?", answer: "LeadFlow.ai is an intelligent outreach platform that automatically matches templates to your leads using AI."},
-            {question: "How does the 10 starter credits work?", answer: "You get 10 free credits upon signup to test out our AI matching engine."},
-            {question: "Which countries are supported?", answer: "We support businesses globally for email sending."},
-            {question: "Can I manage multiple branches?", answer: "Yes, our enterprise plan supports multi-branch management."},
-            {question: "Is there a free trial?", answer: "We offer a 14-day free trial on all paid plans."}
+            {question: "What is LeadFlow.ai?", answer: "LeadFlow.ai is an intelligent outreach platform that syncs with Google Sheets and uses AI to match the perfect email template to your leads."},
+            {question: "Is there a free trial?", answer: "Yes, we offer a 14-day free trial on all paid plans so you can test our AI matching engine."},
+            {question: "Do I need to import my leads?", answer: "No importing required! Just paste your Google Sheet URL, and we sync directly with your live data."},
+            {question: "Will this affect my domain reputation?", answer: "We use smart sending features like built-in delays and throttling to ensure your domain reputation stays protected while scaling."},
+            {question: "Can I bring my own email account?", answer: "Yes! You can connect your existing email accounts via SMTP to send directly from your own domain."}
         ];
 
         if(!footerData) footerData = {

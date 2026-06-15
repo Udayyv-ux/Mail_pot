@@ -402,14 +402,20 @@ document.addEventListener('DOMContentLoaded', () => {
             // Populate defaults if empty to help the admin
             if(!document.getElementById('landing-steps').value) {
                 document.getElementById('landing-steps').value = JSON.stringify([
-                    {step_num: "01", title: "Create your account", description: "Sign up in 60 seconds. No credit card required. Your workspace is provisioned instantly."},
-                    {step_num: "02", title: "Get 10 free starter credits", description: "Use credits for AI reconciliation, bulk exports, SMS notifications and report generation."}
+                    {step_num: "01", title: "Connect your Google Sheet", description: "Paste your Google Sheet URL. We automatically read your leads instantly without complex setup."},
+                    {step_num: "02", title: "Define your templates", description: "Create various email templates for different types of clients or outreach scenarios."},
+                    {step_num: "03", title: "AI matches the message", description: "Our AI engine analyzes each lead's notes and automatically selects the most relevant email template."},
+                    {step_num: "04", title: "Review & Send", description: "Approve the AI-selected templates and send them. We throttle sending speeds to protect your domain."},
+                    {step_num: "05", title: "Track in your Sheet", description: "We log the email status and replies right back into your original Google Sheet."}
                 ], null, 2);
             }
             if(!document.getElementById('landing-faq').value) {
                 document.getElementById('landing-faq').value = JSON.stringify([
-                    {question: "What is AnyInvoice?", answer: "AnyInvoice is an accounting and invoicing platform purpose-built for care providers."},
-                    {question: "Is there a free trial?", answer: "Yes, you get 10 free starter credits."}
+                    {question: "What is LeadFlow.ai?", answer: "LeadFlow.ai is an intelligent outreach platform that syncs with Google Sheets and uses AI to match the perfect email template to your leads."},
+                    {question: "Is there a free trial?", answer: "Yes, we offer a 14-day free trial on all paid plans so you can test our AI matching engine."},
+                    {question: "Do I need to import my leads?", answer: "No importing required! Just paste your Google Sheet URL, and we sync directly with your live data."},
+                    {question: "Will this affect my domain reputation?", answer: "We use smart sending features like built-in delays and throttling to ensure your domain reputation stays protected while scaling."},
+                    {question: "Can I bring my own email account?", answer: "Yes! You can connect your existing email accounts via SMTP to send directly from your own domain."}
                 ], null, 2);
             }
             if(!document.getElementById('landing-footer').value) {
