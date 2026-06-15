@@ -222,11 +222,12 @@ async def run_247_engine():
                         
                     # Write to Sheet
                     try:
-                        await update_sheet_cell(client.google_sheet_id, i+1, status_idx, "Sent" if success else "Failed")
+                        print(f"📝 Updating sheet row {i+1}, col {status_idx + 1} to 'Sent'")
+                        await update_sheet_cell(client.google_sheet_id, i+1, status_idx + 1, "Sent" if success else "Failed")
                         if success:
                             await asyncio.sleep(1) # Delay between sends
-                    except:
-                        pass
+                    except Exception as e:
+                        print(f"❌ Failed to update sheet: {e}")
         except Exception as e:
             print(f"24/7 Engine Iteration Error: {e}")
             
