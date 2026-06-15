@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(cfWl) cfWl.checked = !!features.whitelabel;
         } catch(e) {}
 
-        document.getElementById('client-features-modal')?.classList.add('active');
+        document.getElementById('client-features-modal')?.showModal();
     };
 
     document.getElementById('form-client-features')?.addEventListener('submit', async (e) => {
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await api.put(`/admin/clients/${id}/features`, features);
             if(window.showToast) showToast("Client features updated", "success");
-            document.getElementById('client-features-modal')?.classList.remove('active');
+            document.getElementById('client-features-modal')?.close();
         } catch(err) {
             if(window.showToast) showToast(err.message, "error");
         }
@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(planId) planId.value = '';
         const title = document.getElementById('plan-modal-title');
         if(title) title.textContent = 'Create Plan';
-        document.getElementById('plan-modal')?.classList.add('active');
+        document.getElementById('plan-modal')?.showModal();
     };
 
     window.editPlan = async (id) => {
@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(el('plan-limit')) el('plan-limit').value = plan.email_limit_daily;
             if(el('plan-features')) el('plan-features').value = plan.features_json;
             if(el('plan-modal-title')) el('plan-modal-title').textContent = 'Edit Plan';
-            document.getElementById('plan-modal')?.classList.add('active');
+            document.getElementById('plan-modal')?.showModal();
         } catch(e){}
     };
 
@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             if(id) await api.put(`/admin/plans/${id}`, payload);
             else await api.post(`/admin/plans`, payload);
-            document.getElementById('plan-modal')?.classList.remove('active');
+            document.getElementById('plan-modal')?.close();
             if(window.showToast) showToast("Plan saved", "success");
             loadPlans();
         } catch(err) { if(window.showToast) showToast(err.message, "error"); }
@@ -423,7 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('form-policy')?.reset();
         const slug = document.getElementById('pol-slug');
         if(slug) slug.readOnly = false;
-        document.getElementById('policy-modal')?.classList.add('active');
+        document.getElementById('policy-modal')?.showModal();
     };
 
     window.editPolicy = async (slug) => {
@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(el('pol-slug')) { el('pol-slug').value = p.slug; el('pol-slug').readOnly = true; }
             if(el('pol-title')) el('pol-title').value = p.title;
             if(el('pol-content')) el('pol-content').value = p.content_html || '';
-            document.getElementById('policy-modal')?.classList.add('active');
+            document.getElementById('policy-modal')?.showModal();
         } catch(e){}
     };
 
@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         try {
             await api.post('/admin/policies', payload);
-            document.getElementById('policy-modal')?.classList.remove('active');
+            document.getElementById('policy-modal')?.close();
             if(window.showToast) showToast("Policy saved", "success");
             loadPolicies();
         } catch(err) { if(window.showToast) showToast(err.message, "error"); }
@@ -467,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await api.post('/admin/notifications', { message: msg });
             if(window.showToast) showToast("Broadcast sent!", "success");
-            document.getElementById('notif-modal')?.classList.remove('active');
+            document.getElementById('notif-modal')?.close();
             document.getElementById('form-notif')?.reset();
         } catch(err) { if(window.showToast) showToast(err.message, "error"); }
     });
