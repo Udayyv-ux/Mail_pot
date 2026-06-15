@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             stepsContainer.innerHTML = '';
             stepsData.forEach(step => {
                 stepsContainer.innerHTML += `
-                    <div class="card bg-base-200 border border-white/5 shadow-lg p-6 flex flex-row items-start gap-6 hover:border-primary/30 transition-colors">
+                    <div class="card bg-base-200 border border-white/5 shadow-lg p-6 flex flex-col sm:flex-row items-start gap-4 sm:gap-6 hover:border-primary/30 transition-colors">
                         <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-dark/50 border border-white/10 flex items-center justify-center font-mono font-bold text-primary">
                             ${step.step_num}
                         </div>
