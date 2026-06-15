@@ -103,7 +103,7 @@ async def send_email_via_gmail_api(to_email: str, first_name: str, template, acc
     try:
         async with httpx.AsyncClient() as http_client:
             resp = await http_client.post(
-                "https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send",
+                "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
                 headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"},
                 json=payload,
                 timeout=15.0
