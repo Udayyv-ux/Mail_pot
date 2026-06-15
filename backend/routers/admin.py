@@ -154,6 +154,9 @@ async def update_settings(settings: List[SettingUpdate], db: AsyncSession = Depe
         db_setting = result.scalar_one_or_none()
         if db_setting:
             db_setting.value = setting.value
+        else:
+            new_setting = AppSetting(key=setting.key, value=setting.value, category="landing")
+            db.add(new_setting)
     await db.commit()
     return {"status": "success"}
 

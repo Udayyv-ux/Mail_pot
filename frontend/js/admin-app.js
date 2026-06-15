@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         router.on('users', loadUsers);
         router.on('plans', loadPlans);
         router.on('settings', loadSettings);
+        router.on('landing', loadLandingContent);
         router.on('policies', loadPolicies);
         router.init();
     }
@@ -385,6 +386,63 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await api.put('/admin/settings', payload);
             if(window.showToast) showToast("Settings saved", "success");
+        } catch(err) { if(window.showToast) showToast(err.message, "error"); }
+    });
+
+    // --- Landing Page Content ---
+    async function loadLandingContent() {
+        try {
+            const settings = await api.get('/admin/settings');
+            settings.forEach(s => {
+                if(s.key === 'LANDING_STEPS') document.getElementById('landing-steps').value = s.value;
+                if(s.key === 'LANDING_FAQ') document.getElementById('landing-faq').value = s.value;
+                if(s.key === 'LANDING_FOOTER') document.getElementById('landing-footer').value = s.value;
+            });
+            
+            // Populate defaults if empty to help the admin
+            if(!document.getElementById('landing-steps').value) {
+                document.getElementById('landing-steps').value = JSON.stringify([
+                    {step_num: "01", title: "Create your account", description: "Sign up in 60 seconds. No credit card required. Your workspace is provisioned instantly."},
+                    {step_num: "02", title: "Get 10 free starter credits", description: "Use credits for AI reconciliation, bulk exports, SMS notifications and report generation."}
+                ], null, 2);
+            }
+            if(!document.getElementById('landing-faq').value) {
+                document.getElementById('landing-faq').value = JSON.stringify([
+                    {question: "What is AnyInvoice?", answer: "AnyInvoice is an accounting and invoicing platform purpose-built for care providers."},
+                    {question: "Is there a free trial?", answer: "Yes, you get 10 free starter credits."}
+                ], null, 2);
+            }
+            if(!document.getElementById('landing-footer').value) {
+                document.getElementById('landing-footer').value = JSON.stringify({
+                    "Product": [{name: "Features", url: "#features"}, {name: "Pricing", url: "#pricing"}],
+                    "Company": [{name: "About Us", url: "#about"}, {name: "Contact", url: "#contact"}],
+                    "Legal": [{name: "Privacy Policy", url: "#"}, {name: "Terms of Service", url: "#"}]
+                }, null, 2);
+            }
+        } catch(e) {}
+    }
+
+    document.getElementById('form-admin-landing')?.addEventListener('submit', async(e) => {
+        e.preventDefault();
+        
+        // Validate JSON before saving
+        try {
+            JSON.parse(document.getElementById('landing-steps').value);
+            JSON.parse(document.getElementById('landing-faq').value);
+            JSON.parse(document.getElementById('landing-footer').value);
+        } catch(err) {
+            if(window.showToast) showToast("Invalid JSON format. Please check your syntax.", "error");
+            return;
+        }
+
+        const payload = [
+            {key: 'LANDING_STEPS', value: document.getElementById('landing-steps').value},
+            {key: 'LANDING_FAQ', value: document.getElementById('landing-faq').value},
+            {key: 'LANDING_FOOTER', value: document.getElementById('landing-footer').value}
+        ];
+        try {
+            await api.put('/admin/settings', payload);
+            if(window.showToast) showToast("Landing page content saved", "success");
         } catch(err) { if(window.showToast) showToast(err.message, "error"); }
     });
 

@@ -72,6 +72,7 @@
                 <li><a class="nav-item" data-route="users">Users & Clients</a></li>
                 <li><a class="nav-item" data-route="plans">Pricing Plans</a></li>
                 <li><a class="nav-item" data-route="settings">App Settings</a></li>
+                <li><a class="nav-item" data-route="landing">Landing Page</a></li>
                 <li><a class="nav-item" data-route="policies">Policies (CMS)</a></li>
             </ul>
         </nav>
@@ -199,6 +200,43 @@
                                 <input type="password" id="admin-rzp-secret" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="Secret Key">
                             </div>
                             <button type="submit" class="btn btn-secondary text-white w-full mt-4">Save Global Settings</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Landing Page Content Editor -->
+            <section id="page-landing" class="page-section max-w-7xl mx-auto">
+                <h2 class="text-3xl font-bold mb-8">Landing Page Content</h2>
+                <div class="card bg-base-200 border border-white/5 shadow-lg max-w-4xl">
+                    <div class="card-body p-8">
+                        <form id="form-admin-landing" class="space-y-8">
+                            <!-- Steps Editor -->
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">How It Works (Steps)</h3>
+                                <p class="text-gray-400 text-sm mb-4">JSON Array of objects: [{"step_num":"01", "title":"...", "description":"..."}, ...]</p>
+                                <textarea id="landing-steps" class="textarea textarea-bordered bg-base-300 border-white/10 focus:border-secondary font-mono text-sm w-full h-48"></textarea>
+                            </div>
+
+                            <hr class="border-white/10">
+
+                            <!-- FAQ Editor -->
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Frequently Asked Questions</h3>
+                                <p class="text-gray-400 text-sm mb-4">JSON Array of objects: [{"question":"...", "answer":"..."}, ...]</p>
+                                <textarea id="landing-faq" class="textarea textarea-bordered bg-base-300 border-white/10 focus:border-secondary font-mono text-sm w-full h-48"></textarea>
+                            </div>
+
+                            <hr class="border-white/10">
+
+                            <!-- Footer Editor -->
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Footer Columns</h3>
+                                <p class="text-gray-400 text-sm mb-4">JSON Object with column names as keys and array of {name, url} as values.</p>
+                                <textarea id="landing-footer" class="textarea textarea-bordered bg-base-300 border-white/10 focus:border-secondary font-mono text-sm w-full h-48"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-secondary text-white w-full">Save Landing Page Content</button>
                         </form>
                     </div>
                 </div>
