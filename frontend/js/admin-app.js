@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             
-            modal.classList.add('active');
+            modal.showModal();
         } catch(e) {
             console.error("View details error:", e);
         }

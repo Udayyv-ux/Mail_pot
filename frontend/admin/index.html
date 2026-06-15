@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Tailwind -->
+    <!-- Tailwind & DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -18,10 +19,9 @@
                 extend: {
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
                     colors: {
-                        primary: '#4f46e5',
-                        secondary: '#ec4899',
+                        primary: '#8b5cf6',
+                        secondary: '#3b82f6',
                         dark: '#0f172a',
-                        card: '#1e293b'
                     }
                 }
             }
@@ -31,115 +31,112 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        body { background-color: #020617; color: #f8fafc; overflow-x: hidden; }
-        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 8px 32px 0 rgba(0,0,0,0.3); }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
         .page-section { display: none; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .page-section.active { display: block; }
         
-        .nav-item { cursor: pointer; padding: 0.875rem 1rem; border-radius: 0.75rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 0.75rem; color: #94a3b8; font-weight: 600; }
-        .nav-item:hover { background: rgba(255,255,255,0.03); color: white; transform: translateX(4px); }
-        .nav-item.active { background: linear-gradient(to right, rgba(236,72,153,0.1), transparent); color: #f472b6; border-left: 3px solid #f472b6; border-radius: 0 0.75rem 0.75rem 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Modals */
-        .modal { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(2,6,23,0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
-        .modal.active { display: flex; animation: fadeIn 0.3s ease-out; }
-        
-        /* Table enhancements */
-        table { border-spacing: 0; }
-        th { border-bottom: 1px solid rgba(255,255,255,0.05); }
-        tr { transition: background 0.2s; }
-        tbody tr:hover { background: rgba(255,255,255,0.02); }
+        /* Override daisyUI primary */
+        :root {
+            --p: 258 79% 66%; /* #8b5cf6 */
+            --s: 217 91% 60%; /* #3b82f6 */
+        }
     </style>
 </head>
-<body class="antialiased flex h-screen overflow-hidden selection:bg-secondary selection:text-white">
+<body class="antialiased flex h-screen overflow-hidden selection:bg-secondary selection:text-white bg-base-300">
 
     <!-- Auth Guard -->
-    <div id="admin-login-screen" class="fixed inset-0 z-50 bg-dark flex items-center justify-center">
-        <div class="glass p-8 rounded-2xl w-full max-w-md text-center">
-            <h2 class="text-2xl font-bold mb-6">Super Admin Login</h2>
+    <div id="admin-login-screen" class="fixed inset-0 z-50 bg-base-300 flex items-center justify-center">
+        <div class="card bg-base-200 border border-white/5 shadow-2xl p-8 rounded-2xl w-full max-w-md text-center">
+            <h2 class="text-2xl font-bold mb-2">Super Admin Login</h2>
             <p class="text-gray-400 mb-8">Access restricted to authorized administrators.</p>
-            <button onclick="window.location.href='/api/auth/google'" class="w-full flex items-center justify-center gap-3 bg-secondary hover:bg-pink-600 text-white font-bold py-3 rounded-lg transition-colors">
+            <button onclick="window.location.href='/api/auth/google'" class="btn w-full flex items-center justify-center gap-3 bg-white text-dark hover:bg-gray-200 border-none shadow-lg">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                 Sign in with Google
             </button>
-            <div class="mt-4">
-                <a href="/" class="text-sm text-gray-500 hover:text-white">Back to site</a>
+            <div class="mt-6">
+                <a href="/" class="link text-sm text-gray-500 hover:text-white">Back to site</a>
             </div>
         </div>
     </div>
 
     <!-- Sidebar -->
-    <aside class="w-64 glass border-r border-white/10 flex flex-col h-full z-20 shrink-0">
-        <div class="p-6 border-b border-white/10">
+    <aside class="w-64 bg-base-200 border-r border-white/5 flex flex-col h-full z-20 shrink-0 shadow-2xl shadow-black/50">
+        <div class="p-6 border-b border-white/5">
             <h1 class="text-2xl font-bold tracking-tight text-secondary">Admin<span class="text-white">Portal</span></h1>
         </div>
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <a class="nav-item active" data-route="dashboard">Dashboard</a>
-            <a class="nav-item" data-route="users">Users & Clients</a>
-            <a class="nav-item" data-route="plans">Pricing Plans</a>
-            <a class="nav-item" data-route="settings">App Settings</a>
-            <a class="nav-item" data-route="policies">Policies (CMS)</a>
+        <nav class="flex-1 p-4 overflow-y-auto">
+            <ul class="menu w-full p-0 space-y-2">
+                <li><a class="nav-item active" data-route="dashboard">Dashboard</a></li>
+                <li><a class="nav-item" data-route="users">Users & Clients</a></li>
+                <li><a class="nav-item" data-route="plans">Pricing Plans</a></li>
+                <li><a class="nav-item" data-route="settings">App Settings</a></li>
+                <li><a class="nav-item" data-route="policies">Policies (CMS)</a></li>
+            </ul>
         </nav>
-        <div class="p-4 border-t border-white/10">
-            <button id="btn-admin-logout" class="w-full py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors">Lock Admin</button>
+        <div class="p-4 border-t border-white/5">
+            <button id="btn-admin-logout" class="btn btn-outline btn-sm w-full border-white/10 hover:bg-white/10 text-gray-400">Lock Admin</button>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col h-full relative z-10 overflow-hidden bg-dark">
-        <header class="h-16 border-b border-white/10 flex justify-between items-center px-8 bg-card/50 backdrop-blur-md">
-            <h2 id="topbar-title" class="text-xl font-semibold">Super Admin</h2>
+    <div class="flex-1 flex flex-col h-full relative z-10 overflow-hidden bg-base-300">
+        <header class="h-16 border-b border-white/5 flex justify-between items-center px-8 bg-base-200 shadow-sm">
+            <h2 id="topbar-title" class="text-xl font-bold">Super Admin</h2>
             <div class="flex gap-4">
-                <button class="bg-primary/20 text-primary hover:bg-primary/30 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors" onclick="document.getElementById('notif-modal').classList.add('active')">🔔 Broadcast Notification</button>
+                <button class="btn btn-sm btn-ghost bg-primary/10 text-primary hover:bg-primary/20 border-none" onclick="document.getElementById('notif-modal').showModal()">🔔 Broadcast Notification</button>
             </div>
         </header>
 
         <main class="flex-1 overflow-y-auto p-8 relative">
             <!-- Dashboard Page -->
-            <section id="page-dashboard" class="page-section active">
+            <section id="page-dashboard" class="page-section active max-w-7xl mx-auto">
                 <h1 class="text-3xl font-bold mb-8">Platform Overview</h1>
                 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="glass p-6 rounded-2xl border border-white/10">
-                        <h3 class="text-gray-400 text-sm font-semibold mb-2 uppercase tracking-wider">Total Users</h3>
-                        <div class="text-4xl font-extrabold text-white" id="stat-users">0</div>
+                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Total Users</div>
+                        <div class="stat-value mt-1" id="stat-users">0</div>
                     </div>
-                    <div class="glass p-6 rounded-2xl border border-white/10">
-                        <h3 class="text-gray-400 text-sm font-semibold mb-2 uppercase tracking-wider">Active Plans</h3>
-                        <div class="text-4xl font-extrabold text-white" id="stat-plans">0</div>
+                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Active Plans</div>
+                        <div class="stat-value text-secondary mt-1" id="stat-plans">0</div>
                     </div>
-                    <div class="glass p-6 rounded-2xl border border-white/10">
-                        <h3 class="text-gray-400 text-sm font-semibold mb-2 uppercase tracking-wider">Emails Processed (24h)</h3>
-                        <div class="text-4xl font-extrabold text-white" id="stat-emails">0</div>
+                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Emails Processed (24h)</div>
+                        <div class="stat-value text-primary mt-1" id="stat-emails">0</div>
                     </div>
-                    <div class="glass p-6 rounded-2xl border border-white/10">
-                        <h3 class="text-gray-400 text-sm font-semibold mb-2 uppercase tracking-wider">Demo Requests</h3>
-                        <div class="text-4xl font-extrabold text-white" id="stat-demos">0</div>
+                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Demo Requests</div>
+                        <div class="stat-value text-accent mt-1" id="stat-demos">0</div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2 glass p-6 rounded-2xl border border-white/10">
-                        <h3 class="text-lg font-bold mb-4">Global Volume (Last 7 Days)</h3>
-                        <div class="relative h-64 w-full">
-                            <canvas id="admin-chart"></canvas>
+                    <div class="lg:col-span-2 card bg-base-200 border border-white/5 shadow-lg">
+                        <div class="card-body p-6">
+                            <h3 class="card-title text-lg mb-4">Global Volume (Last 7 Days)</h3>
+                            <div class="relative h-64 w-full">
+                                <canvas id="admin-chart"></canvas>
+                            </div>
                         </div>
                     </div>
-                    <div class="glass p-6 rounded-2xl border border-white/10">
-                        <h3 class="text-lg font-bold mb-4">Demo Requests</h3>
-                        <div id="demo-requests-list" class="space-y-4 max-h-80 overflow-y-auto pr-2"></div>
+                    <div class="card bg-base-200 border border-white/5 shadow-lg">
+                        <div class="card-body p-6">
+                            <h3 class="card-title text-lg mb-4">Demo Requests</h3>
+                            <div id="demo-requests-list" class="space-y-4 max-h-80 overflow-y-auto pr-2"></div>
+                        </div>
                     </div>
                 </div>
             </section>
 
             <!-- Users Page -->
-            <section id="page-users" class="page-section">
+            <section id="page-users" class="page-section max-w-7xl mx-auto">
                 <h2 class="text-3xl font-bold mb-8">Client Management</h2>
-                <div class="glass rounded-2xl border border-white/10 overflow-hidden">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-white/5 border-b border-white/10 text-gray-400 text-sm uppercase tracking-wider">
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                    <table class="table table-zebra w-full text-left">
+                        <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
                             <tr>
                                 <th class="p-4 font-semibold">Email</th>
                                 <th class="p-4 font-semibold">Company</th>
@@ -147,7 +144,7 @@
                                 <th class="p-4 font-semibold text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="client-list" class="divide-y divide-white/10">
+                        <tbody id="client-list" class="border-t border-white/5">
                             <!-- Populated by JS -->
                         </tbody>
                     </table>
@@ -155,202 +152,225 @@
             </section>
 
             <!-- Plans Page -->
-            <section id="page-plans" class="page-section">
+            <section id="page-plans" class="page-section max-w-7xl mx-auto">
                 <div class="flex justify-between items-center mb-8">
                     <h2 class="text-3xl font-bold">Pricing Plans</h2>
-                    <button class="bg-white text-dark hover:bg-gray-200 font-bold py-2 px-4 rounded-lg transition-colors" onclick="openPlanModal()">+ Create Plan</button>
+                    <button class="btn bg-white hover:bg-gray-200 text-dark border-none" onclick="openPlanModal()">+ Create Plan</button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="admin-plan-list"></div>
             </section>
 
             <!-- Settings Page -->
-            <section id="page-settings" class="page-section">
+            <section id="page-settings" class="page-section max-w-7xl mx-auto">
                 <h2 class="text-3xl font-bold mb-8">Global Settings</h2>
-                <div class="glass p-8 rounded-2xl border border-white/10 max-w-3xl">
-                    <form id="form-admin-settings" class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Global Default Groq Key</label>
-                            <input type="password" id="admin-groq" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" placeholder="Enter API Key">
-                            <p class="text-xs text-gray-500 mt-1">Used for categorizing leads.</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Global Resend API Key (HTTP Email Blasting)</label>
-                            <input type="password" id="admin-resend" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" placeholder="re_...">
-                            <p class="text-xs text-gray-500 mt-1">Bypasses blocked SMTP ports. All emails sent via HTTP API.</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Global Sender Identity (From Email)</label>
-                            <input type="email" id="admin-sender" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" placeholder="hello@yourverifieddomain.com">
-                            <p class="text-xs text-gray-500 mt-1">Must be verified on Resend. Replies will go directly to your clients.</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Google Service Account Email</label>
-                            <input type="email" id="admin-gcp-email" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" placeholder="service-account@project.iam.gserviceaccount.com">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Google Service Account JSON</label>
-                            <textarea id="admin-gcp-json" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary font-mono text-xs" rows="4" placeholder="{...}"></textarea>
-                        </div>
-                        <hr class="border-white/10">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Razorpay Key ID</label>
-                            <input type="text" id="admin-rzp-key" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" placeholder="rzp_live_...">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Razorpay Secret</label>
-                            <input type="password" id="admin-rzp-secret" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" placeholder="Secret Key">
-                        </div>
-                        <button type="submit" class="w-full bg-secondary hover:bg-pink-600 text-white font-bold py-3 rounded-lg transition-colors">Save Global Settings</button>
-                    </form>
+                <div class="card bg-base-200 border border-white/5 shadow-lg max-w-3xl">
+                    <div class="card-body p-8">
+                        <form id="form-admin-settings" class="space-y-6">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Global Default Groq Key</span></label>
+                                <input type="password" id="admin-groq" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="Enter API Key">
+                                <label class="label"><span class="label-text-alt text-gray-500">Used for categorizing leads.</span></label>
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Global Resend API Key (HTTP Email Blasting)</span></label>
+                                <input type="password" id="admin-resend" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="re_...">
+                                <label class="label"><span class="label-text-alt text-gray-500">Bypasses blocked SMTP ports. All emails sent via HTTP API.</span></label>
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Global Sender Identity (From Email)</span></label>
+                                <input type="email" id="admin-sender" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="hello@yourverifieddomain.com">
+                                <label class="label"><span class="label-text-alt text-gray-500">Must be verified on Resend. Replies will go directly to your clients.</span></label>
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Google Service Account Email</span></label>
+                                <input type="email" id="admin-gcp-email" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="service-account@project.iam.gserviceaccount.com">
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Google Service Account JSON</span></label>
+                                <textarea id="admin-gcp-json" class="textarea textarea-bordered bg-base-300 border-white/10 focus:border-secondary font-mono text-xs h-32" placeholder="{...}"></textarea>
+                            </div>
+                            <hr class="border-white/10 my-4">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Razorpay Key ID</span></label>
+                                <input type="text" id="admin-rzp-key" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="rzp_live_...">
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Razorpay Secret</span></label>
+                                <input type="password" id="admin-rzp-secret" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="Secret Key">
+                            </div>
+                            <button type="submit" class="btn btn-secondary text-white w-full mt-4">Save Global Settings</button>
+                        </form>
+                    </div>
                 </div>
             </section>
 
             <!-- Policies Page -->
-            <section id="page-policies" class="page-section">
+            <section id="page-policies" class="page-section max-w-7xl mx-auto">
                 <div class="flex justify-between items-center mb-8">
                     <h2 class="text-3xl font-bold">Legal Policies CMS</h2>
-                    <button class="bg-white text-dark hover:bg-gray-200 font-bold py-2 px-4 rounded-lg transition-colors" onclick="openPolicyModal()">+ Add Policy</button>
+                    <button class="btn bg-white hover:bg-gray-200 text-dark border-none" onclick="openPolicyModal()">+ Add Policy</button>
                 </div>
-                <div class="glass p-6 rounded-2xl border border-white/10">
-                    <div id="policy-list" class="space-y-4"></div>
+                <div class="card bg-base-200 border border-white/5 shadow-lg">
+                    <div class="card-body p-6">
+                        <div id="policy-list" class="space-y-4"></div>
+                    </div>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- Modals -->
+    <!-- Modals (DaisyUI) -->
 
     <!-- Plan Modal -->
-    <div id="plan-modal" class="modal">
-        <div class="modal-content glass p-8 rounded-2xl w-full max-w-md relative">
-            <button onclick="document.getElementById('plan-modal').classList.remove('active')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl p-2">&times;</button>
-            <h2 class="text-2xl font-bold mb-6" id="plan-modal-title">Create Plan</h2>
+    <dialog id="plan-modal" class="modal">
+        <div class="modal-box bg-base-100 border border-white/10">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="font-bold text-2xl mb-6" id="plan-modal-title">Create Plan</h3>
             <form id="form-plan" class="space-y-4">
                 <input type="hidden" id="plan-id">
-                <div>
-                    <label class="block text-sm font-medium text-gray-400 mb-1">Plan Name</label>
-                    <input type="text" id="plan-name" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary" required>
+                <div class="form-control">
+                    <label class="label"><span class="label-text text-gray-400">Plan Name</span></label>
+                    <input type="text" id="plan-name" class="input input-bordered bg-base-200 border-white/10 focus:border-secondary" required>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">Monthly Price ($)</label>
-                        <input type="number" id="plan-price" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary" required>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text text-gray-400">Monthly Price ($)</span></label>
+                        <input type="number" id="plan-price" class="input input-bordered bg-base-200 border-white/10 focus:border-secondary" required>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">Daily Email Limit</label>
-                        <input type="number" id="plan-limit" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary" required>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text text-gray-400">Daily Email Limit</span></label>
+                        <input type="number" id="plan-limit" class="input input-bordered bg-base-200 border-white/10 focus:border-secondary" required>
                     </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-400 mb-1">Features (JSON Array)</label>
-                    <textarea id="plan-features" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary font-mono text-xs" rows="3" placeholder='["Unlimited sends", "AI Match"]'></textarea>
+                <div class="form-control">
+                    <label class="label"><span class="label-text text-gray-400">Features (JSON Array)</span></label>
+                    <textarea id="plan-features" class="textarea textarea-bordered bg-base-200 border-white/10 focus:border-secondary font-mono text-xs h-24" placeholder='["Unlimited sends", "AI Match"]'></textarea>
                 </div>
-                <button type="submit" class="w-full bg-secondary hover:bg-pink-600 text-white font-bold py-3 rounded-lg transition-colors mt-2">Save Plan</button>
+                <button type="submit" class="btn btn-secondary text-white w-full mt-4">Save Plan</button>
             </form>
         </div>
-    </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
 
     <!-- Policy Modal -->
-    <div id="policy-modal" class="modal">
-        <div class="modal-content glass p-8 rounded-2xl w-full max-w-4xl relative">
-            <button onclick="document.getElementById('policy-modal').classList.remove('active')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl p-2">&times;</button>
-            <h2 class="text-2xl font-bold mb-6">Edit Policy</h2>
+    <dialog id="policy-modal" class="modal">
+        <div class="modal-box w-11/12 max-w-4xl bg-base-100 border border-white/10">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="font-bold text-2xl mb-6">Edit Policy</h3>
             <form id="form-policy" class="space-y-4">
                 <input type="hidden" id="pol-id">
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">Slug (e.g. terms)</label>
-                        <input type="text" id="pol-slug" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary" required>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text text-gray-400">Slug (e.g. terms)</span></label>
+                        <input type="text" id="pol-slug" class="input input-bordered bg-base-200 border-white/10 focus:border-secondary" required>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">Title</label>
-                        <input type="text" id="pol-title" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary" required>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text text-gray-400">Title</span></label>
+                        <input type="text" id="pol-title" class="input input-bordered bg-base-200 border-white/10 focus:border-secondary" required>
                     </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-400 mb-1">Markdown Content</label>
-                    <textarea id="pol-content" class="w-full min-h-[300px] bg-dark/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-secondary font-mono text-sm" required></textarea>
+                <div class="form-control">
+                    <label class="label"><span class="label-text text-gray-400">Markdown Content</span></label>
+                    <textarea id="pol-content" class="textarea textarea-bordered bg-base-200 border-white/10 focus:border-secondary font-mono text-sm min-h-[300px]" required></textarea>
                 </div>
-                <button type="submit" class="w-full bg-secondary hover:bg-pink-600 text-white font-bold py-3 rounded-lg transition-colors">Save Policy</button>
+                <button type="submit" class="btn btn-secondary text-white w-full">Save Policy</button>
             </form>
         </div>
-    </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
 
     <!-- Notification Broadcast Modal -->
-    <div id="notif-modal" class="modal">
-        <div class="modal-content glass p-8 rounded-2xl w-full max-w-md relative">
-            <button onclick="document.getElementById('notif-modal').classList.remove('active')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl p-2">&times;</button>
-            <h2 class="text-2xl font-bold mb-6">Broadcast Announcement</h2>
+    <dialog id="notif-modal" class="modal">
+        <div class="modal-box bg-base-100 border border-white/10">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="font-bold text-2xl mb-6">Broadcast Announcement</h3>
             <form id="form-notif" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-400 mb-1">Message</label>
-                    <textarea id="notif-msg" class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-secondary" rows="4" required></textarea>
+                <div class="form-control">
+                    <label class="label"><span class="label-text text-gray-400">Message</span></label>
+                    <textarea id="notif-msg" class="textarea textarea-bordered bg-base-200 border-white/10 focus:border-secondary h-32" required></textarea>
                 </div>
-                <button type="submit" class="w-full bg-primary hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition-colors mt-2">Send to All Users</button>
+                <button type="submit" class="btn btn-primary text-white w-full">Send to All Users</button>
             </form>
         </div>
-    </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
 
     <!-- Client Details Modal -->
-    <div id="client-details-modal" class="modal">
-        <div class="modal-content glass p-8 rounded-2xl w-full max-w-2xl relative">
-            <button onclick="document.getElementById('client-details-modal').classList.remove('active')" 
-class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl p-2">&times;</button>
-            <h2 class="text-2xl font-bold mb-2">Client Details</h2>
+    <dialog id="client-details-modal" class="modal">
+        <div class="modal-box w-11/12 max-w-2xl bg-base-100 border border-white/10">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="font-bold text-2xl mb-2">Client Details</h3>
             <div id="cd-content" class="mt-6">
                 <!-- Injected via JS -->
             </div>
-            <div class="mt-6 text-right">
-                <button onclick="document.getElementById('client-details-modal').classList.remove('active')" class="text-gray-400 hover:text-white transition-colors">Close</button>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn btn-ghost">Close</button>
+                </form>
             </div>
         </div>
-    </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
 
     <!-- Client Manage Features Modal -->
-    <div id="client-features-modal" class="modal">
-        <div class="modal-content glass p-8 rounded-2xl w-full max-w-md relative">
-            <button onclick="document.getElementById('client-features-modal').classList.remove('active')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl p-2">&times;</button>
-            <h2 class="text-2xl font-bold mb-6">Manage Client Features</h2>
-            <p class="text-gray-400 text-sm mb-4" id="cf-email"></p>
+    <dialog id="client-features-modal" class="modal">
+        <div class="modal-box bg-base-100 border border-white/10">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="font-bold text-2xl mb-2">Manage Client Features</h3>
+            <p class="text-gray-400 text-sm mb-6" id="cf-email"></p>
             <form id="form-client-features" class="space-y-4">
                 <input type="hidden" id="cf-id">
                 
-                <label class="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" id="cf-ai" class="w-5 h-5 accent-secondary">
-                    <span class="text-white">Enable AI Matcher</span>
-                </label>
-                <label class="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" id="cf-whitelabel" class="w-5 h-5 accent-secondary">
-                    <span class="text-white">White-label Domains</span>
-                </label>
+                <div class="form-control">
+                    <label class="cursor-pointer label justify-start gap-4">
+                        <input type="checkbox" id="cf-ai" class="checkbox checkbox-secondary">
+                        <span class="label-text text-white">Enable AI Matcher</span>
+                    </label>
+                </div>
+                <div class="form-control">
+                    <label class="cursor-pointer label justify-start gap-4">
+                        <input type="checkbox" id="cf-whitelabel" class="checkbox checkbox-secondary">
+                        <span class="label-text text-white">White-label Domains</span>
+                    </label>
+                </div>
 
-                <button type="submit" class="w-full bg-secondary hover:bg-pink-600 text-white font-bold py-3 rounded-lg transition-colors mt-4">Save Configuration</button>
+                <button type="submit" class="btn btn-secondary text-white w-full mt-4">Save Configuration</button>
             </form>
         </div>
-    </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
 
     <!-- Toast Container -->
-    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+    <div id="toast-container" class="toast toast-end z-[100]"></div>
 
     <script>
         // Custom Toast
         window.showToast = (msg, type='info') => {
             const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            const bg = type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : 'bg-primary';
-            toast.className = `${bg} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-y-10 opacity-0`;
-            toast.textContent = msg;
-            container.appendChild(toast);
-            setTimeout(() => { toast.classList.remove('translate-y-10', 'opacity-0'); }, 10);
+            const alert = document.createElement('div');
+            const alertClass = type === 'error' ? 'alert-error' : type === 'success' ? 'alert-success' : 'alert-info bg-primary text-white border-none';
+            alert.className = `alert ${alertClass} shadow-lg`;
+            alert.innerHTML = `<span>${msg}</span>`;
+            container.appendChild(alert);
             setTimeout(() => {
-                toast.classList.add('translate-y-10', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
+                alert.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => alert.remove(), 300);
             }, 3000);
         };
         window.components = { showToast, formatDate: (dateStr) => new Date(dateStr).toLocaleString() };
     </script>
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
-    <script src="/js/admin-app.js?v=6"></script>
+    <script src="/js/admin-app.js?v=7"></script>
 </body>
 </html>
