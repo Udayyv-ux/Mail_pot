@@ -21,9 +21,45 @@ async def lifespan(app: FastAPI):
     # Startup
     print(f"Starting {settings.APP_NAME}...")
     await init_db()  # Tables already exist, avoid duplicate table error
+    
+    from backend.database import engine, Base
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        
+    # Add new columns manually to existing tables (sqlite & postgres)
+    for col, col_def in [("target_columns", "VARCHAR DEFAULT 'Name, Email, Inquiry'"), ("status_column", "VARCHAR DEFAULT 'Status'")]:
+        try:
+            async with engine.begin() as conn:
+                from sqlalchemy import text
+                await conn.execute(text(f"ALTER TABLE clients ADD COLUMN {col} {col_def}"))
+        except Exception: pass
+    
+    try:
+        async with engine.begin() as conn:
+            from sqlalchemy import text
+            await conn.execute(text(f"ALTER TABLE templates ADD COLUMN banner_url VARCHAR"))
+    except Exception: pass
+        
+    try:
+        async with engine.begin() as conn:
+            from sqlalchemy import text
+            await conn.execute(text(f"ALTER TABLE email_logs ADD COLUMN client_id VARCHAR"))
+    except Exception: pass
+
+    for col, col_def in [("recipient_name", "VARCHAR"), ("template_used", "VARCHAR"), ("category_assigned", "VARCHAR"), ("error_message", "TEXT")]:
+        try:
+            async with engine.begin() as conn:
+                from sqlalchemy import text
+                await conn.execute(text(f"ALTER TABLE email_logs ADD COLUMN {col} {col_def}"))
+        except Exception: pass
+        
     print("Database ready")
 
-    # Engine logic no longer uses background workers in lifespan
+    # Start the 24/7 background engine
+    from backend.services.email_engine import run_247_engine
+    import asyncio
+    global engine_task
+    engine_task = asyncio.create_task(run_247_engine())
 
     # Setup OAuth
     try:
@@ -36,6 +72,8 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown engine tasks if any
+    if engine_task:
+        engine_task.cancel()
     print(f"{settings.APP_NAME} shut down.")
 
 
@@ -102,47 +140,7 @@ app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 # ── Frontend Page Routes ─────────────────────────────────────────────────────
 
-@app.on_event("startup")
-async def startup():
-    from backend.database import engine, Base
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    # Add new columns manually to existing tables (sqlite & postgres)
-    # Each gets its own transaction so a failure in one doesn't abort the others (Postgres specific)
-    for col, col_def in [("target_columns", "VARCHAR DEFAULT 'Name, Email, Inquiry'"), ("status_column", "VARCHAR DEFAULT 'Status'")]:
-        try:
-            async with engine.begin() as conn:
-                from sqlalchemy import text
-                await conn.execute(text(f"ALTER TABLE clients ADD COLUMN {col} {col_def}"))
-        except Exception:
-            pass # column already exists
-    
-    try:
-        async with engine.begin() as conn:
-            from sqlalchemy import text
-            await conn.execute(text(f"ALTER TABLE templates ADD COLUMN banner_url VARCHAR"))
-    except Exception:
-        pass # column already exists
-        
-    try:
-        async with engine.begin() as conn:
-            from sqlalchemy import text
-            await conn.execute(text(f"ALTER TABLE email_logs ADD COLUMN client_id VARCHAR"))
-    except Exception:
-        pass # column already exists
 
-    for col, col_def in [("recipient_name", "VARCHAR"), ("template_used", "VARCHAR"), ("category_assigned", "VARCHAR"), ("error_message", "TEXT")]:
-        try:
-            async with engine.begin() as conn:
-                from sqlalchemy import text
-                await conn.execute(text(f"ALTER TABLE email_logs ADD COLUMN {col} {col_def}"))
-        except Exception:
-            pass
-
-    # Start the 24/7 background engine
-    from backend.services.email_engine import run_247_engine
-    import asyncio
-    asyncio.create_task(run_247_engine())
 
 @app.get("/")
 async def landing_page():
