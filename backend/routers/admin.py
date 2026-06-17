@@ -115,6 +115,7 @@ class PlanCreate(BaseModel):
     price_monthly: float
     price_yearly: float
     email_limit_daily: int
+    campaign_limit: int
     features_json: str
 
 @router.get("/plans")
@@ -128,6 +129,18 @@ async def create_plan(plan: PlanCreate, db: AsyncSession = Depends(get_db), admi
     db.add(new_plan)
     await db.commit()
     return new_plan
+
+@router.put("/plans/{id}")
+async def update_plan(id: str, plan_update: PlanCreate, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    plan = await db.get(Plan, id)
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    
+    for key, value in plan_update.model_dump().items():
+        setattr(plan, key, value)
+        
+    await db.commit()
+    return plan
 
 @router.delete("/plans/{id}")
 async def delete_plan(id: str, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
