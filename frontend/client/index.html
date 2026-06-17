@@ -360,6 +360,12 @@
     
     <!-- Toast Container -->
     <div id="toast-container" class="toast toast-end z-[100]"></div>
+    
+    <!-- Global Loader -->
+    <div id="global-loader" class="fixed inset-0 bg-base-300/80 backdrop-blur-sm z-[100] flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+        <p class="mt-4 text-gray-400 font-medium tracking-wide">Loading data...</p>
+    </div>
 
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
