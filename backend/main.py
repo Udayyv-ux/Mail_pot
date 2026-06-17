@@ -72,6 +72,23 @@ async def lifespan(app: FastAPI):
             await conn.execute(text("ALTER TABLE email_logs ADD COLUMN is_follow_up BOOLEAN DEFAULT FALSE"))
     except Exception: pass
     
+    # Campaign columns auto-migration
+    campaign_cols = [
+        ("google_sheet_id", "VARCHAR"),
+        ("target_columns", "VARCHAR DEFAULT 'Name, Email, Inquiry'"),
+        ("status_column", "VARCHAR DEFAULT 'Status'"),
+        ("follow_up_days", "INTEGER DEFAULT 0"),
+        ("follow_up_template_id", "VARCHAR"),
+        ("is_active", "BOOLEAN DEFAULT TRUE"),
+        ("created_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()")
+    ]
+    for col, col_def in campaign_cols:
+        try:
+            async with engine.begin() as conn:
+                from sqlalchemy import text
+                await conn.execute(text(f"ALTER TABLE campaigns ADD COLUMN {col} {col_def}"))
+        except Exception: pass
+    
     try:
         async with engine.begin() as conn:
             from sqlalchemy import text
