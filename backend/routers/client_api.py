@@ -25,7 +25,15 @@ async def get_client_profile(user, db: AsyncSession):
     result = await db.execute(select(Client).where(Client.user_id == user.id))
     client = result.scalar_one_or_none()
     if not client:
-        raise HTTPException(status_code=404, detail="Client profile not found")
+        # If an admin is testing the client portal, they might not have a client profile yet.
+        client = Client(
+            id=str(uuid.uuid4()),
+            user_id=user.id,
+            company_name=user.name + " Company" if getattr(user, "name", None) else "My Company"
+        )
+        db.add(client)
+        await db.commit()
+        await db.refresh(client)
     return client
 
 @router.get("/dashboard")

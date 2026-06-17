@@ -87,8 +87,8 @@ async def require_admin(user: User = Depends(get_current_user)) -> User:
 
 
 async def require_client(user: User = Depends(get_current_user)) -> User:
-    """Restrict endpoint to client or demo users (not admin dashboard routes)."""
-    if user.role not in (UserRole.CLIENT, UserRole.DEMO):
+    """Restrict endpoint to client, demo, or admin users (admins need access to test the client portal)."""
+    if user.role not in (UserRole.CLIENT, UserRole.DEMO, UserRole.ADMIN):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Client access required")
     return user
 
