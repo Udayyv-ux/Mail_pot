@@ -35,18 +35,40 @@ def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> str:
         return "General"
     
     categories_str = ", ".join([f"'{c}'" for c in categories])
-    prompt = f"Customer Inquiry: '{lead_info}'. Match intent to closest Project ID: {categories_str}. Reply ONLY with Project ID."
+    
+    system_prompt = (
+        "You are an exact categorization bot. "
+        f"You must choose EXACTLY ONE category from this list: {categories_str}. "
+        "Do not wrap it in quotes. Do not add any prefix. Respond with the exact name only."
+    )
+    prompt = f"Customer Inquiry: '{lead_info}'\n\nWhich category does this fit best? Output ONLY the category name."
     
     try:
         api_key = groq_key if groq_key else settings.GROQ_API_KEY
         client = Groq(api_key=api_key)
         response = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
             model="llama-3.1-8b-instant",
         )
         decision = response.choices[0].message.content.strip()
+        # Clean quotes if AI added them
+        decision = decision.strip("'").strip('"')
+        
         print(f"🤖 AI Categorized '{lead_info}' -> '{decision}'")
-        return decision if decision in categories else categories[0]
+        
+        # Exact match
+        if decision in categories:
+            return decision
+            
+        # Fuzzy fallback match
+        for c in categories:
+            if c.lower() in decision.lower():
+                return c
+                
+        return categories[0]
     except Exception as e:
         print(f"AI Categorization Error: {e}")
         return categories[0]
