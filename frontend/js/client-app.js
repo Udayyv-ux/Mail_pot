@@ -386,6 +386,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ─────────────────────────────────────────────────────────────────────────
     //  BILLING
     // ─────────────────────────────────────────────────────────────────────────
+    let currentBillingCycle = 'monthly';
+    let cachedPlans = [];
+
     async function loadBilling() {
         try {
             var profile = await api.get('/client/profile');
@@ -394,41 +397,79 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (el('billing-current-plan')) el('billing-current-plan').textContent = profile.plan_name || 'Free Plan';
             if (el('billing-current-limit')) el('billing-current-limit').textContent = (profile.daily_limit || 50) + ' / day';
 
-            var plans = await api.get('/public/plans');
-            var container = document.getElementById('billing-plan-list');
-            if (!container) return;
-            container.innerHTML = '';
-
-            plans.forEach(function (plan) {
-                var features = [];
-                try { features = JSON.parse(plan.features_json); } catch (e) {}
-
-                var card = document.createElement('div');
-                card.className = 'glass p-6 rounded-2xl border border-white/10 hover:border-primary/50 transition-colors flex flex-col';
-                var featuresHtml = features.map(function (f) {
-                    return '<li class="text-sm text-gray-300 flex items-center gap-2"><svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>' + f + '</li>';
-                }).join('');
-
-                card.innerHTML =
-                    '<h4 class="text-lg font-bold mb-2">' + plan.name + '</h4>' +
-                    '<div class="mb-4"><span class="text-3xl font-extrabold">$' + plan.price_monthly + '</span><span class="text-gray-400 text-sm">/mo</span></div>' +
-                    '<ul class="space-y-2 mb-6 flex-1">' + featuresHtml + '</ul>' +
-                    '<button class="w-full bg-white text-dark hover:bg-gray-200 font-bold py-2 rounded-lg transition-colors" onclick="upgradePlan(\'' + plan.id + '\', \'' + plan.name + '\', ' + plan.price_monthly + ')">Upgrade Now</button>';
-                container.appendChild(card);
-            });
+            cachedPlans = await api.get('/public/plans');
+            renderPlans();
+            setupBillingToggle();
         } catch (e) {
             console.error('Billing load error:', e);
         }
     }
 
-    window.upgradePlan = async (planId, planName, amount) => {
+    function renderPlans() {
+        var container = document.getElementById('billing-plan-list');
+        if (!container) return;
+        container.innerHTML = '';
+
+        cachedPlans.forEach(function (plan) {
+            var features = [];
+            try { features = JSON.parse(plan.features_json); } catch (e) {}
+
+            var card = document.createElement('div');
+            card.className = 'glass p-6 rounded-2xl border border-white/10 hover:border-primary/50 transition-colors flex flex-col';
+            var featuresHtml = features.map(function (f) {
+                return '<li class="text-sm text-gray-300 flex items-center gap-2"><svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>' + f + '</li>';
+            }).join('');
+
+            let displayPrice = plan.price_monthly;
+            let totalBilled = '<div class="text-xs text-gray-500 font-medium mb-4">Billed monthly</div>';
+            
+            if (currentBillingCycle === 'half_yearly') {
+                displayPrice = Math.round((plan.price_half_yearly || plan.price_monthly * 6) / 6);
+                totalBilled = '<div class="text-xs text-green-400 font-medium mb-4">Billed $' + (plan.price_half_yearly || plan.price_monthly * 6) + ' every 6 months</div>';
+            } else if (currentBillingCycle === 'yearly') {
+                displayPrice = Math.round((plan.price_yearly || plan.price_monthly * 12) / 12);
+                totalBilled = '<div class="text-xs text-green-400 font-medium mb-4">Billed $' + (plan.price_yearly || plan.price_monthly * 12) + ' yearly</div>';
+            }
+
+            card.innerHTML =
+                '<h4 class="text-lg font-bold mb-2">' + plan.name + '</h4>' +
+                '<div><span class="text-4xl font-extrabold">$' + displayPrice + '</span><span class="text-gray-400 text-sm">/mo</span></div>' +
+                totalBilled +
+                '<ul class="space-y-2 mb-6 flex-1">' + featuresHtml + '</ul>' +
+                '<button class="w-full bg-white text-dark hover:bg-gray-200 font-bold py-3 rounded-xl transition-colors" onclick="upgradePlan(\'' + plan.id + '\', \'' + plan.name + '\')">Upgrade Now</button>';
+            container.appendChild(card);
+        });
+    }
+
+    function setupBillingToggle() {
+        const toggleContainer = document.getElementById('billing-toggle');
+        if (!toggleContainer || toggleContainer.dataset.setup) return;
+        toggleContainer.dataset.setup = 'true';
+        
+        const buttons = toggleContainer.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                buttons.forEach(b => {
+                    b.classList.remove('bg-primary', 'text-white');
+                    b.classList.add('text-gray-400');
+                });
+                btn.classList.add('bg-primary', 'text-white');
+                btn.classList.remove('text-gray-400');
+                
+                currentBillingCycle = btn.dataset.cycle;
+                renderPlans();
+            });
+        });
+    }
+
+    window.upgradePlan = async (planId, planName) => {
         try {
             if (window.showToast) showToast('Initiating upgrade to ' + planName + '...', 'info');
-            var order = await api.post('/payments/create-order', { plan_id: planId });
+            var order = await api.post('/payments/create-order', { plan_id: planId, billing_cycle: currentBillingCycle });
 
             var options = {
                 key: order.razorpay_key_id,
-                amount: amount * 100,
+                amount: order.amount,
                 currency: 'INR',
                 name: 'Sheetx.io',
                 description: 'Upgrade to ' + planName,

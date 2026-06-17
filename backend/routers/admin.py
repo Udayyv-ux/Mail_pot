@@ -113,6 +113,7 @@ class PlanCreate(BaseModel):
     name: str
     description: str
     price_monthly: float
+    price_half_yearly: float
     price_yearly: float
     email_limit_daily: int
     campaign_limit: int

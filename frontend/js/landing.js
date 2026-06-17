@@ -164,22 +164,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load Plans
     try {
         const plans = await api.get('/public/plans');
-        const grid = document.getElementById('public-plans');
-        if(grid) {
+        let currentCycle = 'monthly';
+        
+        function renderLandingPlans() {
+            const grid = document.getElementById('public-plans');
+            if(!grid) return;
             grid.innerHTML = '';
+            
             plans.forEach(plan => {
                 let features = [];
                 try { features = JSON.parse(plan.features_json); } catch(e){}
                 
                 let featureHtml = features.map(f => `<li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> ${f}</li>`).join('');
                 
+                let displayPrice = plan.price_monthly;
+                let totalBilled = '<div class="text-xs text-gray-500 font-medium mb-4">Billed monthly</div>';
+                
+                if (currentCycle === 'half_yearly') {
+                    displayPrice = Math.round((plan.price_half_yearly || plan.price_monthly * 6) / 6);
+                    totalBilled = '<div class="text-xs text-green-400 font-medium mb-4">Billed $' + (plan.price_half_yearly || plan.price_monthly * 6) + ' every 6 months</div>';
+                } else if (currentCycle === 'yearly') {
+                    displayPrice = Math.round((plan.price_yearly || plan.price_monthly * 12) / 12);
+                    totalBilled = '<div class="text-xs text-green-400 font-medium mb-4">Billed $' + (plan.price_yearly || plan.price_monthly * 12) + ' yearly</div>';
+                }
+
                 grid.innerHTML += `
                     <div class="card bg-base-200 border border-white/5 hover:border-white/20 transition-all ${plan.is_featured ? 'shadow-primary/20 shadow-2xl scale-105' : ''}">
                         <div class="card-body">
                             ${plan.is_featured ? '<div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold px-3 py-1 rounded-full">Most Popular</div>' : ''}
                             <h3 class="text-xl font-bold">${plan.name}</h3>
-                            <div class="my-4"><span class="text-4xl font-extrabold">$${plan.price_monthly}</span><span class="text-gray-400">/mo</span></div>
-                            <ul class="text-sm text-gray-300 space-y-3 mb-8 flex-1">
+                            <div><span class="text-4xl font-extrabold">$${displayPrice}</span><span class="text-gray-400 text-sm">/mo</span></div>
+                            ${totalBilled}
+                            <ul class="text-sm text-gray-300 space-y-3 mb-8 flex-1 mt-4">
                                 <li class="flex items-center gap-2"><svg class="w-4 h-4 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg> <b>${plan.email_limit_daily}</b> daily emails</li>
                                 ${featureHtml}
                             </ul>
@@ -189,6 +205,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
             });
         }
+        
+        renderLandingPlans();
+
+        const toggleContainer = document.getElementById('landing-billing-toggle');
+        if (toggleContainer) {
+            const buttons = toggleContainer.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    buttons.forEach(b => {
+                        b.classList.remove('bg-primary', 'text-white');
+                        b.classList.add('text-gray-400');
+                    });
+                    btn.classList.add('bg-primary', 'text-white');
+                    btn.classList.remove('text-gray-400');
+                    
+                    currentCycle = btn.dataset.cycle;
+                    renderLandingPlans();
+                });
+            });
+        }
+
     } catch (e) {
         console.error("Failed to load plans", e);
     }

@@ -35,7 +35,12 @@ async def api_create_order(req: OrderRequest, db: AsyncSession = Depends(get_db)
     if not plan:
         raise HTTPException(404, "Plan not found")
         
-    amount = plan.price_yearly if req.billing_cycle == "yearly" else plan.price_monthly
+    if req.billing_cycle == "yearly":
+        amount = plan.price_yearly
+    elif req.billing_cycle == "half_yearly":
+        amount = plan.price_half_yearly
+    else:
+        amount = plan.price_monthly
     if amount <= 0:
         raise HTTPException(400, "Invalid plan amount")
         

@@ -321,6 +321,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if(el('plan-id')) el('plan-id').value = plan.id;
             if(el('plan-name')) el('plan-name').value = plan.name;
             if(el('plan-price')) el('plan-price').value = plan.price_monthly;
+            if(el('plan-price-half-yearly')) el('plan-price-half-yearly').value = plan.price_half_yearly || (plan.price_monthly * 6);
+            if(el('plan-price-yearly')) el('plan-price-yearly').value = plan.price_yearly || (plan.price_monthly * 12);
             if(el('plan-limit')) el('plan-limit').value = plan.email_limit_daily;
             if(el('plan-campaign-limit')) el('plan-campaign-limit').value = plan.campaign_limit || 3;
             if(el('plan-features')) {
@@ -343,7 +345,8 @@ document.addEventListener('DOMContentLoaded', () => {
             name: document.getElementById('plan-name').value,
             description: '',
             price_monthly: parseFloat(document.getElementById('plan-price').value),
-            price_yearly: parseFloat(document.getElementById('plan-price').value) * 10,
+            price_half_yearly: parseFloat(document.getElementById('plan-price-half-yearly').value) || 0,
+            price_yearly: parseFloat(document.getElementById('plan-price-yearly').value) || 0,
             email_limit_daily: parseInt(document.getElementById('plan-limit').value),
             campaign_limit: parseInt(document.getElementById('plan-campaign-limit').value) || 3,
             features_json: JSON.stringify(featuresArray)

@@ -15,6 +15,7 @@ class Plan(Base):
     name = Column(String, nullable=False, unique=True)
     description = Column(Text, default="")
     price_monthly = Column(Float, default=0.0)
+    price_half_yearly = Column(Float, default=0.0)
     price_yearly = Column(Float, default=0.0)
     email_limit_daily = Column(Integer, default=50)
     template_limit = Column(Integer, default=5)
