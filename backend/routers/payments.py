@@ -40,7 +40,8 @@ async def api_create_order(req: OrderRequest, db: AsyncSession = Depends(get_db)
         raise HTTPException(400, "Invalid plan amount")
         
     try:
-        order = await create_order(amount, db=db, receipt=f"plan_{plan.id}")
+        receipt_id = f"plan_{plan.id}"[:40]
+        order = await create_order(amount, db=db, receipt=receipt_id)
         
         # Fetch public key for frontend — admin saves it as RAZORPAY_KEY_ID (uppercase)
         result_key = await db.execute(select(AppSetting).where(AppSetting.key.in_(["razorpay_key_id", "RAZORPAY_KEY_ID"])))
