@@ -32,18 +32,34 @@ async def get_client_profile(user, db: AsyncSession):
 async def get_dashboard(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client = await get_client_profile(current_user, db)
     
-    # Count active campaigns
-    result = await db.execute(select(func.count(Campaign.id)).where(Campaign.client_id == client.id, Campaign.is_active == True))
-    active_campaigns = result.scalar() or 0
+    # Count active campaigns — wrapped in try/except to prevent crash if table is missing
+    active_campaigns = 0
+    total_campaigns = 0
+    try:
+        result = await db.execute(select(func.count(Campaign.id)).where(Campaign.client_id == client.id, Campaign.is_active == True))
+        active_campaigns = result.scalar() or 0
+        
+        result = await db.execute(select(func.count(Campaign.id)).where(Campaign.client_id == client.id))
+        total_campaigns = result.scalar() or 0
+    except Exception:
+        pass
     
-    result = await db.execute(select(func.count(Campaign.id)).where(Campaign.client_id == client.id))
-    total_campaigns = result.scalar() or 0
+    # Count email logs sent
+    try:
+        from sqlalchemy import func as sa_func
+        log_result = await db.execute(select(func.count(EmailLog.id)).where(
+            EmailLog.client_id == client.id, EmailLog.status == "sent"
+        ))
+        total_emails_sent = log_result.scalar() or 0
+    except Exception:
+        total_emails_sent = client.emails_sent_today
     
     return {
         "emails_sent_today": client.emails_sent_today,
         "daily_limit": client.daily_email_limit,
         "active_campaigns": active_campaigns,
         "total_campaigns": total_campaigns,
+        "total_emails_sent": total_emails_sent,
         "company_name": client.company_name
     }
 
@@ -61,10 +77,18 @@ async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends
             service_email = creds.get("client_email", service_email)
         except:
             pass
+    
+    plan_name = "Free"
+    daily_limit = client.daily_email_limit
+    if client.plan:
+        plan_name = client.plan.name
+        daily_limit = client.plan.email_limit_daily
             
     return {
         "company_name": client.company_name,
-        "service_account_email": service_email
+        "service_account_email": service_email,
+        "plan_name": plan_name,
+        "daily_limit": daily_limit,
     }
 
 class ProfileUpdate(BaseModel):

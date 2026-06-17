@@ -380,7 +380,9 @@
         
         window.components = { showToast, formatDate: (dateStr) => new Date(dateStr).toLocaleString() };
     </script>
+    <!-- Razorpay SDK — REQUIRED for payment modal -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <!-- Append a version to bypass cache -->
-    <script src="/js/client-app.js?v=7"></script>
+    <script src="/js/client-app.js?v=8"></script>
 </body>
 </html>

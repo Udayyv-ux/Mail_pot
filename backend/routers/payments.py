@@ -42,9 +42,9 @@ async def api_create_order(req: OrderRequest, db: AsyncSession = Depends(get_db)
     try:
         order = await create_order(amount, db=db, receipt=f"plan_{plan.id}")
         
-        # Fetch public key for frontend
-        result_key = await db.execute(select(AppSetting).where(AppSetting.key == "razorpay_key_id"))
-        db_key = result_key.scalar_one_or_none()
+        # Fetch public key for frontend — admin saves it as RAZORPAY_KEY_ID (uppercase)
+        result_key = await db.execute(select(AppSetting).where(AppSetting.key.in_(["razorpay_key_id", "RAZORPAY_KEY_ID"])))
+        db_key = result_key.scalars().first()
         razorpay_key_id = db_key.value if db_key and db_key.value else settings.RAZORPAY_KEY_ID
 
         # Save payment record
