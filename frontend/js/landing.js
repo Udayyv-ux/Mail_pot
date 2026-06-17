@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Fetch and Render CMS Policies
         try {
-            const policies = await api.get('/public/cms');
+            const policies = await api.get('/public/policies');
             const policiesContainer = document.getElementById('footer-policies');
             if(policiesContainer && policies.length > 0) {
                 const links = policies.map(p => `<a href="javascript:void(0)" onclick="viewPolicy('${p.slug}')" class="hover:text-white transition-colors ml-4">${p.title}</a>`);
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Global function to open policy modal
     window.viewPolicy = async (slug) => {
         try {
-            const p = await api.get(`/public/cms/${slug}`);
+            const p = await api.get(`/public/policies/${slug}`);
             document.getElementById('policy-view-title').textContent = p.title;
             document.getElementById('policy-view-content').innerHTML = p.content_html;
             document.getElementById('policy-view-modal').showModal();
