@@ -245,16 +245,6 @@
                                     <label class="label"><span class="label-text text-gray-400 font-medium">Company / Sender Name</span></label>
                                     <input type="text" id="set-company" class="input input-bordered bg-base-300 border-white/10 focus:border-primary" placeholder="e.g. John Doe Realty">
                                 </div>
-                                <div class="form-control">
-                                    <label class="label"><span class="label-text text-gray-400 font-medium">Target Columns (Comma separated)</span></label>
-                                    <input type="text" id="set-target-cols" class="input input-bordered bg-base-300 border-white/10 focus:border-primary" placeholder="Name, Email, Inquiry">
-                                    <label class="label"><span class="label-text-alt text-gray-500">The AI will read these columns from your Google Sheet.</span></label>
-                                </div>
-                                <div class="form-control">
-                                    <label class="label"><span class="label-text text-gray-400 font-medium">Status Column Name</span></label>
-                                    <input type="text" id="set-status-col" class="input input-bordered bg-base-300 border-white/10 focus:border-primary" placeholder="Status">
-                                    <label class="label"><span class="label-text-alt text-gray-500">The column where the engine will write "Sent".</span></label>
-                                </div>
                                 <div class="form-control mt-6">
                                     <button type="submit" class="btn btn-primary text-white">Save Configuration</button>
                                 </div>
@@ -391,6 +381,6 @@
         window.components = { showToast, formatDate: (dateStr) => new Date(dateStr).toLocaleString() };
     </script>
     <!-- Append a version to bypass cache -->
-    <script src="/js/client-app.js?v=6"></script>
+    <script src="/js/client-app.js?v=7"></script>
 </body>
 </html>

@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.innerHTML = `
                     <h3 class="text-xl font-bold mb-2">${plan.name}</h3>
                     <div class="mb-4"><span class="text-3xl font-extrabold">$${plan.price_monthly}</span>/mo</div>
-                    <div class="text-sm text-gray-400 mb-4">Limit: ${plan.email_limit_daily}/day</div>
+                    <div class="text-sm text-gray-400 mb-4">Limit: ${plan.email_limit_daily}/day · ${plan.campaign_limit || 3} Campaigns</div>
                     <ul class="text-sm text-gray-300 space-y-1 mb-6 h-20 overflow-y-auto">${features.map(f => `<li>✓ ${f}</li>`).join('')}</ul>
                     <div class="flex gap-2">
                         <button class="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-2 rounded transition-colors text-sm" onclick="editPlan('${plan.id}')">Edit</button>
@@ -322,6 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(el('plan-name')) el('plan-name').value = plan.name;
             if(el('plan-price')) el('plan-price').value = plan.price_monthly;
             if(el('plan-limit')) el('plan-limit').value = plan.email_limit_daily;
+            if(el('plan-campaign-limit')) el('plan-campaign-limit').value = plan.campaign_limit || 3;
             if(el('plan-features')) el('plan-features').value = plan.features_json;
             if(el('plan-modal-title')) el('plan-modal-title').textContent = 'Edit Plan';
             document.getElementById('plan-modal')?.showModal();
@@ -337,6 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
             price_monthly: parseFloat(document.getElementById('plan-price').value),
             price_yearly: parseFloat(document.getElementById('plan-price').value) * 10,
             email_limit_daily: parseInt(document.getElementById('plan-limit').value),
+            campaign_limit: parseInt(document.getElementById('plan-campaign-limit').value) || 3,
             features_json: document.getElementById('plan-features').value
         };
         try {
