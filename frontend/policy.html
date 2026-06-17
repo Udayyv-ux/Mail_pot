@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Policies - LeadFlow.ai</title>
+    <title>Policies - Sheetx.io</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,7 +36,7 @@
 <body class="antialiased selection:bg-primary selection:text-white flex flex-col min-h-screen">
     <nav class="w-full z-40 glass border-b border-white/10">
         <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="/" class="text-2xl font-bold tracking-tight">LeadFlow<span class="text-primary">.ai</span></a>
+            <a href="/" class="text-2xl font-bold tracking-tight">Sheetx<span class="text-primary">.io</span></a>
             <a href="/" class="text-sm text-gray-400 hover:text-white transition-colors">Back to Home</a>
         </div>
     </nav>
@@ -46,7 +46,7 @@
         </div>
     </main>
     <footer class="border-t border-white/10 py-6 mt-12 text-center text-gray-500 text-sm">
-        © 2026 LeadFlow.ai. All rights reserved.
+        © 2026 Sheetx.io. All rights reserved.
     </footer>
 
     <script src="/js/api.js"></script>
@@ -57,7 +57,7 @@
             const contentDiv = document.getElementById('content');
             try {
                 const p = await api.get(`/public/policies/${slug}`);
-                document.title = `${p.title} - LeadFlow.ai`;
+                document.title = `${p.title} - Sheetx.io`;
                 contentDiv.innerHTML = marked.parse(p.content_md);
             } catch(e) {
                 contentDiv.innerHTML = `<div class="text-center"><h1 class="text-3xl font-bold mb-4">404 - Not Found</h1><p class="text-gray-400">The policy you are looking for does not exist.</p><a href="/" class="inline-block mt-6 bg-primary hover:bg-indigo-500 text-white font-bold py-2 px-6 rounded-lg transition-colors">Go Home</a></div>`;

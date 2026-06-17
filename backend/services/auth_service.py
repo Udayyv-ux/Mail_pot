@@ -28,7 +28,6 @@ def setup_oauth(app):
         server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
         client_kwargs={
             'scope': 'openid email profile https://www.googleapis.com/auth/gmail.send',
-            'prompt': 'consent',
             'access_type': 'offline'
         }
     )

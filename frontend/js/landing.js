@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ];
         
         if(!faqData) faqData = [
-            {question: "What is LeadFlow.ai?", answer: "LeadFlow.ai is an intelligent outreach platform that syncs with Google Sheets and uses AI to match the perfect email template to your leads."},
+            {question: "What is Sheetx.io?", answer: "Sheetx.io is an intelligent outreach platform that syncs with Google Sheets and uses AI to match the perfect email template to your leads."},
             {question: "Is there a free trial?", answer: "Yes, we offer a 14-day free trial on all paid plans so you can test our AI matching engine."},
             {question: "Do I need to import my leads?", answer: "No importing required! Just paste your Google Sheet URL, and we sync directly with your live data."},
             {question: "Will this affect my domain reputation?", answer: "We use smart sending features like built-in delays and throttling to ensure your domain reputation stays protected while scaling."},
@@ -127,9 +127,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+        // Fetch and Render CMS Policies
+        try {
+            const policies = await api.get('/public/cms');
+            const policiesContainer = document.getElementById('footer-policies');
+            if(policiesContainer && policies.length > 0) {
+                const links = policies.map(p => `<a href="javascript:void(0)" onclick="viewPolicy('${p.slug}')" class="hover:text-white transition-colors ml-4">${p.title}</a>`);
+                policiesContainer.innerHTML = links.join('');
+            }
+        } catch(e) {
+            console.error("Failed to load policies", e);
+        }
+
     } catch (e) {
         console.error("Failed to load landing settings", e);
     }
+
+    // Global function to open policy modal
+    window.viewPolicy = async (slug) => {
+        try {
+            const p = await api.get(`/public/cms/${slug}`);
+            document.getElementById('policy-view-title').textContent = p.title;
+            document.getElementById('policy-view-content').innerHTML = p.content_html;
+            document.getElementById('policy-view-modal').showModal();
+        } catch(e) {
+            alert("Failed to load policy.");
+        }
+    };
 
     // Load Plans
     try {

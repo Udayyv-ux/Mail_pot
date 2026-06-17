@@ -323,7 +323,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if(el('plan-price')) el('plan-price').value = plan.price_monthly;
             if(el('plan-limit')) el('plan-limit').value = plan.email_limit_daily;
             if(el('plan-campaign-limit')) el('plan-campaign-limit').value = plan.campaign_limit || 3;
-            if(el('plan-features')) el('plan-features').value = plan.features_json;
+            if(el('plan-features')) {
+                let feats = [];
+                try { feats = JSON.parse(plan.features_json); } catch(e){}
+                el('plan-features').value = feats.join('\n');
+            }
             if(el('plan-modal-title')) el('plan-modal-title').textContent = 'Edit Plan';
             document.getElementById('plan-modal')?.showModal();
         } catch(e){}
@@ -332,6 +336,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-plan')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('plan-id').value;
+        const featuresText = document.getElementById('plan-features').value;
+        const featuresArray = featuresText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        
         const payload = {
             name: document.getElementById('plan-name').value,
             description: '',
@@ -339,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
             price_yearly: parseFloat(document.getElementById('plan-price').value) * 10,
             email_limit_daily: parseInt(document.getElementById('plan-limit').value),
             campaign_limit: parseInt(document.getElementById('plan-campaign-limit').value) || 3,
-            features_json: document.getElementById('plan-features').value
+            features_json: JSON.stringify(featuresArray)
         };
         try {
             if(id) await api.put(`/admin/plans/${id}`, payload);
@@ -413,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if(!document.getElementById('landing-faq').value) {
                 document.getElementById('landing-faq').value = JSON.stringify([
-                    {question: "What is LeadFlow.ai?", answer: "LeadFlow.ai is an intelligent outreach platform that syncs with Google Sheets and uses AI to match the perfect email template to your leads."},
+                    {question: "What is Sheetx.io?", answer: "Sheetx.io is an intelligent outreach platform that syncs with Google Sheets and uses AI to match the perfect email template to your leads."},
                     {question: "Is there a free trial?", answer: "Yes, we offer a 14-day free trial on all paid plans so you can test our AI matching engine."},
                     {question: "Do I need to import my leads?", answer: "No importing required! Just paste your Google Sheet URL, and we sync directly with your live data."},
                     {question: "Will this affect my domain reputation?", answer: "We use smart sending features like built-in delays and throttling to ensure your domain reputation stays protected while scaling."},
@@ -427,12 +434,62 @@ document.addEventListener('DOMContentLoaded', () => {
                     "Legal": [{name: "Privacy Policy", url: "#"}, {name: "Terms of Service", url: "#"}]
                 }, null, 2);
             }
+            
+            // Render FAQ Builder UI
+            renderFaqBuilder();
         } catch(e) {}
     }
+
+    // --- FAQ Builder Logic ---
+    function renderFaqBuilder() {
+        const container = document.getElementById('faq-builder-container');
+        if(!container) return;
+        let faqs = [];
+        try { faqs = JSON.parse(document.getElementById('landing-faq').value); } catch(e){}
+        
+        container.innerHTML = '';
+        faqs.forEach((faq, idx) => {
+            container.insertAdjacentHTML('beforeend', `
+                <div class="faq-row bg-base-100 p-4 rounded-xl border border-white/5 relative group">
+                    <button type="button" onclick="removeFaqRow(this)" class="btn btn-sm btn-circle btn-ghost text-red-400 absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                    <div class="form-control mb-2 pr-8">
+                        <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Question</span></label>
+                        <input type="text" class="faq-q input input-sm input-bordered bg-base-200 border-white/10" value="${faq.question.replace(/"/g, '&quot;')}">
+                    </div>
+                    <div class="form-control">
+                        <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Answer</span></label>
+                        <textarea class="faq-a textarea textarea-sm textarea-bordered bg-base-200 border-white/10 h-16">${faq.answer}</textarea>
+                    </div>
+                </div>
+            `);
+        });
+    }
+
+    window.addFaqRow = () => {
+        let faqs = [];
+        try { faqs = JSON.parse(document.getElementById('landing-faq').value || "[]"); } catch(e){}
+        faqs.push({question: "", answer: ""});
+        document.getElementById('landing-faq').value = JSON.stringify(faqs);
+        renderFaqBuilder();
+    };
+
+    window.removeFaqRow = (btn) => {
+        btn.closest('.faq-row').remove();
+    };
 
     document.getElementById('form-admin-landing')?.addEventListener('submit', async(e) => {
         e.preventDefault();
         
+        // Serialize FAQ Builder back to JSON
+        const faqRows = document.querySelectorAll('.faq-row');
+        const newFaqs = [];
+        faqRows.forEach(row => {
+            const q = row.querySelector('.faq-q').value.trim();
+            const a = row.querySelector('.faq-a').value.trim();
+            if(q || a) newFaqs.push({question: q, answer: a});
+        });
+        document.getElementById('landing-faq').value = JSON.stringify(newFaqs);
+
         // Validate JSON before saving
         try {
             JSON.parse(document.getElementById('landing-steps').value);

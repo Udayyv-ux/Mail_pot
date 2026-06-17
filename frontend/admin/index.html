@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Admin - LeadFlow.ai</title>
+    <title>Super Admin - Sheetx.io</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -223,8 +223,12 @@
                             <!-- FAQ Editor -->
                             <div>
                                 <h3 class="text-xl font-bold mb-2">Frequently Asked Questions</h3>
-                                <p class="text-gray-400 text-sm mb-4">JSON Array of objects: [{"question":"...", "answer":"..."}, ...]</p>
-                                <textarea id="landing-faq" class="textarea textarea-bordered bg-base-300 border-white/10 focus:border-secondary font-mono text-sm w-full h-48"></textarea>
+                                <p class="text-gray-400 text-sm mb-4">Manage the questions and answers displayed on the landing page.</p>
+                                <div id="faq-builder-container" class="space-y-4 mb-4">
+                                    <!-- Populated dynamically by JS -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline border-white/20 text-white" onclick="addFaqRow()">+ Add Question</button>
+                                <textarea id="landing-faq" class="hidden"></textarea>
                             </div>
 
                             <hr class="border-white/10">
@@ -288,8 +292,8 @@
                     <label class="label"><span class="label-text-alt text-gray-500">Max number of Google Sheets a user on this plan can connect.</span></label>
                 </div>
                 <div class="form-control">
-                    <label class="label"><span class="label-text text-gray-400">Features (JSON Array)</span></label>
-                    <textarea id="plan-features" class="textarea textarea-bordered bg-base-200 border-white/10 focus:border-secondary font-mono text-xs h-24" placeholder='["Unlimited sends", "AI Match"]'></textarea>
+                    <label class="label"><span class="label-text text-gray-400">Features (One per line)</span></label>
+                    <textarea id="plan-features" class="textarea textarea-bordered bg-base-200 border-white/10 focus:border-secondary font-mono text-xs h-24" placeholder="Unlimited sends&#10;AI Match&#10;Premium Support"></textarea>
                 </div>
                 <button type="submit" class="btn btn-secondary text-white w-full mt-4">Save Plan</button>
             </form>

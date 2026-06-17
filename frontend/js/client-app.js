@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 key: order.razorpay_key_id,
                 amount: amount * 100,
                 currency: 'INR',
-                name: 'LeadFlow.ai',
+                name: 'Sheetx.io',
                 description: 'Upgrade to ' + planName,
                 order_id: order.order_id,
                 handler: async function (response) {
