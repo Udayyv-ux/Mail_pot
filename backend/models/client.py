@@ -20,10 +20,8 @@ class Client(Base):
     status = Column(String, default="active")  # active, suspended, trial
 
     # Google Sheets Configuration
-    google_sheet_id = Column(String, nullable=True)
+    # Google Sheets Configuration is now moved to the Campaign model
     credentials_json = Column(Text, nullable=True)  # service account JSON (encrypted)
-    target_columns = Column(String, default="Name, Email, Inquiry")
-    status_column = Column(String, default="Status")
 
     # Usage tracking
     daily_email_limit = Column(Integer, default=50)
@@ -41,6 +39,7 @@ class Client(Base):
     user = relationship("User", backref="client_profile", lazy="selectin")
     plan = relationship("Plan", backref="subscribers", lazy="selectin")
     templates = relationship("Template", back_populates="client", cascade="all, delete-orphan", lazy="selectin")
+    campaigns = relationship("Campaign", back_populates="client", cascade="all, delete-orphan", lazy="selectin")
     email_logs = relationship("EmailLog", back_populates="client", cascade="all, delete-orphan", lazy="selectin")
     payments = relationship("Payment", back_populates="client", cascade="all, delete-orphan", lazy="selectin")
 

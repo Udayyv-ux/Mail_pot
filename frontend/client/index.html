@@ -66,6 +66,12 @@
                     </a>
                 </li>
                 <li>
+                    <a class="nav-item" data-route="campaigns">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        Campaigns
+                    </a>
+                </li>
+                <li>
                     <a class="nav-item" data-route="billing">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                         Billing & Plan
@@ -184,6 +190,32 @@
                 </div>
             </section>
 
+            <!-- Campaigns Page -->
+            <section id="page-campaigns" class="page-section max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold">Campaigns</h2>
+                        <p class="text-gray-400">Manage multiple Google Sheets and automated follow-ups.</p>
+                    </div>
+                    <button class="btn btn-primary text-white" id="btn-new-campaign">+ New Campaign</button>
+                </div>
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                    <table class="table table-zebra w-full text-left">
+                        <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
+                            <tr>
+                                <th class="p-4 font-semibold">Name</th>
+                                <th class="p-4 font-semibold">Google Sheet ID</th>
+                                <th class="p-4 font-semibold">Follow-Up Rules</th>
+                                <th class="p-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="campaign-list" class="border-t border-white/5">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- Billing Page -->
             <section id="page-billing" class="page-section max-w-7xl mx-auto">
                 <h2 class="text-3xl font-bold mb-8">Billing & Plan</h2>
@@ -230,23 +262,13 @@
                         </div>
                     </div>
 
-                    <!-- Google Sheets -->
                     <div class="card bg-base-200 border border-white/5 shadow-lg h-fit">
                         <div class="card-body p-8">
-                            <h3 class="card-title text-xl mb-6">Google Sheets Integration</h3>
-                            <p class="text-gray-400 text-sm mb-4">Share your target Google Sheet with this Service Account email so our system can read it:</p>
+                            <h3 class="card-title text-xl mb-6">Service Account Setup</h3>
+                            <p class="text-gray-400 text-sm mb-4">Share all your Campaign Google Sheets with this Service Account email so our system can read them:</p>
                             <div class="bg-base-300 border border-white/10 p-3 rounded-lg font-mono text-sm text-secondary mb-6 break-all shadow-inner" id="service-account-email">
                                 Not configured by admin
                             </div>
-                            <form id="form-sheet" class="space-y-4">
-                                <div class="form-control">
-                                    <label class="label"><span class="label-text text-gray-400 font-medium">Google Sheet URL or ID</span></label>
-                                    <input type="text" id="set-sheet" class="input input-bordered bg-base-300 border-white/10 focus:border-primary" placeholder="https://docs.google.com/spreadsheets/d/...">
-                                </div>
-                                <div class="form-control mt-6">
-                                    <button type="submit" class="btn bg-white hover:bg-gray-200 text-dark border-none">Link Google Sheet</button>
-                                </div>
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -306,6 +328,42 @@
         <form method="dialog" class="modal-backdrop">
             <button>close</button>
         </form>
+    </dialog>
+
+    <!-- Modal: New Campaign -->
+    <dialog id="modal-campaign" class="modal">
+        <div class="modal-box bg-base-200 border border-white/10 max-w-md">
+            <h3 class="font-bold text-xl mb-6">Create New Campaign</h3>
+            <form id="form-campaign" class="space-y-4">
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Campaign Name</span></label>
+                    <input type="text" id="camp-name" class="input input-bordered bg-base-300 border-white/5" placeholder="e.g. Q3 Outreach" required>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Google Sheet URL</span></label>
+                    <input type="text" id="camp-sheet" class="input input-bordered bg-base-300 border-white/5" placeholder="https://docs.google.com/..." required>
+                </div>
+                
+                <div class="divider border-white/5 my-2">Follow-ups</div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Follow-up Days</span></label>
+                    <input type="number" id="camp-followup-days" class="input input-bordered bg-base-300 border-white/5" placeholder="0" min="0" value="0">
+                    <label class="label"><span class="label-text-alt text-gray-500">Set to 0 to disable automatic follow-ups.</span></label>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Follow-up Template</span></label>
+                    <select id="camp-followup-template" class="select select-bordered bg-base-300 border-white/5 w-full">
+                        <option value="">-- None --</option>
+                    </select>
+                </div>
+
+                <div class="modal-action mt-6">
+                    <button type="button" class="btn btn-ghost text-gray-400 hover:bg-white/5" onclick="document.getElementById('modal-campaign').close()">Cancel</button>
+                    <button type="submit" class="btn btn-primary text-white">Save Campaign</button>
+                </div>
+            </form>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>

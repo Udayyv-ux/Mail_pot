@@ -1,0 +1,36 @@
+"""
+Campaign model — linking a specific Google Sheet and follow-up rules to a Client.
+"""
+import uuid
+from datetime import datetime, timezone
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy.orm import relationship
+from backend.database import Base
+
+
+class Campaign(Base):
+    __tablename__ = "campaigns"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    client_id = Column(String, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+    name = Column(String, nullable=False)
+    
+    # Google Sheets Configuration
+    google_sheet_id = Column(String, nullable=False)
+    target_columns = Column(String, default="Name, Email, Inquiry")
+    status_column = Column(String, default="Status")
+    
+    # Follow-up Logic
+    follow_up_days = Column(Integer, default=0) # 0 means no follow up
+    follow_up_template_id = Column(String, ForeignKey("templates.id", ondelete="SET NULL"), nullable=True)
+    
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    client = relationship("Client", back_populates="campaigns", lazy="selectin")
+    follow_up_template = relationship("Template", lazy="selectin")
+    email_logs = relationship("EmailLog", back_populates="campaign", cascade="all, delete-orphan", lazy="selectin")
+
+    def __repr__(self):
+        return f"<Campaign {self.name} (client={self.client_id})>"

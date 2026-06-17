@@ -15,7 +15,9 @@ from datetime import datetime, timedelta, timezone
 from fastapi import UploadFile, File, BackgroundTasks
 import os
 import uuid
+import re
 from backend.utils.encryption import encrypt_value
+from backend.models.campaign import Campaign
 
 router = APIRouter(prefix="/api/client", tags=["client"])
 
@@ -30,8 +32,12 @@ async def get_client_profile(user, db: AsyncSession):
 async def get_dashboard(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client = await get_client_profile(current_user, db)
     
-    active_campaigns = 0
-    total_campaigns = 0
+    # Count active campaigns
+    result = await db.execute(select(func.count(Campaign.id)).where(Campaign.client_id == client.id, Campaign.is_active == True))
+    active_campaigns = result.scalar() or 0
+    
+    result = await db.execute(select(func.count(Campaign.id)).where(Campaign.client_id == client.id))
+    total_campaigns = result.scalar() or 0
     
     return {
         "emails_sent_today": client.emails_sent_today,
@@ -58,44 +64,73 @@ async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends
             
     return {
         "company_name": client.company_name,
-        "google_sheet_id": client.google_sheet_id,
-        "target_columns": client.target_columns,
-        "status_column": client.status_column,
         "service_account_email": service_email
     }
 
 class ProfileUpdate(BaseModel):
     company_name: Optional[str] = None
-    target_columns: Optional[str] = None
-    status_column: Optional[str] = None
 
 @router.put("/profile")
 async def update_profile(profile: ProfileUpdate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client = await get_client_profile(current_user, db)
     if profile.company_name is not None:
         client.company_name = profile.company_name
-    if profile.target_columns is not None:
-        client.target_columns = profile.target_columns
-    if profile.status_column is not None:
-        client.status_column = profile.status_column
-        
     await db.commit()
     return {"status": "success"}
 
-class SheetUpdate(BaseModel):
-    sheet_url_or_id: str
+# --- CAMPAIGNS ---
 
-@router.put("/sheet")
-async def update_sheet(data: SheetUpdate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
-    import re
+class CampaignCreate(BaseModel):
+    name: str
+    sheet_url_or_id: str
+    target_columns: str = "Name, Email, Inquiry"
+    status_column: str = "Status"
+    follow_up_days: int = 0
+    follow_up_template_id: Optional[str] = None
+
+@router.get("/campaigns")
+async def list_campaigns(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client = await get_client_profile(current_user, db)
+    result = await db.execute(select(Campaign).where(Campaign.client_id == client.id).order_by(Campaign.created_at.desc()))
+    return result.scalars().all()
+
+@router.post("/campaigns")
+async def create_campaign(data: CampaignCreate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    client = await get_client_profile(current_user, db)
+    await db.refresh(client, ['plan'])
     
+    # Enforce limits
+    campaign_limit = client.plan.campaign_limit if client.plan else 3
+    result = await db.execute(select(func.count(Campaign.id)).where(Campaign.client_id == client.id))
+    current_count = result.scalar() or 0
+    if current_count >= campaign_limit:
+        raise HTTPException(status_code=403, detail=f"Your plan is limited to {campaign_limit} campaigns. Please upgrade.")
+        
     match = re.search(r'/d/([a-zA-Z0-9-_]+)', data.sheet_url_or_id)
     sheet_id = match.group(1) if match else data.sheet_url_or_id.strip()
     
-    client.google_sheet_id = sheet_id
+    new_campaign = Campaign(
+        client_id=client.id,
+        name=data.name,
+        google_sheet_id=sheet_id,
+        target_columns=data.target_columns,
+        status_column=data.status_column,
+        follow_up_days=data.follow_up_days,
+        follow_up_template_id=data.follow_up_template_id
+    )
+    db.add(new_campaign)
     await db.commit()
-    return {"status": "success", "sheet_id": sheet_id}
+    return {"status": "success", "campaign": new_campaign}
+
+@router.delete("/campaigns/{campaign_id}")
+async def delete_campaign(campaign_id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    client = await get_client_profile(current_user, db)
+    result = await db.execute(select(Campaign).where(Campaign.id == campaign_id, Campaign.client_id == client.id))
+    campaign = result.scalar_one_or_none()
+    if campaign:
+        await db.delete(campaign)
+        await db.commit()
+    return {"status": "success"}
 
 @router.get("/notifications")
 async def get_client_notifications(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):

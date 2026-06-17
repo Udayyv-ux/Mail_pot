@@ -117,32 +117,33 @@ async def send_email_via_gmail_api(to_email: str, first_name: str, template, acc
         return False, f"HTTP Error: {str(e)}"
 
 async def run_247_engine():
-    """Background loop that polls all clients every 60 seconds."""
+    """Background loop that polls all campaigns every 60 seconds."""
     print("🚀 24/7 Autonomous Engine Started...")
     while True:
         try:
             async with SessionLocal() as db:
-                clients_res = await db.execute(select(Client).where(Client.status == "active", Client.google_sheet_id.isnot(None)))
-                clients = clients_res.scalars().all()
+                from backend.models.campaign import Campaign
+                campaigns_res = await db.execute(select(Campaign).where(Campaign.is_active == True))
+                campaigns = campaigns_res.scalars().all()
                 global_settings = await get_global_settings(db)
                 
             groq_key = global_settings.get("GROQ_API_KEY", settings.GROQ_API_KEY)
-            resend_key = global_settings.get("RESEND_API_KEY", "")
-            global_sender = global_settings.get("SENDER_EMAIL", "hello@example.com")
             
-            for client in clients:
-                if client.emails_sent_today >= client.daily_email_limit:
-                    print(f"⚠️ Skipping client {client.id} - Daily limit reached ({client.emails_sent_today}/{client.daily_email_limit})")
-                    continue # Rate limited
-                    
+            for campaign in campaigns:
                 async with SessionLocal() as db:
-                    templates_res = await db.execute(select(Template).where(Template.client_id == client.id, Template.is_active == True))
+                    db_client = await db.get(Client, campaign.client_id)
+                    if not db_client or db_client.status != "active":
+                        continue
+                        
+                    if db_client.emails_sent_today >= db_client.daily_email_limit:
+                        print(f"⚠️ Skipping campaign {campaign.id} - Client daily limit reached ({db_client.emails_sent_today}/{db_client.daily_email_limit})")
+                        continue
+                        
+                    templates_res = await db.execute(select(Template).where(Template.client_id == campaign.client_id, Template.is_active == True))
                     templates = templates_res.scalars().all()
-                    # Need client email for Reply-To
-                    db_client = await db.get(Client, client.id)
+                    
                     await db.refresh(db_client, ['user'])
                     client_user = db_client.user
-                    client_email = client_user.email if client_user else "reply@example.com"
                     
                     access_token = None
                     if client_user:
@@ -151,19 +152,18 @@ async def run_247_engine():
                 if not templates: continue
                 
                 try:
-                    print(f"🔍 Scanning Google Sheet for Client {client.id}...")
-                    _, rows = await get_sheet_data(client.google_sheet_id)
+                    print(f"🔍 Scanning Google Sheet for Campaign '{campaign.name}'...")
+                    _, rows = await get_sheet_data(campaign.google_sheet_id)
                 except Exception as e:
-                    print(f"❌ Failed to read sheet for Client {client.id}: {e}")
-                    continue # Skip if sheet fails
+                    print(f"❌ Failed to read sheet for Campaign {campaign.id}: {e}")
+                    continue
                     
                 if not rows or len(rows) < 2: 
-                    print(f"ℹ️ No leads found in sheet for Client {client.id}")
                     continue
                 
                 headers = rows[0]
-                target_cols = [c.strip() for c in (client.target_columns or "Name, Email, Inquiry").split(',')]
-                status_col_name = client.status_column or "Status"
+                target_cols = [c.strip() for c in (campaign.target_columns or "Name, Email, Inquiry").split(',')]
+                status_col_name = campaign.status_column or "Status"
                 
                 name_idx = get_col_index(headers, target_cols[0] if len(target_cols)>0 else "Name")
                 email_idx = get_col_index(headers, target_cols[1] if len(target_cols)>1 else "Email")
@@ -171,63 +171,90 @@ async def run_247_engine():
                 status_idx = get_col_index(headers, status_col_name)
                 
                 if email_idx == -1 or status_idx == -1:
-                    continue # Cannot process without email and status column
+                    continue
                     
                 for i, row in enumerate(rows[1:], start=1):
-                    # Pad row if short
                     while len(row) <= max(name_idx, email_idx, inquiry_idx, status_idx):
                         row.append("")
                         
                     email = row[email_idx]
                     status = row[status_idx]
                     
-                    if status.strip().lower() in ["sent", "failed"]:
-                        continue # Already processed
                     if not email or "@" not in email:
                         continue
                         
                     name = row[name_idx] if name_idx != -1 else ""
                     inquiry = row[inquiry_idx] if inquiry_idx != -1 else ""
                     
-                    print(f"📩 Found new lead: {email} | Status: {status}")
+                    target_template = None
+                    category = "General"
+                    is_follow_up_run = False
                     
-                    category = categorize_with_ai(inquiry, templates, groq_key)
-                    target_template = next((t for t in templates if t.project_name == category), templates[0])
+                    # 1. Check if it needs a follow-up
+                    if status.strip().lower() == "sent" and campaign.follow_up_days > 0 and campaign.follow_up_template_id:
+                        async with SessionLocal() as db:
+                            res = await db.execute(select(EmailLog).where(
+                                EmailLog.campaign_id == campaign.id,
+                                EmailLog.recipient_email == email,
+                                EmailLog.is_follow_up == False,
+                                EmailLog.status == "sent"
+                            ).order_by(EmailLog.sent_at.desc()))
+                            last_log = res.scalars().first()
+                            
+                            if last_log and last_log.sent_at:
+                                days_since = (datetime.now(timezone.utc) - last_log.sent_at).days
+                                if days_since >= campaign.follow_up_days:
+                                    target_template = await db.get(Template, campaign.follow_up_template_id)
+                                    is_follow_up_run = True
+                                    category = "FollowUp"
+
+                    # 2. Check if it's a new lead
+                    elif status.strip() == "":
+                        print(f"📩 Found new lead: {email}")
+                        category = categorize_with_ai(inquiry, templates, groq_key)
+                        target_template = next((t for t in templates if t.project_name == category), templates[0])
                     
-                    print(f"📤 Sending '{target_template.project_name}' email to {email} via Gmail API...")
-                    success, err = await send_email_via_gmail_api(email, name, target_template, access_token)
-                    
-                    if success:
-                        print(f"✅ Successfully sent to {email}")
-                    else:
-                        print(f"❌ Failed to send to {email}: {err}")
-                    
-                    # Log to DB
-                    async with SessionLocal() as db:
-                        log = EmailLog(
-                            client_id=client.id,
-                            recipient_email=email,
-                            recipient_name=name,
-                            template_used=target_template.project_name,
-                            category_assigned=category,
-                            status="sent" if success else "failed",
-                            error_message=err,
-                            sent_at=datetime.now(timezone.utc) if success else None
-                        )
-                        db.add(log)
-                        if success:
-                            db_client = await db.get(Client, client.id)
-                            db_client.emails_sent_today += 1
-                        await db.commit()
+                    # 3. Send email if a template was selected
+                    if target_template:
+                        print(f"📤 Sending '{target_template.project_name}' email to {email}...")
+                        success, err = await send_email_via_gmail_api(email, name, target_template, access_token)
                         
-                    # Write to Sheet
-                    try:
-                        print(f"📝 Updating sheet row {i+1}, col {status_idx + 1} to 'Sent'")
-                        await update_sheet_cell(client.google_sheet_id, i+1, status_idx + 1, "Sent" if success else "Failed")
                         if success:
-                            await asyncio.sleep(1) # Delay between sends
-                    except Exception as e:
-                        print(f"❌ Failed to update sheet: {e}")
+                            print(f"✅ Successfully sent to {email}")
+                        else:
+                            print(f"❌ Failed to send to {email}: {err}")
+                        
+                        # Log to DB
+                        async with SessionLocal() as db:
+                            log = EmailLog(
+                                client_id=campaign.client_id,
+                                campaign_id=campaign.id,
+                                recipient_email=email,
+                                recipient_name=name,
+                                template_used=target_template.project_name,
+                                category_assigned=category,
+                                status="sent" if success else "failed",
+                                error_message=err,
+                                sent_at=datetime.now(timezone.utc) if success else None,
+                                is_follow_up=is_follow_up_run
+                            )
+                            db.add(log)
+                            if success:
+                                db_client = await db.get(Client, campaign.client_id)
+                                db_client.emails_sent_today += 1
+                            await db.commit()
+                            
+                        # Write to Sheet
+                        try:
+                            new_status = "Followed Up" if is_follow_up_run else "Sent"
+                            if not success: new_status = "Failed"
+                            print(f"📝 Updating sheet row {i+1}, col {status_idx + 1} to '{new_status}'")
+                            await update_sheet_cell(campaign.google_sheet_id, i+1, status_idx + 1, new_status)
+                            if success:
+                                await asyncio.sleep(1) # Delay between sends
+                        except Exception as e:
+                            print(f"❌ Failed to update sheet: {e}")
+                            
         except Exception as e:
             print(f"24/7 Engine Iteration Error: {e}")
             

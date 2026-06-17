@@ -47,6 +47,87 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    // --- Campaigns ---
+    async function loadCampaigns() {
+        try {
+            const campaigns = await api.get('/client/campaigns');
+            const tbody = document.getElementById('campaign-list');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            if(campaigns.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No campaigns found. Create your first one!</td></tr>';
+                return;
+            }
+            
+            campaigns.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-white">${c.name}</td>
+                    <td class="p-4 text-gray-300 truncate max-w-xs">${c.google_sheet_id}</td>
+                    <td class="p-4 text-gray-400 text-sm">
+                        ${c.follow_up_days > 0 ? \`Wait \${c.follow_up_days} days \` : 'Disabled'}
+                    </td>
+                    <td class="p-4 text-right space-x-2">
+                        <button class="text-red-400 hover:text-red-300 font-semibold text-sm" onclick="deleteCampaign('${c.id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch(e) {
+            if(window.showToast) showToast("Failed to load campaigns", "error");
+        }
+    }
+
+    document.getElementById('btn-new-campaign')?.addEventListener('click', async () => {
+        document.getElementById('camp-name').value = '';
+        document.getElementById('camp-sheet').value = '';
+        document.getElementById('camp-followup-days').value = '0';
+        
+        // Populate template select
+        try {
+            const templates = await api.get('/client/templates');
+            const select = document.getElementById('camp-followup-template');
+            select.innerHTML = '<option value="">-- None --</option>';
+            templates.forEach(t => {
+                select.innerHTML += \`<option value="\${t.id}">\${t.project_name}</option>\`;
+            });
+        } catch(e) {}
+        
+        document.getElementById('modal-campaign').showModal();
+    });
+
+    document.getElementById('form-campaign')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+            name: document.getElementById('camp-name').value,
+            sheet_url_or_id: document.getElementById('camp-sheet').value,
+            follow_up_days: parseInt(document.getElementById('camp-followup-days').value) || 0,
+            follow_up_template_id: document.getElementById('camp-followup-template').value || null
+        };
+        
+        try {
+            await api.post('/client/campaigns', payload);
+            document.getElementById('modal-campaign').close();
+            if(window.showToast) showToast("Campaign created!", "success");
+            loadCampaigns();
+            loadDashboard(); // Refresh dash
+        } catch(e) {
+            if(window.showToast) showToast(e.message, "error");
+        }
+    });
+
+    window.deleteCampaign = async (id) => {
+        if(!confirm("Delete this campaign?")) return;
+        try { 
+            await api.delete(\`/client/campaigns/\${id}\`); 
+            loadCampaigns(); 
+            loadDashboard();
+        } catch(e){
+            if(window.showToast) showToast(e.message, "error");
+        }
+    };
+
     // --- Dashboard ---
     let emailChart = null;
 
@@ -59,7 +140,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if(el('dash-emails-sent')) el('dash-emails-sent').textContent = data.emails_sent_today || 0;
             if(el('dash-emails-limit')) el('dash-emails-limit').textContent = data.daily_limit || 0;
             if(el('dash-total')) el('dash-total').textContent = data.emails_sent_today || 0;
-            if(el('dash-templates')) el('dash-templates').textContent = '-';
+            if(el('dash-templates')) el('dash-templates').textContent = data.active_campaigns || 0;
+            if(el('dash-templates')) el('dash-templates').parentElement.querySelector('.stat-title').textContent = "Active Campaigns";
+            if(el('dash-templates')) el('dash-templates').parentElement.querySelector('.stat-desc').textContent = \`\${data.total_campaigns} Total Campaigns\`;
             
             let percentage = data.daily_limit > 0 ? (data.emails_sent_today / data.daily_limit) * 100 : 0;
             if(percentage > 100) percentage = 100;
@@ -336,27 +419,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Settings ---
     async function loadSettings() {
         try {
-            // Uses /client/profile endpoint which exists in the backend
             const data = await api.get('/client/profile');
             const el = (id) => document.getElementById(id);
-            
             if(el('set-company')) el('set-company').value = data.company_name || '';
-            if(el('set-smtp-email')) el('set-smtp-email').value = data.smtp_email || '';
-            if(el('set-sheet')) el('set-sheet').value = data.google_sheet_id || '';
             if(el('service-account-email')) el('service-account-email').textContent = data.service_account_email || 'Not configured by admin';
-            if(el('groq-status')) el('groq-status').textContent = data.has_groq_key ? 'Custom Key Active ✓' : 'Using System Default';
         } catch(e) {
             console.error("Settings load error:", e);
         }
     }
 
-    // --- Profile & Settings Form ---
+    // --- Profile Form ---
     document.getElementById('form-profile')?.addEventListener('submit', async(e) => {
         e.preventDefault();
         const payload = {
-            company_name: document.getElementById('set-company').value,
-            target_columns: document.getElementById('set-target-cols').value,
-            status_column: document.getElementById('set-status-col').value
+            company_name: document.getElementById('set-company').value
         };
         try {
             await api.put('/client/profile', payload);
@@ -366,14 +442,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    document.getElementById('form-sheet')?.addEventListener('submit', async(e) => {
-        e.preventDefault();
-        try {
-            await api.put('/client/sheet', { sheet_url_or_id: document.getElementById('set-sheet').value });
-            if(window.showToast) showToast("Google Sheet linked successfully", "success");
-        } catch(err) {
-            if(window.showToast) showToast(err.message, "error");
-        }
     });
 
 
@@ -412,19 +480,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('notification-dropdown')?.classList.toggle('hidden');
     });
 
-    // Initialize Routes
-    router.on('dashboard', loadDashboard);
-    router.on('templates', loadTemplates);
-    router.on('billing', loadBilling);
-    router.on('settings', loadSettings);
+    // Load initial views based on router
+    router.on('dashboard', () => { loadDashboard(); });
+    router.on('templates', () => { loadTemplates(); });
+    router.on('campaigns', () => { loadCampaigns(); });
+    router.on('billing', () => { loadBilling(); });
+    router.on('settings', () => { loadSettings(); });
     
-    // Set display email from user object
-    const emailDisplay = document.getElementById('client-email-display');
-    if(emailDisplay) emailDisplay.textContent = user.email || '';
+    // Header setup
+    const updateTitle = () => {
+        const title = document.getElementById('topbar-title');
+        if(title) {
+            const hash = window.location.hash.replace('#', '') || 'dashboard';
+            title.textContent = hash.charAt(0).toUpperCase() + hash.slice(1);
+        }
+    };
+    window.addEventListener('hashchange', updateTitle);
+    updateTitle();
     
-    // Set user name
-    const nameDisplay = document.getElementById('client-name-display');
-    if(nameDisplay) nameDisplay.textContent = user.name || '';
+    // User info display
+    const disp = document.getElementById('client-email-display');
+    if(disp) disp.textContent = user.email;
 
     router.init();
     fetchNotifications();

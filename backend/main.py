@@ -63,6 +63,18 @@ async def lifespan(app: FastAPI):
     try:
         async with engine.begin() as conn:
             from sqlalchemy import text
+            await conn.execute(text("ALTER TABLE email_logs ADD COLUMN campaign_id VARCHAR"))
+    except Exception: pass
+        
+    try:
+        async with engine.begin() as conn:
+            from sqlalchemy import text
+            await conn.execute(text("ALTER TABLE email_logs ADD COLUMN is_follow_up BOOLEAN DEFAULT FALSE"))
+    except Exception: pass
+    
+    try:
+        async with engine.begin() as conn:
+            from sqlalchemy import text
             await conn.execute(text("ALTER TABLE email_logs ALTER COLUMN campaign_id DROP NOT NULL"))
     except Exception: pass
         
