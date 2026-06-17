@@ -12,27 +12,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Check if logged in
-    const user = await auth.getCurrentUser();
-    if (user) {
-        document.getElementById('nav-login').style.display = 'none';
-        document.getElementById('nav-signup').style.display = 'none';
-        document.getElementById('nav-admin-login').style.display = 'none';
-        const portalBtn = document.getElementById('nav-portal');
-        portalBtn.style.display = 'inline-block';
-        portalBtn.href = user.role === 'admin' ? '/admin/' : '/client/';
-    } else {
+    try {
+        const user = await auth.getCurrentUser();
         const loginBtn = document.getElementById('nav-login');
         const signupBtn = document.getElementById('nav-signup');
         const adminBtn = document.getElementById('nav-admin-login');
+        const portalBtn = document.getElementById('nav-portal');
         
-        loginBtn.style.display = 'inline-block';
-        signupBtn.style.display = 'inline-block';
-        adminBtn.style.display = 'inline-block';
-        
-        const handleAuth = (e) => { e.preventDefault(); auth.login(); };
-        loginBtn.addEventListener('click', handleAuth);
-        signupBtn.addEventListener('click', handleAuth);
-        adminBtn.addEventListener('click', handleAuth);
+        if (user) {
+            if(loginBtn) loginBtn.style.display = 'none';
+            if(signupBtn) signupBtn.style.display = 'none';
+            if(adminBtn) adminBtn.style.display = 'none';
+            if(portalBtn) {
+                portalBtn.style.display = 'inline-block';
+                portalBtn.href = user.role === 'admin' ? '/admin/' : '/client/';
+            }
+        } else {
+            if(loginBtn) loginBtn.style.display = 'inline-block';
+            if(signupBtn) signupBtn.style.display = 'inline-block';
+            if(adminBtn) adminBtn.style.display = 'inline-block';
+            
+            const handleAuth = (e) => { e.preventDefault(); auth.login(); };
+            if(loginBtn) loginBtn.addEventListener('click', handleAuth);
+            if(signupBtn) signupBtn.addEventListener('click', handleAuth);
+            if(adminBtn) adminBtn.addEventListener('click', handleAuth);
+        }
+    } catch(e) {
+        console.error("Auth check failed:", e);
     }
 
     // Load Dynamic Settings (Steps, FAQ, Footer)
