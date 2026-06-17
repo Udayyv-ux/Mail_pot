@@ -124,7 +124,18 @@ class CampaignCreate(BaseModel):
 async def list_campaigns(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client = await get_client_profile(current_user, db)
     result = await db.execute(select(Campaign).where(Campaign.client_id == client.id).order_by(Campaign.created_at.desc()))
-    return result.scalars().all()
+    campaigns = result.scalars().all()
+    return [{
+        "id": c.id,
+        "name": c.name,
+        "google_sheet_id": c.google_sheet_id,
+        "target_columns": c.target_columns,
+        "status_column": c.status_column,
+        "follow_up_days": c.follow_up_days,
+        "follow_up_template_id": c.follow_up_template_id,
+        "is_active": c.is_active,
+        "created_at": c.created_at
+    } for c in campaigns]
 
 @router.post("/campaigns")
 async def create_campaign(data: CampaignCreate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
