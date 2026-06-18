@@ -14,7 +14,7 @@ from backend.models.template import Template
 from backend.models.email_log import EmailLog
 from backend.models.email_queue import EmailQueue
 from backend.models.app_settings import AppSetting
-from backend.services.sheets_service import get_sheet_data, update_sheet_cell
+from backend.services.sheets_service import get_sheet_data, update_sheet_cell, update_sheet_cells_batch
 
 def get_col_index(headers: list, target_name: str) -> int:
     for i, h in enumerate(headers):
@@ -231,7 +231,6 @@ async def run_247_engine():
                 if not templates: continue
                 
                 try:
-                    print(f"🔍 Scanning Google Sheet for Campaign '{campaign.name}'...")
                     _, rows = await get_sheet_data(campaign.google_sheet_id)
                 except Exception as e:
                     print(f"❌ Failed to read sheet for Campaign {campaign.id}: {e}")
@@ -270,6 +269,7 @@ async def run_247_engine():
                     print(f"🛑 Campaign '{campaign.name}' hit hourly limit ({campaign.max_emails_per_hour}/hr). Skipping.")
                     continue
 
+                batch_updates = []
                 for i, row in enumerate(rows[1:], start=1):
                     while len(row) <= max(name_idx, email_idx, inquiry_idx, status_idx):
                         row.append("")
@@ -328,11 +328,7 @@ async def run_247_engine():
                                 await db.commit()
                             
                             # Mark as Queued on the sheet
-                            try:
-                                await update_sheet_cell(campaign.google_sheet_id, status_col_name, i, "Queued")
-                            except Exception as e:
-                                print(f"⚠️ Failed to update sheet status: {e}")
-                            
+                            batch_updates.append({'row': i+1, 'col': status_idx + 1, 'value': 'Queued'})
                             continue
                             
                         print(f"📤 Sending '{target_template.project_name}' email to {email}...")
@@ -363,16 +359,20 @@ async def run_247_engine():
                                 db_client.emails_sent_today += 1
                             await db.commit()
                             
-                        # Write to Sheet
-                        try:
-                            new_status = "Followed Up" if is_follow_up_run else "Sent"
-                            if not success: new_status = "Failed"
-                            print(f"📝 Updating sheet row {i+1}, col {status_idx + 1} to '{new_status}'")
-                            await update_sheet_cell(campaign.google_sheet_id, i+1, status_idx + 1, new_status)
-                            if success:
-                                await asyncio.sleep(1) # Delay between sends
-                        except Exception as e:
-                            print(f"❌ Failed to update sheet: {e}")
+                        # Queue Sheet Update
+                        new_status = "Followed Up" if is_follow_up_run else "Sent"
+                        if not success: new_status = "Failed"
+                        batch_updates.append({'row': i+1, 'col': status_idx + 1, 'value': new_status})
+                        
+                        if success:
+                            await asyncio.sleep(1) # Delay between sends
+                
+                if batch_updates:
+                    try:
+                        print(f"📝 Batch updating {len(batch_updates)} sheet cells for '{campaign.name}'...")
+                        await update_sheet_cells_batch(campaign.google_sheet_id, batch_updates)
+                    except Exception as e:
+                        print(f"❌ Failed to batch update sheet: {e}")
                             
         except Exception as e:
             print(f"24/7 Engine Iteration Error: {e}")

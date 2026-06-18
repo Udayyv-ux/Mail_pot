@@ -226,6 +226,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    window.resetUsage = async (id) => {
+        if(!confirm("Are you sure you want to reset this user's daily usage?")) return;
+        try {
+            await api.post(`/admin/clients/${id}/reset`);
+            if(window.showToast) showToast("Usage reset successfully", "success");
+            loadUsers();
+        } catch (e) {
+            alert("Failed to reset: " + e.message);
+        }
+    };
+
     window.viewClientDetails = async (id) => {
         try {
             const client = await api.get(`/admin/clients/${id}`);
@@ -685,7 +696,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('form-notif')?.reset();
         } catch(err) { if(window.showToast) showToast(err.message, "error"); }
     });
-    });
 
     // --- Promo Codes ---
     async function loadPromoCodes() {
@@ -751,31 +761,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     router.on('promo', loadPromoCodes);
 
-});
+    window.uploadLogo = async function() {
+        const fileInput = document.getElementById('admin-logo-upload');
+        if(!fileInput) return;
+        const file = fileInput.files[0];
+        if (!file) return alert('Please select an image file first.');
 
-async function uploadLogo() {
-    const fileInput = document.getElementById('admin-logo-upload');
-    const file = fileInput.files[0];
-    if (!file) return alert('Please select an image file first.');
+        const formData = new FormData();
+        formData.append('file', file);
 
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-        const res = await fetch('/api/admin/settings/logo', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${api.getToken()}`
-            },
-            body: formData
-        });
-        const data = await res.json();
-        if (data.status === 'success') {
-            alert('Logo uploaded successfully! Refresh the page to see changes.');
-        } else {
-            alert('Upload failed: ' + JSON.stringify(data));
+        try {
+            const res = await fetch('/api/admin/settings/logo', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${api.getToken()}`
+                },
+                body: formData
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert('Logo uploaded successfully! Refresh the page to see changes.');
+            } else {
+                alert('Upload failed: ' + JSON.stringify(data));
+            }
+        } catch (e) {
+            alert('Error uploading logo: ' + e);
         }
-    } catch (e) {
-        alert('Error uploading logo: ' + e);
-    }
-}
+    };
+
+});

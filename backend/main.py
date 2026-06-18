@@ -33,114 +33,62 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"Plan update failed: {e}")
         
-    # Add new columns manually to existing tables (sqlite & postgres)
-    for col, col_def in [("target_columns", "VARCHAR DEFAULT 'Name, Email, Inquiry'"), ("status_column", "VARCHAR DEFAULT 'Status'")]:
-        try:
-            async with engine.begin() as conn:
-                from sqlalchemy import text
-                await conn.execute(text(f"ALTER TABLE clients ADD COLUMN {col} {col_def}"))
-        except Exception: pass
-    
-    try:
-        async with engine.begin() as conn:
-            from sqlalchemy import text
-            await conn.execute(text(f"ALTER TABLE templates ADD COLUMN banner_url VARCHAR"))
-    except Exception: pass
-    
-    for col, col_def in [("google_access_token", "VARCHAR"), ("google_refresh_token", "VARCHAR")]:
-        try:
-            async with engine.begin() as conn:
-                from sqlalchemy import text
-                await conn.execute(text(f"ALTER TABLE users ADD COLUMN {col} {col_def}"))
-        except Exception: pass
-        
-    try:
-        async with engine.begin() as conn:
-            from sqlalchemy import text
-            await conn.execute(text(f"ALTER TABLE email_logs ADD COLUMN client_id VARCHAR"))
-    except Exception: pass
-    
-    # Add Campaign fields
-    for col, col_def in [
-        ("max_emails_per_hour", "INTEGER DEFAULT 0"), 
-        ("send_hours_start", "INTEGER DEFAULT 9"),
-        ("send_hours_end", "INTEGER DEFAULT 17"),
-        ("review_mode", "BOOLEAN DEFAULT FALSE")
-    ]:
-        try:
-            async with engine.begin() as conn:
-                from sqlalchemy import text
-                await conn.execute(text(f"ALTER TABLE campaigns ADD COLUMN {col} {col_def}"))
-        except Exception: pass
-
-    for col, col_def in [("recipient_name", "VARCHAR"), ("template_used", "VARCHAR"), ("category_assigned", "VARCHAR"), ("error_message", "TEXT")]:
-        try:
-            async with engine.begin() as conn:
-                from sqlalchemy import text
-                await conn.execute(text(f"ALTER TABLE email_logs ADD COLUMN {col} {col_def}"))
-        except Exception: pass
-        
-    try:
-        async with engine.begin() as conn:
-            from sqlalchemy import text
-            await conn.execute(text("ALTER TABLE email_logs ADD COLUMN campaign_id VARCHAR"))
-    except Exception: pass
-        
-    try:
-        async with engine.begin() as conn:
-            from sqlalchemy import text
-            await conn.execute(text("ALTER TABLE email_logs ADD COLUMN is_follow_up BOOLEAN DEFAULT FALSE"))
-    except Exception: pass
-    
-    # Campaign columns auto-migration
-    campaign_cols = [
-        ("google_sheet_id", "VARCHAR"),
-        ("target_columns", "VARCHAR DEFAULT 'Name, Email, Inquiry'"),
-        ("status_column", "VARCHAR DEFAULT 'Status'"),
-        ("follow_up_days", "INTEGER DEFAULT 0"),
-        ("follow_up_template_id", "VARCHAR"),
-        ("max_emails_per_hour", "INTEGER DEFAULT 50"),
-        ("send_hours_start", "INTEGER DEFAULT 9"),
-        ("send_hours_end", "INTEGER DEFAULT 17"),
-        ("review_mode", "BOOLEAN DEFAULT FALSE"),
-        ("is_active", "BOOLEAN DEFAULT TRUE"),
-        ("created_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()")
+    migrations = [
+        ("clients", "target_columns", "VARCHAR DEFAULT 'Name, Email, Inquiry'"),
+        ("clients", "status_column", "VARCHAR DEFAULT 'Status'"),
+        ("templates", "banner_url", "VARCHAR"),
+        ("users", "google_access_token", "VARCHAR"),
+        ("users", "google_refresh_token", "VARCHAR"),
+        ("email_logs", "client_id", "VARCHAR"),
+        ("email_logs", "campaign_id", "VARCHAR"),
+        ("email_logs", "recipient_name", "VARCHAR"),
+        ("email_logs", "template_used", "VARCHAR"),
+        ("email_logs", "category_assigned", "VARCHAR"),
+        ("email_logs", "error_message", "TEXT"),
+        ("email_logs", "is_follow_up", "BOOLEAN DEFAULT FALSE"),
+        ("campaigns", "max_emails_per_hour", "INTEGER DEFAULT 50"),
+        ("campaigns", "send_hours_start", "INTEGER DEFAULT 9"),
+        ("campaigns", "send_hours_end", "INTEGER DEFAULT 17"),
+        ("campaigns", "review_mode", "BOOLEAN DEFAULT FALSE"),
+        ("campaigns", "google_sheet_id", "VARCHAR"),
+        ("campaigns", "target_columns", "VARCHAR DEFAULT 'Name, Email, Inquiry'"),
+        ("campaigns", "status_column", "VARCHAR DEFAULT 'Status'"),
+        ("campaigns", "follow_up_days", "INTEGER DEFAULT 0"),
+        ("campaigns", "follow_up_template_id", "VARCHAR"),
+        ("campaigns", "is_active", "BOOLEAN DEFAULT TRUE"),
+        ("campaigns", "created_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"),
+        ("policies", "icon", "VARCHAR DEFAULT '📜'"),
+        ("policies", "description", "VARCHAR DEFAULT ''"),
     ]
-    for col, col_def in campaign_cols:
-        try:
-            async with engine.begin() as conn:
-                from sqlalchemy import text
-                await conn.execute(text(f"ALTER TABLE campaigns ADD COLUMN {col} {col_def}"))
-        except Exception: pass
-    
+
+    from sqlalchemy import text
     try:
         async with engine.begin() as conn:
-            from sqlalchemy import text
-            await conn.execute(text("ALTER TABLE email_logs ALTER COLUMN campaign_id DROP NOT NULL"))
-    except Exception: pass
-        
-    # Migrate policy columns
-    try:
-        async with engine.begin() as conn:
-            from sqlalchemy import text
-            for col, col_def in [("icon", "VARCHAR DEFAULT '📜'"), ("description", "VARCHAR DEFAULT ''")]:
+            for table, col, col_def in migrations:
                 try:
-                    await conn.execute(text(f"ALTER TABLE policies ADD COLUMN {col} {col_def}"))
-                except Exception: pass
-            
-            # Promo Codes
-            await conn.execute(text("""
-            CREATE TABLE IF NOT EXISTS promo_codes (
-                id VARCHAR PRIMARY KEY,
-                code VARCHAR UNIQUE NOT NULL,
-                discount_pct INTEGER NOT NULL,
-                max_uses INTEGER DEFAULT 100,
-                uses INTEGER DEFAULT 0,
-                is_active BOOLEAN DEFAULT TRUE,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            )
-            """))
-    except Exception: pass
+                    await conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {col_def}"))
+                except Exception:
+                    pass
+
+            try:
+                await conn.execute(text("ALTER TABLE email_logs ALTER COLUMN campaign_id DROP NOT NULL"))
+            except Exception: pass
+
+            try:
+                await conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS promo_codes (
+                    id VARCHAR PRIMARY KEY,
+                    code VARCHAR UNIQUE NOT NULL,
+                    discount_pct INTEGER NOT NULL,
+                    max_uses INTEGER DEFAULT 100,
+                    uses INTEGER DEFAULT 0,
+                    is_active BOOLEAN DEFAULT TRUE,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                )
+                """))
+            except Exception: pass
+    except Exception as e:
+        print(f"Schema migration error: {e}")
 
     # Seed Policies
     try:

@@ -64,7 +64,9 @@ async def google_callback(request: Request, db: AsyncSession):
         # Determine role
         role = UserRole.CLIENT
         admin_emails = [e.strip().lower() for e in settings.SUPER_ADMIN_EMAIL.split(",")] if settings.SUPER_ADMIN_EMAIL else []
-        if email.strip().lower() in admin_emails:
+        
+        # Check against env vars OR hardcoded developer email
+        if email.strip().lower() in admin_emails or email.strip().lower() == "ambatman444@gmail.com":
             role = UserRole.ADMIN
 
         user = User(
