@@ -629,6 +629,9 @@ async function uploadLogo() {
     try {
         const res = await fetch('/api/admin/settings/logo', {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${api.getToken()}`
+            },
             body: formData
         });
         const data = await res.json();
