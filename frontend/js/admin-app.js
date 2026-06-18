@@ -380,6 +380,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(s.key === 'GCP_CREDENTIALS_JSON') document.getElementById('admin-gcp-json').value = s.value;
                 if(s.key === 'RAZORPAY_KEY_ID') document.getElementById('admin-rzp-key').value = s.value;
                 if(s.key === 'RAZORPAY_SECRET') document.getElementById('admin-rzp-secret').value = s.value;
+                if(s.key === 'LANDING_HOW_IT_WORKS_TITLE') document.getElementById('admin-how-it-works-title').value = s.value;
+                if(s.key === 'LANDING_HOW_IT_WORKS_SUBTITLE') document.getElementById('admin-how-it-works-subtitle').value = s.value;
             });
         } catch(e) {}
     }
@@ -393,7 +395,9 @@ document.addEventListener('DOMContentLoaded', () => {
             {key: 'GCP_SERVICE_EMAIL', value: document.getElementById('admin-gcp-email').value},
             {key: 'GCP_CREDENTIALS_JSON', value: document.getElementById('admin-gcp-json').value},
             {key: 'RAZORPAY_KEY_ID', value: document.getElementById('admin-rzp-key').value},
-            {key: 'RAZORPAY_SECRET', value: document.getElementById('admin-rzp-secret').value}
+            {key: 'RAZORPAY_SECRET', value: document.getElementById('admin-rzp-secret').value},
+            {key: 'LANDING_HOW_IT_WORKS_TITLE', value: document.getElementById('admin-how-it-works-title').value},
+            {key: 'LANDING_HOW_IT_WORKS_SUBTITLE', value: document.getElementById('admin-how-it-works-subtitle').value}
         ];
         try {
             await api.put('/admin/settings', payload);

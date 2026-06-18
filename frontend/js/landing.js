@@ -52,6 +52,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (settings.LANDING_STEPS) stepsData = JSON.parse(settings.LANDING_STEPS);
         if (settings.LANDING_FAQ) faqData = JSON.parse(settings.LANDING_FAQ);
         if (settings.LANDING_FOOTER) footerData = JSON.parse(settings.LANDING_FOOTER);
+        
+        if (settings.LANDING_HOW_IT_WORKS_TITLE) {
+            const el = document.getElementById('landing-how-it-works-title');
+            if (el) el.textContent = settings.LANDING_HOW_IT_WORKS_TITLE;
+        }
+        if (settings.LANDING_HOW_IT_WORKS_SUBTITLE) {
+            const el = document.getElementById('landing-how-it-works-subtitle');
+            if (el) el.textContent = settings.LANDING_HOW_IT_WORKS_SUBTITLE;
+        }
 
         // Fallbacks if not configured yet
         if(!stepsData) stepsData = [
