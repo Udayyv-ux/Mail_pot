@@ -139,7 +139,7 @@ async def send_email_via_gmail_api(to_email: str, first_name: str, template, acc
             if resp.status_code == 200:
                 return True, ""
             elif resp.status_code == 401:
-                return False, "Gmail API Unauthorized. Token may be expired or revoked."
+                return False, f"Gmail API 401 Unauthorized. Exact response: {resp.text}"
             return False, f"Gmail API Error: {resp.text}"
     except Exception as e:
         return False, f"HTTP Error: {str(e)}"
