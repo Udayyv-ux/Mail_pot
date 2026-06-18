@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         router.on('settings', loadSettings);
         router.on('landing', loadLandingContent);
         router.on('policies', loadPolicies);
+        router.on('promo', loadPromoCodes);
         router.init();
     }
 
