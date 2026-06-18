@@ -189,7 +189,7 @@ async def landing_page():
     """Serve the space-themed landing page."""
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
-@app.get("/legal")
+@app.get("/regulations")
 async def legal_page():
     """Serve the dedicated legal policies page."""
     return FileResponse(os.path.join(FRONTEND_DIR, "legal.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})

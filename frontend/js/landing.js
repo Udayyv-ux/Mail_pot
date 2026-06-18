@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const policies = await api.get('/public/policies');
             const policiesContainer = document.getElementById('footer-policies');
             if(policiesContainer && policies.length > 0) {
-                const links = policies.map(p => `<a href="/legal?policy=${p.slug}" class="hover:text-white transition-colors ml-4">${p.title}</a>`);
+                const links = policies.map(p => `<a href="/regulations?policy=${p.slug}" class="hover:text-white transition-colors ml-4">${p.title}</a>`);
                 policiesContainer.innerHTML = links.join('');
             }
         } catch(e) {
