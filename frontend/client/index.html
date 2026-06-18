@@ -48,8 +48,11 @@
 
     <!-- Sidebar -->
     <aside class="w-64 bg-base-200 border-r border-white/5 flex flex-col h-full z-20 shrink-0 shadow-2xl shadow-black/50">
-        <div class="p-6 border-b border-white/5">
-            <h1 class="text-2xl font-bold tracking-tight">Sheetx<span class="text-primary">.io</span></h1>
+        <div class="p-6 border-b border-white/5 flex justify-center">
+            <a href="/" class="flex items-center gap-2">
+                <img src="/img/logo.png" alt="Sheetx Logo" class="h-8 object-contain">
+                <span class="text-2xl font-bold tracking-tight">Sheetx<span class="text-primary">.io</span></span>
+            </a>
         </div>
         <nav class="flex-1 p-4 overflow-y-auto">
             <ul class="menu w-full p-0 space-y-2">
@@ -226,7 +229,15 @@
                         <div class="stat-desc text-sm">Daily limit: <span id="billing-current-limit" class="text-white font-bold">0 / day</span></div>
                     </div>
                 </div>
-                <h3 class="text-xl font-bold mb-6">Available Upgrades</h3>
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+                    <h3 class="text-xl font-bold">Available Upgrades</h3>
+                    <!-- Billing Toggle -->
+                    <div class="bg-base-300 p-1 rounded-full inline-flex border border-white/10" id="billing-toggle">
+                        <button class="px-6 py-2 rounded-full text-sm font-semibold transition-all bg-primary text-white" data-cycle="monthly">Monthly</button>
+                        <button class="px-6 py-2 rounded-full text-sm font-semibold transition-all text-gray-400 hover:text-white" data-cycle="half_yearly">6-Monthly <span class="text-xs text-green-400 ml-1">15% off</span></button>
+                        <button class="px-6 py-2 rounded-full text-sm font-semibold transition-all text-gray-400 hover:text-white" data-cycle="yearly">Yearly <span class="text-xs text-green-400 ml-1">25% off</span></button>
+                    </div>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="billing-plan-list">
                     <!-- Populated by JS -->
                 </div>
