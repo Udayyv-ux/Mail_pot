@@ -69,11 +69,20 @@
 
     <!-- Navigation -->
     <div class="navbar bg-base-100/50 backdrop-blur-md sticky top-0 z-50 border-b border-white/5 px-6">
-        <div class="flex-1">
+        <div class="navbar-start">
             <a href="#" class="text-2xl font-bold tracking-tight">Sheetx<span class="text-primary">.io</span></a>
         </div>
-        <div class="flex-none gap-4">
-            <button onclick="document.getElementById('login-modal').showModal()" class="btn btn-ghost btn-sm">Log in</button>
+        <div class="navbar-center hidden lg:flex">
+            <ul class="menu menu-horizontal px-1 gap-2 text-gray-300 font-medium text-sm">
+                <li><a href="#how-it-works" class="hover:text-white transition-colors">How it works</a></li>
+                <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
+                <li><a href="#pricing" class="hover:text-white transition-colors">Pricing</a></li>
+                <li><a href="#testimonials" class="hover:text-white transition-colors">Testimonials</a></li>
+                <li><a href="#faq" class="hover:text-white transition-colors">FAQ</a></li>
+            </ul>
+        </div>
+        <div class="navbar-end gap-4">
+            <button onclick="document.getElementById('login-modal').showModal()" class="btn btn-ghost btn-sm text-gray-300 hover:text-white">Log in</button>
             <button onclick="document.getElementById('register-modal').showModal()" class="btn bg-primary hover:bg-violet-600 text-white border-none btn-sm">Get Started</button>
         </div>
     </div>
@@ -298,6 +307,20 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- About Us -->
+        <section id="about" class="py-24 border-t border-white/5 relative z-10">
+            <div class="max-w-4xl mx-auto px-6 text-center">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider mb-6">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    About Us
+                </div>
+                <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">Built by agency owners, for agency owners.</h2>
+                <p class="text-xl text-gray-400 font-light leading-relaxed max-w-3xl mx-auto">
+                    We started Sheetx.io because we were tired of fighting with clunky CRM integrations just to send personalized emails. We wanted a tool that respected the simplicity of Google Sheets but had the power of an enterprise outreach platform. 
+                </p>
             </div>
         </section>
 
