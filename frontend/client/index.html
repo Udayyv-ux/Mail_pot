@@ -62,6 +62,12 @@
                     </a>
                 </li>
                 <li>
+                    <a class="nav-item" data-route="instructions">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        How to Use
+                    </a>
+                </li>
+                <li>
                     <a class="nav-item" data-route="templates">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                         Templates
@@ -169,6 +175,58 @@
                             <div id="recent-activity-list" class="flex-1 overflow-y-auto space-y-4 pr-2">
                                 <div class="text-center text-gray-500 mt-10">No recent activity</div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Instructions Page -->
+            <section id="page-instructions" class="page-section max-w-4xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold mb-2">How to Use Sheetx.io</h2>
+                    <p class="text-gray-400">Everything you need to know to automate your email outreach.</p>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Step 1 -->
+                    <div class="card bg-base-200 border border-white/5 shadow-lg">
+                        <div class="card-body p-6">
+                            <h3 class="text-xl font-bold flex items-center gap-3"><span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">1</span> Connect Your Google Account</h3>
+                            <p class="text-gray-400 mt-2">To send emails on your behalf, we need permission to connect to your Gmail account. We only request the minimum permissions required to send emails and read the Google Sheets you explicitly share with us.</p>
+                            <ul class="list-disc list-inside text-sm text-gray-300 mt-4 space-y-2">
+                                <li>Go to the <a href="#settings" class="text-primary hover:underline" onclick="document.querySelector('[data-route=settings]').click(); return false;">Settings</a> tab.</li>
+                                <li>Click the <b>"Connect Google Workspace"</b> button.</li>
+                                <li>Grant the required permissions. Make sure to check the box to allow sending emails!</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="card bg-base-200 border border-white/5 shadow-lg">
+                        <div class="card-body p-6">
+                            <h3 class="text-xl font-bold flex items-center gap-3"><span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">2</span> Create a Template</h3>
+                            <p class="text-gray-400 mt-2">Define the core message you want to send. Our AI will automatically personalize it for each lead based on their data.</p>
+                            <ul class="list-disc list-inside text-sm text-gray-300 mt-4 space-y-2">
+                                <li>Go to the <a href="#templates" class="text-primary hover:underline" onclick="document.querySelector('[data-route=templates]').click(); return false;">Templates</a> tab.</li>
+                                <li>Click <b>"+ Create Template"</b>.</li>
+                                <li>Write your subject line and email body. You can use variables like <code>{{Name}}</code> or <code>{{Company}}</code> if your sheet has those columns.</li>
+                                <li>Save the template.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="card bg-base-200 border border-white/5 shadow-lg">
+                        <div class="card-body p-6">
+                            <h3 class="text-xl font-bold flex items-center gap-3"><span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">3</span> Launch a Campaign</h3>
+                            <p class="text-gray-400 mt-2">Link a Google Sheet containing your leads to a Template, and start sending.</p>
+                            <ul class="list-disc list-inside text-sm text-gray-300 mt-4 space-y-2">
+                                <li>Go to the <a href="#campaigns" class="text-primary hover:underline" onclick="document.querySelector('[data-route=campaigns]').click(); return false;">Campaigns</a> tab and click <b>"+ New Campaign"</b>.</li>
+                                <li>Select the Template you created.</li>
+                                <li>Paste the <b>URL of your Google Sheet</b> containing the leads. <br><span class="text-xs text-yellow-500 italic mt-1 inline-block">Note: The sheet must be "Anyone with the link can view" or explicitly shared with your connected Google account.</span></li>
+                                <li>Map the columns (e.g. tell the system which column has the Email address).</li>
+                                <li>Click <b>Start Campaign</b>. The engine will process rows sequentially.</li>
+                            </ul>
                         </div>
                     </div>
                 </div>

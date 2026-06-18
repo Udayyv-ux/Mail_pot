@@ -26,6 +26,12 @@ async def lifespan(app: FastAPI):
     from backend.database import engine, Base
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    try:
+        from sqlalchemy import text
+        async with engine.begin() as conn:
+            await conn.execute(text("UPDATE plans SET is_featured = true WHERE name = 'Growth'"))
+    except Exception as e:
+        print(f"Plan update failed: {e}")
         
     # Add new columns manually to existing tables (sqlite & postgres)
     for col, col_def in [("target_columns", "VARCHAR DEFAULT 'Name, Email, Inquiry'"), ("status_column", "VARCHAR DEFAULT 'Status'")]:
