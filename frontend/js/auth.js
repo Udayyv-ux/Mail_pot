@@ -22,6 +22,7 @@ const auth = {
             return await api.get('/auth/me');
         } catch (e) {
             console.error("Auth error:", e);
+            alert("Authentication Error: " + e.message + "\nPlease check the backend server logs.");
             api.clearTokens();
             return null;
         }

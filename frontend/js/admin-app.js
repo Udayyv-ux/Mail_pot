@@ -11,6 +11,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             loginScreen.style.display = 'flex';
+            
+            // Check if there's an error we can display
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                // If we have a token but user is null, it means the API call failed
+                const errDiv = document.createElement('div');
+                errDiv.className = 'text-red-400 mt-4 text-sm font-mono bg-black/50 p-2 rounded';
+                errDiv.textContent = 'Auth failed. Please check the backend server logs. Are you sure you are running the backend on port 8000?';
+                loginScreen.querySelector('.card').appendChild(errDiv);
+            }
         } else {
             loginScreen.style.display = 'none';
             initAdmin();
