@@ -38,10 +38,11 @@ def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> str:
     
     system_prompt = (
         "You are an exact categorization bot. "
-        f"You must choose EXACTLY ONE category from this list: {categories_str}. "
-        "Do not wrap it in quotes. Do not add any prefix. Respond with the exact name only."
+        f"You must choose EXACTLY ONE category from this exact list: {categories_str}. "
+        "Do not wrap it in quotes. Do not add any prefix, suffix, or explanation. "
+        "Output ONLY the exact string from the list."
     )
-    prompt = f"Customer Inquiry: '{lead_info}'\n\nWhich category does this fit best? Output ONLY the category name."
+    prompt = f"Customer Inquiry: '{lead_info}'\n\nWhich category does this fit best?"
     
     try:
         api_key = groq_key if groq_key else settings.GROQ_API_KEY
@@ -57,15 +58,17 @@ def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> str:
         # Clean quotes if AI added them
         decision = decision.strip("'").strip('"')
         
-        print(f"🤖 AI Categorized '{lead_info}' -> '{decision}'")
+        print(f"AI Categorized '{lead_info}' -> '{decision}'")
         
         # Exact match
         if decision in categories:
             return decision
             
-        # Fuzzy fallback match
+        # Fuzzy fallback match (check both ways)
+        decision_lower = decision.lower()
         for c in categories:
-            if c.lower() in decision.lower():
+            c_lower = c.lower()
+            if c_lower in decision_lower or decision_lower in c_lower:
                 return c
                 
         return categories[0]
