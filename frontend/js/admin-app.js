@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         on(path, callback) { this.routes[path] = callback; },
         async navigate(path) {
             if (!path) return;
-            if (this.currentRoute === path) return;
+            // Allow re-navigating to the same route (force refresh)
             this.currentRoute = path;
             window.location.hash = path;
             
@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.deletePlan = deletePlan;
 
     // --- Global Monitor ---
-    window.loadGlobalLogs = async () => {
+    async function loadGlobalLogs() {
         try {
             const logs = await api.get('/admin/email-logs');
             const tbody = document.getElementById('global-log-list');
