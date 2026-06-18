@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/public", tags=["public"])
 
 @router.get("/plans")
 async def get_active_plans(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Plan).where(Plan.is_active == True).order_by(Plan.sort_order))
+    result = await db.execute(select(Plan).where(Plan.is_active == True).order_by(Plan.price_monthly.asc()))
     return result.scalars().all()
 
 @router.get("/policies")
