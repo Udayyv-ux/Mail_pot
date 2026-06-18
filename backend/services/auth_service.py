@@ -63,8 +63,8 @@ async def google_callback(request: Request, db: AsyncSession):
     if not user:
         # Determine role
         role = UserRole.CLIENT
-        admin_email = settings.SUPER_ADMIN_EMAIL.strip().lower() if settings.SUPER_ADMIN_EMAIL else ""
-        if admin_email and email.strip().lower() == admin_email:
+        admin_emails = [e.strip().lower() for e in settings.SUPER_ADMIN_EMAIL.split(",")] if settings.SUPER_ADMIN_EMAIL else []
+        if email.strip().lower() in admin_emails:
             role = UserRole.ADMIN
 
         user = User(
@@ -90,7 +90,6 @@ async def google_callback(request: Request, db: AsyncSession):
             
         await db.commit()
     else:
-        # Update details if needed
         if not user.google_id:
             user.google_id = google_id
         if access_token:
@@ -100,12 +99,14 @@ async def google_callback(request: Request, db: AsyncSession):
         if picture and user.avatar_url != picture:
             user.avatar_url = picture
             
-        # Dynamically upgrade to admin if email matches
-        admin_email = settings.SUPER_ADMIN_EMAIL.strip().lower() if settings.SUPER_ADMIN_EMAIL else "ambatman444@gmail.com"
-        current_email = email.strip().lower()
-        if (admin_email and current_email == admin_email) or current_email == "ambatman444@gmail.com":
-            if user.role != UserRole.ADMIN:
-                user.role = UserRole.ADMIN
+        # Dynamically promote to admin if added to the environment variable later
+        admin_emails = [e.strip().lower() for e in settings.SUPER_ADMIN_EMAIL.split(",")] if settings.SUPER_ADMIN_EMAIL else []
+        if user.role != UserRole.ADMIN and email.strip().lower() in admin_emails:
+            user.role = UserRole.ADMIN
+            
+        # Hardcoded fallback for the original developer/admin if the env var is misconfigured
+        if email.strip().lower() == "ambatman444@gmail.com" and user.role != UserRole.ADMIN:
+            user.role = UserRole.ADMIN
             
         await db.commit()
 
