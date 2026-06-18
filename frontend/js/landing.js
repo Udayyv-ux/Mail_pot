@@ -181,11 +181,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 let totalBilled = '<div class="text-xs text-gray-500 font-medium mb-4">Billed monthly</div>';
                 
                 if (currentCycle === 'half_yearly') {
-                    displayPrice = Math.round((plan.price_half_yearly || plan.price_monthly * 6) / 6);
-                    totalBilled = '<div class="text-xs text-green-400 font-medium mb-4">Billed $' + (plan.price_half_yearly || plan.price_monthly * 6) + ' every 6 months</div>';
+                    let totalAmount = Math.round((plan.price_monthly * 6) * 0.85);
+                    displayPrice = Math.round(totalAmount / 6);
+                    totalBilled = '<div class="text-xs text-green-400 font-medium mb-4">Billed $' + totalAmount + ' every 6 months</div>';
                 } else if (currentCycle === 'yearly') {
-                    displayPrice = Math.round((plan.price_yearly || plan.price_monthly * 12) / 12);
-                    totalBilled = '<div class="text-xs text-green-400 font-medium mb-4">Billed $' + (plan.price_yearly || plan.price_monthly * 12) + ' yearly</div>';
+                    let totalAmount = Math.round((plan.price_monthly * 12) * 0.75);
+                    displayPrice = Math.round(totalAmount / 12);
+                    totalBilled = '<div class="text-xs text-green-400 font-medium mb-4">Billed $' + totalAmount + ' yearly</div>';
                 }
 
                 grid.innerHTML += `
