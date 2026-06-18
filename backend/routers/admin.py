@@ -25,7 +25,37 @@ import base64
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
+@router.get("/email-logs")
+async def get_global_email_logs(db: AsyncSession = Depends(get_db), admin = Depends(require_admin), limit: int = 50):
+    result = await db.execute(
+        select(EmailLog)
+        .order_by(EmailLog.sent_at.desc())
+        .limit(limit)
+    )
+    logs = result.scalars().all()
+    return [{
+        "id": log.id,
+        "client_id": log.client_id,
+        "recipient_email": log.recipient_email,
+        "status": log.status,
+        "sent_at": log.sent_at.isoformat() if log.sent_at else None,
+        "error_message": log.error_message
+    } for log in logs]
+
 # --- DASHBOARD ---
+
+from backend.middleware.auth_middleware import create_access_token
+
+@router.post("/impersonate/{user_id}")
+async def impersonate_user(user_id: str, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    token = create_access_token({"sub": user.id})
+    return {"access_token": token, "message": f"Impersonating {user.name}"}
+
 @router.get("/dashboard")
 async def get_dashboard(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
     clients_count = await db.scalar(select(func.count(Client.id)))
@@ -71,6 +101,7 @@ async def list_clients(db: AsyncSession = Depends(get_db), admin = Depends(requi
     clients = result.scalars().all()
     return [{
         "id": c.id, 
+        "user_id": c.user_id,
         "email": c.user.email if c.user else "N/A",
         "company_name": c.company_name, 
         "plan": c.plan.name if c.plan else "Free",
@@ -341,3 +372,66 @@ async def send_demo_emails(req: DemoEmailRequest, db: AsyncSession = Depends(get
             
     return {"status": "success", "sent_count": sent_count}
 
+@router.get("/revenue")
+async def get_revenue_metrics(db: AsyncSession = Depends(get_db), current_admin = Depends(require_admin)):
+    from backend.models.client import Client
+    from backend.models.plan import Plan
+    from sqlalchemy.orm import selectinload
+    
+    # Active clients with their plans
+    res = await db.execute(select(Client).options(selectinload(Client.plan)).where(Client.status == "active"))
+    clients = res.scalars().all()
+    
+    mrr = 0
+    active_subscriptions = 0
+    
+    for c in clients:
+        if c.plan and c.plan.price_monthly > 0:
+            mrr += c.plan.price_monthly
+            active_subscriptions += 1
+            
+    # Total revenue ever
+    from backend.models.payment import Payment
+    pay_res = await db.execute(select(func.sum(Payment.amount)).where(Payment.status == "paid"))
+    total_revenue = pay_res.scalar() or 0
+    
+    return {
+        "mrr": mrr,
+        "active_subscriptions": active_subscriptions,
+        "total_revenue": total_revenue
+    }
+
+from pydantic import BaseModel
+class PromoCodeCreate(BaseModel):
+    code: str
+    discount_pct: int
+    max_uses: int = 100
+    is_active: bool = True
+
+@router.get("/promo-codes")
+async def get_promo_codes(db: AsyncSession = Depends(get_db), current_admin = Depends(require_admin)):
+    from backend.models.promo_code import PromoCode
+    res = await db.execute(select(PromoCode).order_by(PromoCode.created_at.desc()))
+    return res.scalars().all()
+
+@router.post("/promo-codes")
+async def create_promo_code(promo: PromoCodeCreate, db: AsyncSession = Depends(get_db), current_admin = Depends(require_admin)):
+    from backend.models.promo_code import PromoCode
+    pc = PromoCode(**promo.model_dump())
+    db.add(pc)
+    try:
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        raise HTTPException(400, "Promo code might already exist")
+    return pc
+
+@router.delete("/promo-codes/{id}")
+async def delete_promo_code(id: str, db: AsyncSession = Depends(get_db), current_admin = Depends(require_admin)):
+    from backend.models.promo_code import PromoCode
+    pc = await db.get(PromoCode, id)
+    if not pc:
+        raise HTTPException(404, "Not found")
+    await db.delete(pc)
+    await db.commit()
+    return {"status": "success"}

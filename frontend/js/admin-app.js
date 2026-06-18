@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         router.on('dashboard', loadDashboard);
         router.on('users', loadUsers);
         router.on('plans', loadPlans);
+        router.on('monitor', loadGlobalLogs);
         router.on('settings', loadSettings);
         router.on('landing', loadLandingContent);
         router.on('policies', loadPolicies);
@@ -76,15 +77,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Dashboard ---
     async function loadDashboard() {
         try {
-            // Backend endpoint: GET /api/admin/dashboard
-            // Returns: { total_clients, active_campaigns, total_emails_sent, total_revenue }
             const stats = await api.get('/admin/dashboard');
+            const revenue = await api.get('/admin/revenue').catch(() => ({}));
+            
             const el = (id) => document.getElementById(id);
             
             if(el('stat-users')) el('stat-users').textContent = stats.total_clients || 0;
-            if(el('stat-plans')) el('stat-plans').textContent = '-';
+            if(el('stat-plans')) el('stat-plans').textContent = revenue.active_subscriptions || 0;
             if(el('stat-emails')) el('stat-emails').textContent = stats.total_emails_sent || 0;
-            if(el('stat-demos')) el('stat-demos').textContent = '-';
+            if(el('stat-demos')) el('stat-demos').textContent = '-'; // We can populate this later
+            if(el('stat-mrr')) el('stat-mrr').textContent = '₹' + (revenue.mrr || 0);
 
             loadDemoRequests();
             loadAnalyticsChart();
@@ -187,7 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td class="p-4 text-right">
                         <button onclick="resetUsage('${c.id}')" class="text-xs bg-dark/50 hover:bg-white/10 text-gray-300 py-1 px-3 rounded transition-colors mr-2">Reset Usage</button>
                         <button class="text-secondary hover:text-pink-400 font-semibold text-sm" onclick="viewClientDetails('${c.id}')">Details</button>
-                        <button class="text-secondary hover:text-pink-400 font-semibold text-sm" onclick="openClientFeatures('${c.id}', '${c.company_name || "Client"}')">Features</button>
+                        <button class="text-secondary hover:text-pink-400 font-semibold text-sm mr-2" onclick="openClientFeatures('${c.id}', '${c.company_name || "Client"}')">Features</button>
+                        <button class="text-accent hover:text-white font-semibold text-sm" onclick="impersonateClient('${c.user_id}')">Impersonate</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -196,6 +199,22 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Load users error:", e);
         }
     }
+
+    window.impersonateClient = async (userId) => {
+        if(!confirm("Are you sure you want to impersonate this user? You will be redirected to the Client Portal.")) return;
+        try {
+            const res = await api.post(`/admin/impersonate/${userId}`);
+            // Save admin token so we can restore it later
+            const currentToken = localStorage.getItem('token');
+            localStorage.setItem('admin_token', currentToken);
+            
+            // Set client token
+            localStorage.setItem('token', res.access_token);
+            window.location.href = '/client';
+        } catch (e) {
+            alert("Failed to impersonate: " + e.message);
+        }
+    };
 
     window.viewClientDetails = async (id) => {
         try {
@@ -265,6 +284,45 @@ document.addEventListener('DOMContentLoaded', () => {
             if(window.showToast) showToast(err.message, "error");
         }
     });
+
+    window.savePlan = savePlan;
+    window.editPlan = editPlan;
+    window.deletePlan = deletePlan;
+
+    // --- Global Monitor ---
+    window.loadGlobalLogs = async () => {
+        try {
+            const logs = await api.get('/admin/email-logs');
+            const tbody = document.getElementById('global-log-list');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            if(!logs || logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">No emails sent yet.</td></tr>';
+                return;
+            }
+
+            logs.forEach(log => {
+                const tr = document.createElement('tr');
+                let statusBadge = '';
+                if(log.status === 'sent') statusBadge = '<span class="badge badge-success badge-sm text-xs">Sent</span>';
+                else if(log.status === 'failed') statusBadge = '<span class="badge badge-error badge-sm text-xs">Failed</span>';
+                else if(log.status === 'bounced') statusBadge = '<span class="badge badge-warning badge-sm text-xs">Bounced</span>';
+                else statusBadge = `<span class="badge badge-ghost badge-sm text-xs">${log.status}</span>`;
+
+                tr.innerHTML = `
+                    <td class="p-4 text-gray-300 font-mono text-xs">${log.client_id || 'Unknown'}</td>
+                    <td class="p-4 text-white">${log.recipient_email}</td>
+                    <td class="p-4">${statusBadge}</td>
+                    <td class="p-4 text-gray-400 text-sm">${log.sent_at ? new Date(log.sent_at).toLocaleString() : '-'}</td>
+                    <td class="p-4 text-error text-xs max-w-xs truncate" title="${log.error_message || ''}">${log.error_message || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch(e) {
+            console.error("Load global logs error:", e);
+        }
+    };
 
     // --- Plans ---
     async function loadPlans() {
@@ -380,6 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(s.key === 'GCP_CREDENTIALS_JSON') document.getElementById('admin-gcp-json').value = s.value;
                 if(s.key === 'RAZORPAY_KEY_ID') document.getElementById('admin-rzp-key').value = s.value;
                 if(s.key === 'RAZORPAY_SECRET') document.getElementById('admin-rzp-secret').value = s.value;
+                if(s.key === 'MAINTENANCE_MODE') document.getElementById('admin-maintenance').checked = (s.value === 'true');
                 if(s.key === 'LANDING_HOW_IT_WORKS_TITLE') document.getElementById('admin-how-it-works-title').value = s.value;
                 if(s.key === 'LANDING_HOW_IT_WORKS_SUBTITLE') document.getElementById('admin-how-it-works-subtitle').value = s.value;
             });
@@ -394,6 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
             {key: 'SENDER_EMAIL', value: document.getElementById('admin-sender').value},
             {key: 'GCP_SERVICE_EMAIL', value: document.getElementById('admin-gcp-email').value},
             {key: 'GCP_CREDENTIALS_JSON', value: document.getElementById('admin-gcp-json').value},
+            {key: 'MAINTENANCE_MODE', value: document.getElementById('admin-maintenance').checked ? 'true' : 'false'},
             {key: 'RAZORPAY_KEY_ID', value: document.getElementById('admin-rzp-key').value},
             {key: 'RAZORPAY_SECRET', value: document.getElementById('admin-rzp-secret').value},
             {key: 'LANDING_HOW_IT_WORKS_TITLE', value: document.getElementById('admin-how-it-works-title').value},
@@ -615,6 +675,71 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('form-notif')?.reset();
         } catch(err) { if(window.showToast) showToast(err.message, "error"); }
     });
+    });
+
+    // --- Promo Codes ---
+    async function loadPromoCodes() {
+        try {
+            const codes = await api.get('/admin/promo-codes');
+            const list = document.getElementById('promo-list');
+            if(!list) return;
+            list.innerHTML = '';
+            
+            if(!codes || codes.length === 0) {
+                list.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">No promo codes found.</td></tr>';
+                return;
+            }
+            
+            codes.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-4 font-bold font-mono text-white">${c.code}</td>
+                    <td class="p-4 text-secondary">${c.discount_pct}%</td>
+                    <td class="p-4">${c.uses}</td>
+                    <td class="p-4">${c.max_uses}</td>
+                    <td class="p-4">
+                        ${c.is_active ? '<span class="badge badge-success badge-sm">Active</span>' : '<span class="badge badge-error badge-sm">Inactive</span>'}
+                    </td>
+                    <td class="p-4 text-right">
+                        <button class="btn btn-xs btn-error text-white" onclick="deletePromoCode('${c.id}')">Delete</button>
+                    </td>
+                `;
+                list.appendChild(tr);
+            });
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    document.getElementById('form-promo')?.addEventListener('submit', async(e) => {
+        e.preventDefault();
+        const payload = {
+            code: document.getElementById('promo-code-val').value.toUpperCase(),
+            discount_pct: parseInt(document.getElementById('promo-discount').value) || 0,
+            max_uses: parseInt(document.getElementById('promo-max-uses').value) || 100,
+            is_active: true
+        };
+        try {
+            await api.post('/admin/promo-codes', payload);
+            if(window.showToast) showToast('Promo code created', 'success');
+            document.getElementById('modal-promo')?.close();
+            document.getElementById('form-promo').reset();
+            loadPromoCodes();
+        } catch(err) {
+            if(window.showToast) showToast(err.message, 'error');
+        }
+    });
+
+    window.deletePromoCode = async (id) => {
+        if(!confirm("Delete this promo code?")) return;
+        try {
+            await api.delete('/admin/promo-codes/' + id);
+            if(window.showToast) showToast('Deleted', 'success');
+            loadPromoCodes();
+        } catch(e) {}
+    };
+
+    router.on('promo', loadPromoCodes);
 
 });
 

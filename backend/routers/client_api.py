@@ -10,7 +10,10 @@ from typing import Optional
 from backend.database import get_db
 from backend.middleware.auth_middleware import require_client
 from backend.models.client import Client
+from backend.models.plan import Plan
+from backend.models.template import Template
 from backend.models.email_log import EmailLog
+from backend.models.email_queue import EmailQueue
 from datetime import datetime, timedelta, timezone
 from fastapi import UploadFile, File, BackgroundTasks
 import os
@@ -119,6 +122,10 @@ class CampaignCreate(BaseModel):
     status_column: str = "Status"
     follow_up_days: int = 0
     follow_up_template_id: Optional[str] = None
+    max_emails_per_hour: int = 50
+    send_hours_start: int = 9
+    send_hours_end: int = 17
+    review_mode: bool = False
 
 @router.get("/campaigns")
 async def list_campaigns(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
@@ -133,6 +140,10 @@ async def list_campaigns(db: AsyncSession = Depends(get_db), current_user = Depe
         "status_column": c.status_column,
         "follow_up_days": c.follow_up_days,
         "follow_up_template_id": c.follow_up_template_id,
+        "max_emails_per_hour": c.max_emails_per_hour,
+        "send_hours_start": c.send_hours_start,
+        "send_hours_end": c.send_hours_end,
+        "review_mode": getattr(c, 'review_mode', False),
         "is_active": c.is_active,
         "created_at": c.created_at
     } for c in campaigns]
@@ -159,7 +170,11 @@ async def create_campaign(data: CampaignCreate, db: AsyncSession = Depends(get_d
         target_columns=data.target_columns,
         status_column=data.status_column,
         follow_up_days=data.follow_up_days,
-        follow_up_template_id=data.follow_up_template_id
+        follow_up_template_id=data.follow_up_template_id,
+        max_emails_per_hour=data.max_emails_per_hour,
+        send_hours_start=data.send_hours_start,
+        send_hours_end=data.send_hours_end,
+        review_mode=data.review_mode
     )
     db.add(new_campaign)
     await db.commit()
@@ -217,3 +232,79 @@ async def upload_image(file: UploadFile = File(...), current_user = Depends(requ
         content = await file.read()
         f.write(content)
     return {"url": f"/uploads/{filename}"}
+@router.get("/queue")
+async def list_email_queue(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    client = await get_client_profile(current_user, db)
+    from sqlalchemy.orm import selectinload
+    res = await db.execute(select(EmailQueue).options(selectinload(EmailQueue.campaign), selectinload(EmailQueue.template)).where(EmailQueue.client_id == client.id, EmailQueue.status == "pending").order_by(EmailQueue.created_at.desc()))
+    queue = res.scalars().all()
+    return [{
+        "id": q.id,
+        "campaign_name": q.campaign.name if q.campaign else "Unknown",
+        "template_name": q.template.project_name if q.template else "Unknown",
+        "recipient_email": q.recipient_email,
+        "recipient_name": q.recipient_name,
+        "status": q.status,
+        "created_at": q.created_at
+    } for q in queue]
+
+@router.post("/queue/{id}/approve")
+async def approve_queue_item(id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    client = await get_client_profile(current_user, db)
+    item = await db.get(EmailQueue, id)
+    if not item or item.client_id != client.id: raise HTTPException(404, "Item not found")
+    item.status = "approved"
+    await db.commit()
+    return {"status": "success"}
+
+@router.post("/queue/{id}/reject")
+async def reject_queue_item(id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    client = await get_client_profile(current_user, db)
+    item = await db.get(EmailQueue, id)
+    if not item or item.client_id != client.id: raise HTTPException(404, "Item not found")
+    item.status = "rejected"
+    await db.commit()
+    return {"status": "success"}
+
+@router.get("/inbox")
+async def get_inbox(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    client = await get_client_profile(current_user, db)
+    await db.refresh(client, ['user'])
+    from backend.services.email_engine import refresh_google_token
+    import httpx
+    
+    access_token = await refresh_google_token(client.user, db)
+    if not access_token:
+        raise HTTPException(400, "No Google connection")
+        
+    async with httpx.AsyncClient() as http_client:
+        # Fetch latest messages from INBOX
+        resp = await http_client.get(
+            "https://gmail.googleapis.com/gmail/v1/users/me/messages?labelIds=INBOX&maxResults=20",
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
+        if resp.status_code != 200:
+            raise HTTPException(400, "Failed to fetch inbox")
+            
+        data = resp.json()
+        messages = data.get("messages", [])
+        
+        inbox_items = []
+        for m in messages:
+            msg_resp = await http_client.get(
+                f"https://gmail.googleapis.com/gmail/v1/users/me/messages/{m['id']}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date",
+                headers={"Authorization": f"Bearer {access_token}"}
+            )
+            if msg_resp.status_code == 200:
+                msg_data = msg_resp.json()
+                headers = {h['name']: h['value'] for h in msg_data.get('payload', {}).get('headers', [])}
+                inbox_items.append({
+                    "id": m['id'],
+                    "threadId": m['threadId'],
+                    "snippet": msg_data.get('snippet', ''),
+                    "from": headers.get('From', ''),
+                    "subject": headers.get('Subject', ''),
+                    "date": headers.get('Date', '')
+                })
+                
+    return inbox_items

@@ -7,6 +7,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // Impersonation handling
+    if (localStorage.getItem('admin_token')) {
+        const banner = document.getElementById('impersonation-banner');
+        if (banner) {
+            banner.classList.remove('hidden');
+        }
+    }
+
+    window.endImpersonation = () => {
+        const adminToken = localStorage.getItem('admin_token');
+        if (adminToken) {
+            localStorage.setItem('token', adminToken);
+            localStorage.removeItem('admin_token');
+            window.location.href = '/admin';
+        }
+    };
+
     // ─────────────────────────────────────────────────────────────────────────
     //  ROUTER — handles sidebar tab navigation
     // ─────────────────────────────────────────────────────────────────────────
@@ -357,7 +374,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             name: document.getElementById('camp-name').value,
             sheet_url_or_id: document.getElementById('camp-sheet').value,
             follow_up_days: parseInt(document.getElementById('camp-followup-days').value) || 0,
-            follow_up_template_id: document.getElementById('camp-followup-template').value || null
+            follow_up_template_id: document.getElementById('camp-followup-template').value || null,
+            max_emails_per_hour: parseInt(document.getElementById('camp-throttle-rate').value) || 50,
+            send_hours_start: parseInt(document.getElementById('camp-throttle-start').value) || 9,
+            send_hours_end: parseInt(document.getElementById('camp-throttle-end').value) || 17,
+            review_mode: document.getElementById('camp-review-mode').checked
         };
 
         try {
@@ -380,6 +401,81 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (window.showToast) showToast('Campaign deleted', 'success');
         } catch (e) {
             if (window.showToast) showToast(e.message, 'error');
+        }
+    };
+
+    window.loadQueue = async () => {
+        try {
+            var items = await api.get('/client/queue');
+            var tbody = document.getElementById('queue-list');
+            if (tbody) {
+                tbody.innerHTML = items.map(q => `
+                    <tr>
+                        <td class="p-4">
+                            <div class="font-medium">${q.recipient_name || 'N/A'}</div>
+                            <div class="text-xs text-gray-500">${q.recipient_email}</div>
+                        </td>
+                        <td class="p-4">${q.campaign_name}</td>
+                        <td class="p-4">${q.template_name}</td>
+                        <td class="p-4 text-right">
+                            <button class="btn btn-xs btn-success text-white mr-2" onclick="approveQueue('${q.id}')">Approve</button>
+                            <button class="btn btn-xs btn-error text-white" onclick="rejectQueue('${q.id}')">Reject</button>
+                        </td>
+                    </tr>
+                `).join('');
+                if (items.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No emails pending review.</td></tr>';
+                }
+                
+                var badge = document.getElementById('queue-badge');
+                if (badge) {
+                    badge.textContent = items.length;
+                    if (items.length > 0) badge.classList.remove('hidden');
+                    else badge.classList.add('hidden');
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    window.approveQueue = async (id) => {
+        try {
+            await api.post('/client/queue/' + id + '/approve');
+            if (window.showToast) showToast('Approved!', 'success');
+            loadQueue();
+        } catch(e) { if (window.showToast) showToast(e.message, 'error'); }
+    };
+
+    window.rejectQueue = async (id) => {
+        try {
+            await api.post('/client/queue/' + id + '/reject');
+            if (window.showToast) showToast('Rejected!', 'success');
+            loadQueue();
+        } catch(e) { if (window.showToast) showToast(e.message, 'error'); }
+    };
+
+    window.loadInbox = async () => {
+        try {
+            var items = await api.get('/client/inbox');
+            var tbody = document.getElementById('inbox-list');
+            if (tbody) {
+                tbody.innerHTML = items.map(m => `
+                    <tr>
+                        <td class="p-4 font-medium text-white">${m.from.replace(/<.*>/, '')}</td>
+                        <td class="p-4">
+                            <div class="font-medium text-white">${m.subject}</div>
+                            <div class="text-xs text-gray-500 truncate max-w-xs">${m.snippet}</div>
+                        </td>
+                        <td class="p-4 text-xs text-gray-400 whitespace-nowrap">${new Date(m.date).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+                if (items.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-500">No recent messages in Inbox.</td></tr>';
+                }
+            }
+        } catch (e) {
+            console.error(e);
         }
     };
 
@@ -410,12 +506,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!container) return;
         container.innerHTML = '';
 
-        cachedPlans.forEach(function (plan) {
+        cachedPlans.forEach(function (plan, index) {
             var features = [];
             try { features = JSON.parse(plan.features_json); } catch (e) {}
 
+            var isPopular = (index === 1); // Middle plan roughly
+            var cardBorder = isPopular ? 'border-primary' : 'border-white/10';
+            var btnStyle = isPopular ? 'bg-primary text-white hover:bg-primary/80 border-none shadow-[0_0_15px_rgba(var(--p),0.5)]' : 'bg-white text-dark hover:bg-gray-200 border-none';
+
             var card = document.createElement('div');
-            card.className = 'glass p-6 rounded-2xl border border-white/10 hover:border-primary/50 transition-colors flex flex-col';
+            card.className = `glass p-6 rounded-2xl border ${cardBorder} hover:border-primary/50 transition-colors flex flex-col relative`;
+            
+            var popularBadge = isPopular ? '<div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">Most Popular</div>' : '';
+
             var featuresHtml = features.map(function (f) {
                 return '<li class="text-sm text-gray-300 flex items-center gap-2"><svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>' + f + '</li>';
             }).join('');
@@ -433,12 +536,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 totalBilled = '<div class="text-xs text-green-400 font-medium mb-4">Billed $' + totalAmount + ' yearly</div>';
             }
 
-            card.innerHTML =
+            card.innerHTML = popularBadge + 
                 '<h4 class="text-lg font-bold mb-2">' + plan.name + '</h4>' +
                 '<div><span class="text-4xl font-extrabold">$' + displayPrice + '</span><span class="text-gray-400 text-sm">/mo</span></div>' +
                 totalBilled +
                 '<ul class="space-y-2 mb-6 flex-1">' + featuresHtml + '</ul>' +
-                '<button class="w-full bg-white text-dark hover:bg-gray-200 font-bold py-3 rounded-xl transition-colors" onclick="upgradePlan(\'' + plan.id + '\', \'' + plan.name + '\')">Upgrade Now</button>';
+                '<button class="w-full ' + btnStyle + ' font-bold py-3 rounded-xl transition-colors" onclick="upgradePlan(\'' + plan.id + '\', \'' + plan.name + '\')">Upgrade Now</button>';
             container.appendChild(card);
         });
     }
@@ -464,10 +567,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    let activePromoCode = null;
+
+    window.applyPromoCode = async () => {
+        const input = document.getElementById('promo-code-input').value.trim();
+        if (!input) return;
+        // Just store the code locally for now; we'll validate it on create-order.
+        activePromoCode = input;
+        if (window.showToast) showToast('Promo code applied. Discount will be applied at checkout.', 'success');
+    };
+
     window.upgradePlan = async (planId, planName) => {
         try {
             if (window.showToast) showToast('Initiating upgrade to ' + planName + '...', 'info');
-            var order = await api.post('/payments/create-order', { plan_id: planId, billing_cycle: currentBillingCycle });
+            
+            const reqBody = { plan_id: planId, billing_cycle: currentBillingCycle };
+            if (activePromoCode) reqBody.promo_code = activePromoCode;
+            
+            var order = await api.post('/payments/create-order', reqBody);
 
             var options = {
                 key: order.razorpay_key_id,
@@ -565,8 +682,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     router.on('dashboard', loadDashboard);
     router.on('templates', loadTemplates);
     router.on('campaigns', loadCampaigns);
+    router.on('queue', loadQueue);
+    router.on('inbox', loadInbox);
     router.on('billing', loadBilling);
     router.on('settings', loadSettings);
+    router.on('instructions', () => {}); // No data loading required
 
     // Display user email
     var emailDisplay = document.getElementById('client-email-display');

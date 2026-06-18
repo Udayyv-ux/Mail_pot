@@ -59,6 +59,19 @@ async def lifespan(app: FastAPI):
             from sqlalchemy import text
             await conn.execute(text(f"ALTER TABLE email_logs ADD COLUMN client_id VARCHAR"))
     except Exception: pass
+    
+    # Add Campaign fields
+    for col, col_def in [
+        ("max_emails_per_hour", "INTEGER DEFAULT 0"), 
+        ("send_hours_start", "INTEGER DEFAULT 9"),
+        ("send_hours_end", "INTEGER DEFAULT 17"),
+        ("review_mode", "BOOLEAN DEFAULT FALSE")
+    ]:
+        try:
+            async with engine.begin() as conn:
+                from sqlalchemy import text
+                await conn.execute(text(f"ALTER TABLE campaigns ADD COLUMN {col} {col_def}"))
+        except Exception: pass
 
     for col, col_def in [("recipient_name", "VARCHAR"), ("template_used", "VARCHAR"), ("category_assigned", "VARCHAR"), ("error_message", "TEXT")]:
         try:
@@ -86,6 +99,10 @@ async def lifespan(app: FastAPI):
         ("status_column", "VARCHAR DEFAULT 'Status'"),
         ("follow_up_days", "INTEGER DEFAULT 0"),
         ("follow_up_template_id", "VARCHAR"),
+        ("max_emails_per_hour", "INTEGER DEFAULT 50"),
+        ("send_hours_start", "INTEGER DEFAULT 9"),
+        ("send_hours_end", "INTEGER DEFAULT 17"),
+        ("review_mode", "BOOLEAN DEFAULT FALSE"),
         ("is_active", "BOOLEAN DEFAULT TRUE"),
         ("created_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()")
     ]
@@ -103,12 +120,27 @@ async def lifespan(app: FastAPI):
     except Exception: pass
         
     # Migrate policy columns
-    for col, col_def in [("icon", "VARCHAR DEFAULT '📜'"), ("description", "VARCHAR DEFAULT ''")]:
-        try:
-            async with engine.begin() as conn:
-                from sqlalchemy import text
-                await conn.execute(text(f"ALTER TABLE policies ADD COLUMN {col} {col_def}"))
-        except Exception: pass
+    try:
+        async with engine.begin() as conn:
+            from sqlalchemy import text
+            for col, col_def in [("icon", "VARCHAR DEFAULT '📜'"), ("description", "VARCHAR DEFAULT ''")]:
+                try:
+                    await conn.execute(text(f"ALTER TABLE policies ADD COLUMN {col} {col_def}"))
+                except Exception: pass
+            
+            # Promo Codes
+            await conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS promo_codes (
+                id VARCHAR PRIMARY KEY,
+                code VARCHAR UNIQUE NOT NULL,
+                discount_pct INTEGER NOT NULL,
+                max_uses INTEGER DEFAULT 100,
+                uses INTEGER DEFAULT 0,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            )
+            """))
+    except Exception: pass
 
     # Seed Policies
     try:
@@ -191,6 +223,9 @@ app.add_middleware(
     https_only=False
 )
 
+from backend.middleware.maintenance import maintenance_middleware
+app.middleware("http")(maintenance_middleware)
+
 # ── Register API Routers ─────────────────────────────────────────────────────
 
 from backend.routers.auth import router as auth_router
@@ -257,6 +292,11 @@ async def legal_page():
 async def policy_page():
     """Serve the policy viewer page."""
     return FileResponse(os.path.join(FRONTEND_DIR, "policy.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+
+@app.get("/maintenance.html")
+async def maintenance_page():
+    """Serve the maintenance screen."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "maintenance.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
 @app.get("/client")

@@ -24,6 +24,14 @@ class Campaign(Base):
     follow_up_days = Column(Integer, default=0) # 0 means no follow up
     follow_up_template_id = Column(String, ForeignKey("templates.id", ondelete="SET NULL"), nullable=True)
     
+    # Smart Scheduling & Throttling
+    max_emails_per_hour = Column(Integer, default=50) # default safe limit
+    send_hours_start = Column(Integer, default=9)  # 9 AM
+    send_hours_end = Column(Integer, default=17)   # 5 PM
+    
+    # Review Before Send
+    review_mode = Column(Boolean, default=False)
+    
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 

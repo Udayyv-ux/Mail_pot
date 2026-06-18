@@ -86,6 +86,12 @@
                     </a>
                 </li>
                 <li>
+                    <a class="nav-item" data-route="instructions">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Help & Guide
+                    </a>
+                </li>
+                <li>
                     <a class="nav-item" data-route="settings">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         Settings
@@ -118,6 +124,15 @@
                 </div>
             </div>
         </header>
+
+        <!-- Impersonation Banner (Hidden by Default) -->
+        <div id="impersonation-banner" class="bg-accent/20 border-b border-accent/50 p-3 flex justify-between items-center px-8 hidden">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                <span class="text-sm font-medium text-accent">You are currently impersonating a user. Actions taken here will affect their account.</span>
+            </div>
+            <button onclick="endImpersonation()" class="btn btn-sm btn-accent text-white">Return to Admin</button>
+        </div>
 
         <!-- Pages Area -->
         <main class="flex-1 overflow-y-auto p-8 relative">
@@ -276,6 +291,57 @@
                 </div>
             </section>
 
+            <!-- Review Queue Page -->
+            <section id="page-queue" class="page-section max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold">Review Queue</h2>
+                        <p class="text-gray-400">Approve or reject pending emails before they are sent.</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="loadQueue()"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Refresh</button>
+                </div>
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                    <table class="table table-zebra w-full text-left">
+                        <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
+                            <tr>
+                                <th class="p-4 font-semibold">Recipient</th>
+                                <th class="p-4 font-semibold">Campaign</th>
+                                <th class="p-4 font-semibold">Template</th>
+                                <th class="p-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="queue-list" class="border-t border-white/5">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Unified Inbox Page -->
+            <section id="page-inbox" class="page-section max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold">Unified Inbox</h2>
+                        <p class="text-gray-400">View recent replies to your sent campaigns.</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="loadInbox()"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Refresh</button>
+                </div>
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                    <table class="table table-zebra w-full text-left">
+                        <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
+                            <tr>
+                                <th class="p-4 font-semibold">From</th>
+                                <th class="p-4 font-semibold">Subject</th>
+                                <th class="p-4 font-semibold">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inbox-list" class="border-t border-white/5">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- Billing Page -->
             <section id="page-billing" class="page-section max-w-7xl mx-auto">
                 <h2 class="text-3xl font-bold mb-8">Billing & Plan</h2>
@@ -293,6 +359,12 @@
                         <button class="px-6 py-2 rounded-full text-sm font-semibold transition-all bg-primary text-white" data-cycle="monthly">Monthly</button>
                         <button class="px-6 py-2 rounded-full text-sm font-semibold transition-all text-gray-400 hover:text-white" data-cycle="half_yearly">6-Monthly <span class="text-xs text-green-400 ml-1">15% off</span></button>
                         <button class="px-6 py-2 rounded-full text-sm font-semibold transition-all text-gray-400 hover:text-white" data-cycle="yearly">Yearly <span class="text-xs text-green-400 ml-1">25% off</span></button>
+                    </div>
+                </div>
+                <div class="mb-8 flex justify-end">
+                    <div class="join">
+                        <input class="input input-bordered join-item w-48 bg-base-300 border-white/10" id="promo-code-input" placeholder="Promo code"/>
+                        <button class="btn btn-outline join-item border-white/10 text-white hover:bg-white hover:text-black" onclick="applyPromoCode()">Apply</button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="billing-plan-list">
@@ -413,6 +485,34 @@
                     <select id="camp-followup-template" class="select select-bordered bg-base-300 border-white/5 w-full">
                         <option value="">-- None --</option>
                     </select>
+                </div>
+                
+                <div class="divider border-white/5 my-2">Review Mode</div>
+                <div class="form-control">
+                    <label class="label cursor-pointer justify-start gap-4">
+                        <input type="checkbox" id="camp-review-mode" class="toggle toggle-primary">
+                        <div>
+                            <span class="label-text font-medium text-gray-300 block">Review Before Send</span>
+                            <span class="label-text-alt text-gray-500">Queue emails for manual approval before sending.</span>
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="divider border-white/5 my-2">Throttle Settings</div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Max Emails / Hour</span></label>
+                    <input type="number" id="camp-throttle-rate" class="input input-bordered bg-base-300 border-white/5" value="50" min="1">
+                    <label class="label"><span class="label-text-alt text-gray-500">Keep low to avoid spam filters.</span></label>
+                </div>
+                <div class="flex gap-4">
+                    <div class="form-control flex-1">
+                        <label class="label"><span class="label-text font-medium text-gray-300">Start Time (24h)</span></label>
+                        <input type="number" id="camp-throttle-start" class="input input-bordered bg-base-300 border-white/5" value="9" min="0" max="23">
+                    </div>
+                    <div class="form-control flex-1">
+                        <label class="label"><span class="label-text font-medium text-gray-300">End Time (24h)</span></label>
+                        <input type="number" id="camp-throttle-end" class="input input-bordered bg-base-300 border-white/5" value="17" min="0" max="23">
+                    </div>
                 </div>
 
                 <div class="modal-action mt-6">

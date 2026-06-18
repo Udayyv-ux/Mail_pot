@@ -5,13 +5,14 @@ import asyncio
 from datetime import datetime, timezone
 import httpx
 from groq import Groq
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from backend.config import settings
 from backend.database import SessionLocal
 from backend.models.client import Client
 from backend.models.template import Template
 from backend.models.email_log import EmailLog
+from backend.models.email_queue import EmailQueue
 from backend.models.app_settings import AppSetting
 from backend.services.sheets_service import get_sheet_data, update_sheet_cell
 
@@ -157,6 +158,56 @@ async def run_247_engine():
                 
             groq_key = global_settings.get("GROQ_API_KEY", settings.GROQ_API_KEY)
             
+            # --- PROCESS APPROVED QUEUED EMAILS ---
+            async with SessionLocal() as db:
+                queued_res = await db.execute(select(EmailQueue).where(EmailQueue.status == "approved"))
+                queued_emails = queued_res.scalars().all()
+                for q in queued_emails:
+                    db_client = await db.get(Client, q.client_id)
+                    if not db_client or db_client.status != "active" or db_client.emails_sent_today >= db_client.daily_email_limit:
+                        continue
+                    
+                    target_template = await db.get(Template, q.template_id)
+                    campaign = await db.get(Campaign, q.campaign_id)
+                    if not target_template or not campaign:
+                        q.status = "failed"
+                        q.error_message = "Missing template or campaign"
+                        continue
+                        
+                    await db.refresh(db_client, ['user'])
+                    access_token = await refresh_google_token(db_client.user, db) if db_client.user else None
+                    
+                    print(f"📤 Sending QUEUED '{target_template.project_name}' email to {q.recipient_email}...")
+                    success, err = await send_email_via_gmail_api(q.recipient_email, q.recipient_name or "", target_template, access_token)
+                    
+                    # Update Log
+                    log = EmailLog(
+                        client_id=q.client_id,
+                        campaign_id=q.campaign_id,
+                        recipient_email=q.recipient_email,
+                        recipient_name=q.recipient_name,
+                        template_used=target_template.project_name,
+                        status="sent" if success else "failed",
+                        error_message=err
+                    )
+                    db.add(log)
+                    
+                    if success:
+                        db_client.emails_sent_today += 1
+                        q.status = "sent"
+                        # Attempt to update sheet if possible
+                        try:
+                            # We don't have the row index here, so we could just leave it or search
+                            pass
+                        except Exception: pass
+                    else:
+                        q.status = "failed"
+                        q.error_message = err
+
+                if queued_emails:
+                    await db.commit()
+            
+            # --- PROCESS CAMPAIGNS ---
             for campaign in campaigns:
                 async with SessionLocal() as db:
                     db_client = await db.get(Client, campaign.client_id)
@@ -201,6 +252,24 @@ async def run_247_engine():
                 if email_idx == -1 or status_idx == -1:
                     continue
                     
+                from datetime import timedelta
+                current_hour = datetime.now(timezone.utc).hour
+                if current_hour < campaign.send_hours_start or current_hour >= campaign.send_hours_end:
+                    print(f"⏰ Campaign '{campaign.name}' is outside sending hours ({campaign.send_hours_start}:00 - {campaign.send_hours_end}:00). Skipping.")
+                    continue
+                
+                async with SessionLocal() as db:
+                    one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
+                    res = await db.execute(select(func.count(EmailLog.id)).where(
+                        EmailLog.campaign_id == campaign.id,
+                        EmailLog.sent_at >= one_hour_ago
+                    ))
+                    emails_sent_last_hour = res.scalar() or 0
+                
+                if emails_sent_last_hour >= campaign.max_emails_per_hour:
+                    print(f"🛑 Campaign '{campaign.name}' hit hourly limit ({campaign.max_emails_per_hour}/hr). Skipping.")
+                    continue
+
                 for i, row in enumerate(rows[1:], start=1):
                     while len(row) <= max(name_idx, email_idx, inquiry_idx, status_idx):
                         row.append("")
@@ -244,6 +313,28 @@ async def run_247_engine():
                     
                     # 3. Send email if a template was selected
                     if target_template:
+                        if getattr(campaign, 'review_mode', False):
+                            print(f"⏸️ Campaign '{campaign.name}' in Review Mode. Queuing {email}...")
+                            async with SessionLocal() as db:
+                                queue_item = EmailQueue(
+                                    client_id=campaign.client_id,
+                                    campaign_id=campaign.id,
+                                    template_id=target_template.id,
+                                    recipient_email=email,
+                                    recipient_name=name,
+                                    status="pending"
+                                )
+                                db.add(queue_item)
+                                await db.commit()
+                            
+                            # Mark as Queued on the sheet
+                            try:
+                                await update_sheet_cell(campaign.google_sheet_id, status_col_name, i, "Queued")
+                            except Exception as e:
+                                print(f"⚠️ Failed to update sheet status: {e}")
+                            
+                            continue
+                            
                         print(f"📤 Sending '{target_template.project_name}' email to {email}...")
                         success, err = await send_email_via_gmail_api(email, name, target_template, access_token)
                         

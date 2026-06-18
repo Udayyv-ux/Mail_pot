@@ -9,9 +9,11 @@ from backend.models.campaign import Campaign
 from backend.models.email_log import EmailLog
 from backend.models.payment import Payment
 from backend.models.app_settings import Policy, AppSetting, DemoRequest, Notification
+from backend.models.email_queue import EmailQueue
+from backend.models.promo_code import PromoCode
 
 __all__ = [
     "User", "Client", "Plan", "Template", "Campaign",
-    "EmailLog", "Payment",
-    "Policy", "AppSetting", "DemoRequest", "Notification",
+    "EmailLog", "Payment", "Policy", "AppSetting", "DemoRequest", "Notification",
+    "EmailQueue", "PromoCode"
 ]

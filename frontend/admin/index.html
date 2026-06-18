@@ -73,6 +73,8 @@
                 <li><a class="nav-item active" data-route="dashboard">Dashboard</a></li>
                 <li><a class="nav-item" data-route="users">Users & Clients</a></li>
                 <li><a class="nav-item" data-route="plans">Pricing Plans</a></li>
+                <li><a class="nav-item" data-route="promo">Promo Codes</a></li>
+                <li><a class="nav-item" data-route="monitor">Global Monitor</a></li>
                 <li><a class="nav-item" data-route="settings">App Settings</a></li>
                 <li><a class="nav-item" data-route="landing">Landing Page</a></li>
                 <li><a class="nav-item" data-route="policies">Policies (CMS)</a></li>
@@ -97,7 +99,7 @@
             <section id="page-dashboard" class="page-section active max-w-7xl mx-auto">
                 <h1 class="text-3xl font-bold mb-8">Platform Overview</h1>
                 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
                     <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Total Users</div>
                         <div class="stat-value mt-1" id="stat-users">0</div>
@@ -107,12 +109,20 @@
                         <div class="stat-value text-secondary mt-1" id="stat-plans">0</div>
                     </div>
                     <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
-                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Emails Processed (24h)</div>
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Emails (24h)</div>
                         <div class="stat-value text-primary mt-1" id="stat-emails">0</div>
                     </div>
                     <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
-                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Demo Requests</div>
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Demos</div>
                         <div class="stat-value text-accent mt-1" id="stat-demos">0</div>
+                    </div>
+                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Total Users</div>
+                        <div class="stat-value text-white mt-1" id="stat-users">0</div>
+                    </div>
+                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">MRR</div>
+                        <div class="stat-value text-success mt-1" id="stat-mrr">₹0</div>
                     </div>
                 </div>
 
@@ -163,6 +173,55 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="admin-plan-list"></div>
             </section>
 
+            <!-- Promo Codes Page -->
+            <section id="page-promo" class="page-section max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">Promo Codes</h2>
+                    <button class="btn bg-white hover:bg-gray-200 text-dark border-none" onclick="document.getElementById('modal-promo').showModal()">+ Generate Promo Code</button>
+                </div>
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                    <table class="table table-zebra w-full text-left">
+                        <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
+                            <tr>
+                                <th class="p-4 font-semibold">Code</th>
+                                <th class="p-4 font-semibold">Discount (%)</th>
+                                <th class="p-4 font-semibold">Uses</th>
+                                <th class="p-4 font-semibold">Max Uses</th>
+                                <th class="p-4 font-semibold">Status</th>
+                                <th class="p-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="promo-list" class="border-t border-white/5">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Global Monitor Page -->
+            <section id="page-monitor" class="page-section max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">Global Monitor</h2>
+                    <button class="btn btn-sm btn-outline border-white/20 text-white hover:bg-white hover:text-black" onclick="loadGlobalLogs()">Refresh Logs</button>
+                </div>
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                    <table class="table table-zebra w-full text-left">
+                        <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
+                            <tr>
+                                <th class="p-4 font-semibold">Client</th>
+                                <th class="p-4 font-semibold">Recipient</th>
+                                <th class="p-4 font-semibold">Status</th>
+                                <th class="p-4 font-semibold">Timestamp</th>
+                                <th class="p-4 font-semibold">Error</th>
+                            </tr>
+                        </thead>
+                        <tbody id="global-log-list" class="border-t border-white/5">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- Settings Page -->
             <section id="page-settings" class="page-section max-w-7xl mx-auto">
                 <h2 class="text-3xl font-bold mb-8">Global Settings</h2>
@@ -200,6 +259,14 @@
                             <div class="form-control">
                                 <label class="label"><span class="label-text text-gray-400 font-medium">Google Service Account JSON</span></label>
                                 <textarea id="admin-gcp-json" class="textarea textarea-bordered bg-base-300 border-white/10 focus:border-secondary font-mono text-xs h-32" placeholder="{...}"></textarea>
+                            </div>
+                            <hr class="border-white/10 my-4">
+                            <h3 class="text-xl font-bold mb-4 text-error">Platform Controls</h3>
+                            <div class="form-control mb-4">
+                                <label class="cursor-pointer label justify-start gap-4">
+                                    <input type="checkbox" id="admin-maintenance" class="toggle toggle-error" />
+                                    <span class="label-text text-gray-300"><b>Maintenance Mode</b> (Blocks all clients from accessing the portal)</span>
+                                </label>
                             </div>
                             <hr class="border-white/10 my-4">
                             <div class="form-control">
@@ -466,6 +533,33 @@
         };
         window.components = { showToast, formatDate: (dateStr) => new Date(dateStr).toLocaleString() };
     </script>
+
+    <!-- Promo Code Modal -->
+    <dialog id="modal-promo" class="modal backdrop-blur-sm">
+        <div class="modal-box bg-base-200 border border-white/10 shadow-2xl">
+            <h3 class="font-bold text-2xl mb-6">Generate Promo Code</h3>
+            <form id="form-promo" class="space-y-4">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Code</span></label>
+                    <input type="text" id="promo-code-val" class="input input-bordered focus:border-secondary" required placeholder="e.g. SUMMER25">
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Discount Percentage (%)</span></label>
+                    <input type="number" id="promo-discount" class="input input-bordered focus:border-secondary" required min="1" max="100" placeholder="15">
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Max Uses</span></label>
+                    <input type="number" id="promo-max-uses" class="input input-bordered focus:border-secondary" required min="1" value="100">
+                </div>
+                
+                <div class="modal-action mt-6">
+                    <button type="button" class="btn btn-ghost" onclick="document.getElementById('modal-promo').close()">Cancel</button>
+                    <button type="submit" class="btn btn-primary bg-white text-black hover:bg-gray-200 border-none px-8">Save</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
     <script src="/js/api.js?v=2"></script>
     <script src="/js/auth.js?v=2"></script>
     <script src="/js/admin-app.js?v=2"></script>

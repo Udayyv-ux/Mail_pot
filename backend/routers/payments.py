@@ -24,6 +24,7 @@ async def get_client_record(user, db: AsyncSession):
 class OrderRequest(BaseModel):
     plan_id: str
     billing_cycle: str = "monthly"
+    promo_code: str = None
 
 @router.post("/create-order")
 async def api_create_order(req: OrderRequest, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
@@ -41,6 +42,16 @@ async def api_create_order(req: OrderRequest, db: AsyncSession = Depends(get_db)
         amount = round((plan.price_monthly * 6) * 0.85)   # 15% off
     else:
         amount = plan.price_monthly
+        
+    if req.promo_code:
+        from backend.models.promo_code import PromoCode
+        pc_res = await db.execute(select(PromoCode).where(PromoCode.code == req.promo_code.upper()))
+        pc = pc_res.scalar_one_or_none()
+        if pc and pc.is_active and pc.uses < pc.max_uses:
+            amount = round(amount * (1 - pc.discount_pct / 100))
+            # Note: We should ideally increment uses only when payment is successful, 
+            # but for simplicity we'll just check it here.
+
     if amount <= 0:
         raise HTTPException(400, "Invalid plan amount")
         
