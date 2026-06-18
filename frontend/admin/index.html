@@ -65,7 +65,7 @@
     <aside class="w-64 bg-base-200 border-r border-white/5 flex flex-col h-full z-20 shrink-0 shadow-2xl shadow-black/50">
         <div class="p-6 border-b border-white/5 flex justify-center">
             <a href="/" class="flex items-center gap-2">
-                <img src="/img/logo.png" alt="Sheetx Logo" class="h-8 object-contain">
+                <img src="/api/logo" alt="Sheetx Logo" class="h-8 object-contain">
                 <span class="text-2xl font-bold tracking-tight text-white">Sheetx<span class="text-primary">.io</span></span>
             </a>
         </div>
@@ -211,7 +211,17 @@
                                 <label class="label"><span class="label-text text-gray-400 font-medium">Razorpay Secret</span></label>
                                 <input type="password" id="admin-rzp-secret" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="Secret Key">
                             </div>
-                            <button type="submit" class="btn btn-secondary text-white w-full mt-4">Save Global Settings</button>
+                            <hr class="border-white/10 my-4">
+                            <h3 class="text-xl font-bold mb-4">Branding</h3>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Site Logo</span></label>
+                                <div class="flex items-center gap-4">
+                                    <input type="file" id="admin-logo-upload" accept="image/*" class="file-input file-input-bordered bg-base-300 border-white/10 w-full max-w-xs" />
+                                    <button type="button" class="btn btn-primary" onclick="uploadLogo()">Upload Logo</button>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">Upload your custom logo to replace "Sheetx.io" across the platform.</p>
+                            </div>
+                            <button type="submit" class="btn btn-secondary text-white w-full mt-8">Save Global Settings</button>
                         </form>
                     </div>
                 </div>

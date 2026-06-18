@@ -20,6 +20,8 @@ from backend.models.payment import Payment
 from backend.models.app_settings import Policy, AppSetting, DemoRequest
 from backend.models.email_log import EmailLog
 from datetime import datetime, timedelta, timezone
+from fastapi import UploadFile, File
+import base64
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -176,6 +178,23 @@ async def update_settings(settings: List[SettingUpdate], db: AsyncSession = Depe
             db.add(new_setting)
     await db.commit()
     return {"status": "success"}
+
+@router.post("/settings/logo")
+async def upload_logo(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    contents = await file.read()
+    b64 = base64.b64encode(contents).decode("utf-8")
+    mime = file.content_type
+    data_uri = f"data:{mime};base64,{b64}"
+
+    result = await db.execute(select(AppSetting).where(AppSetting.key == "SITE_LOGO"))
+    setting = result.scalar_one_or_none()
+    if not setting:
+        setting = AppSetting(key="SITE_LOGO", category="branding", value=data_uri)
+        db.add(setting)
+    else:
+        setting.value = data_uri
+    await db.commit()
+    return {"status": "success", "url": "/api/logo"}
 
 # --- POLICIES (LEGAL CMS) ---
 class PolicyCreateUpdate(BaseModel):

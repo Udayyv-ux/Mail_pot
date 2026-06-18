@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('landing-footer').value = JSON.stringify({
                     "Product": [{name: "Features", url: "#features"}, {name: "Pricing", url: "#pricing"}],
                     "Company": [{name: "About Us", url: "#about"}, {name: "Contact", url: "#contact"}],
-                    "Legal": [{name: "Privacy Policy", url: "#"}, {name: "Terms of Service", url: "#"}]
+                    "Legal": [{name: "Regulations", url: "/regulations"}]
                 }, null, 2);
             }
             if(!document.getElementById('landing-reviews').value) {
@@ -617,3 +617,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 });
+
+async function uploadLogo() {
+    const fileInput = document.getElementById('admin-logo-upload');
+    const file = fileInput.files[0];
+    if (!file) return alert('Please select an image file first.');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const res = await fetch('/api/admin/settings/logo', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            alert('Logo uploaded successfully! Refresh the page to see changes.');
+        } else {
+            alert('Upload failed: ' + JSON.stringify(data));
+        }
+    } catch (e) {
+        alert('Error uploading logo: ' + e);
+    }
+}

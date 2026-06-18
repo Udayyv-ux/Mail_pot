@@ -11,7 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from backend.config import settings
-from backend.database import init_db
+from backend.database import init_db, get_db
+from fastapi import Depends
 
 # ── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -217,6 +218,23 @@ app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 # ── Frontend Page Routes ─────────────────────────────────────────────────────
 
+@app.get("/api/logo")
+async def get_site_logo(db = Depends(get_db)):
+    from sqlalchemy import select
+    from backend.models.app_settings import AppSetting
+    result = await db.execute(select(AppSetting).where(AppSetting.key == "SITE_LOGO"))
+    setting = result.scalar_one_or_none()
+    if setting and setting.value.startswith("data:image"):
+        import base64
+        from fastapi.responses import Response
+        try:
+            header, b64 = setting.value.split(",", 1)
+            mime = header.split(":")[1].split(";")[0]
+            img_data = base64.b64decode(b64)
+            return Response(content=img_data, media_type=mime)
+        except Exception:
+            pass
+    return RedirectResponse("/img/logo.png")
 
 
 @app.get("/")
