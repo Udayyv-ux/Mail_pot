@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const policies = await api.get('/public/policies');
             const policiesContainer = document.getElementById('footer-policies');
             if(policiesContainer && policies.length > 0) {
-                const links = policies.map(p => `<a href="javascript:void(0)" onclick="viewPolicy('${p.slug}')" class="hover:text-white transition-colors ml-4">${p.title}</a>`);
+                const links = policies.map(p => `<a href="/legal?policy=${p.slug}" class="hover:text-white transition-colors ml-4">${p.title}</a>`);
                 policiesContainer.innerHTML = links.join('');
             }
         } catch(e) {
@@ -157,18 +157,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {
         console.error("Failed to load landing settings", e);
     }
-
-    // Global function to open policy modal
-    window.viewPolicy = async (slug) => {
-        try {
-            const p = await api.get(`/public/policies/${slug}`);
-            document.getElementById('policy-view-title').textContent = p.title;
-            document.getElementById('policy-view-content').innerHTML = p.content_html;
-            document.getElementById('policy-view-modal').showModal();
-        } catch(e) {
-            alert("Failed to load policy.");
-        }
-    };
 
     // Load Plans
     try {

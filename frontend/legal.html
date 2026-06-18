@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal & Policies - Sheetx.io</title>
+    <!-- Tailwind CSS (via CDN for simplicity, replace with build process for prod) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        dark: '#0f172a',
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
+        .prose h1, .prose h2, .prose h3, .prose h4 { color: #f8fafc; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; }
+        .prose p { color: #94a3b8; line-height: 1.7; margin-bottom: 1.25rem; }
+        .prose ul { list-style-type: disc; padding-left: 1.5rem; color: #94a3b8; margin-bottom: 1.25rem; }
+        .prose a { color: #3b82f6; text-decoration: underline; }
+        .policy-tab.active { background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; border-left: 3px solid #3b82f6; font-weight: 600; }
+        .policy-tab { border-left: 3px solid transparent; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#0f172a] text-slate-200">
+
+    <!-- Header -->
+    <header class="fixed w-full top-0 z-50 bg-[#0f172a]/80 backdrop-blur-md border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-bold text-white shadow-lg shadow-primary/20">S</div>
+                <span class="text-xl font-bold tracking-tight">Sheetx<span class="text-primary">.io</span></span>
+            </a>
+            <nav class="hidden md:flex gap-8 text-sm font-medium">
+                <a href="/#features" class="text-gray-300 hover:text-white transition-colors">Features</a>
+                <a href="/#how-it-works" class="text-gray-300 hover:text-white transition-colors">How it works</a>
+                <a href="/#pricing" class="text-gray-300 hover:text-white transition-colors">Pricing</a>
+            </nav>
+            <div class="flex items-center gap-4">
+                <a href="/admin/" class="text-sm font-medium text-gray-300 hover:text-white transition-colors">Log in</a>
+                <button class="btn btn-primary btn-sm rounded-full text-white px-6 hidden sm:flex shadow-lg shadow-primary/20" onclick="window.location.href='/admin/'">Get Started</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow pt-32 pb-24 max-w-7xl mx-auto w-full px-6 flex flex-col md:flex-row gap-12 relative z-10">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="md:w-1/4 flex-shrink-0">
+            <div class="sticky top-32">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6 pl-4">Legal & Policies</h3>
+                <nav id="policy-sidebar" class="space-y-1">
+                    <p class="text-sm text-gray-500 pl-4">Loading policies...</p>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <section class="md:w-3/4 min-h-[60vh]">
+            <div id="policy-content-area" class="bg-base-200 border border-white/5 p-8 md:p-12 rounded-3xl shadow-xl">
+                <div id="policy-loader" class="flex justify-center items-center h-64">
+                    <span class="loading loading-spinner text-primary loading-lg"></span>
+                </div>
+                <div id="policy-body" class="hidden">
+                    <h1 id="policy-title" class="text-3xl md:text-5xl font-bold text-white mb-8"></h1>
+                    <div id="policy-text" class="prose prose-invert max-w-none text-gray-300">
+                        <!-- Content injected here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-base-300/50 border-t border-white/5 pt-12 pb-8">
+        <div class="max-w-7xl mx-auto px-6 text-center text-sm text-gray-500">
+            <p>© 2026 Sheetx.io. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Include API Utility -->
+    <script src="/js/api.js"></script>
+    <!-- Include Legal Page Logic -->
+    <script src="/js/legal.js"></script>
+</body>
+</html>
