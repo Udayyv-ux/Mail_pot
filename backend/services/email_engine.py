@@ -111,7 +111,10 @@ async def send_email_via_gmail_api(to_email: str, first_name: str, template, acc
     subject = template.subject
     html_body = template.body_html.replace("{first_name}", first_name or "There")
     if getattr(template, 'banner_url', None):
-        html_body = f'<img src="{template.banner_url}" style="max-width:100%;"><br><br>' + html_body
+        banner_url = template.banner_url
+        if banner_url.startswith("/"):
+            banner_url = settings.APP_URL.rstrip('/') + banner_url
+        html_body = f'<img src="{banner_url}" style="max-width:100%;"><br><br>' + html_body
 
     msg = EmailMessage()
     msg['To'] = to_email
