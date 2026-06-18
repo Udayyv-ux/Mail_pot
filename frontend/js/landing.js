@@ -130,7 +130,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             footerGrid.innerHTML = '';
             Object.keys(footerData).forEach(colName => {
                 const links = footerData[colName];
-                const linksHtml = links.map(l => `<li><a href="${l.url}" class="text-gray-400 hover:text-white text-sm transition-colors">${l.name}</a></li>`).join('');
+                const linksHtml = links.map(l => {
+                    let url = l.url;
+                    if (url === "#" && l.name.toLowerCase().includes("policy")) url = "/regulations?policy=" + l.name.toLowerCase().replace(/\s+/g, '-');
+                    if (url === "#" && l.name.toLowerCase().includes("terms")) url = "/regulations?policy=" + l.name.toLowerCase().replace(/\s+/g, '-');
+                    return `<li><a href="${url}" class="text-gray-400 hover:text-white text-sm transition-colors">${l.name}</a></li>`;
+                }).join('');
                 footerGrid.innerHTML += `
                     <div>
                         <h4 class="text-xs font-bold text-gray-500 tracking-wider uppercase mb-4">${colName}</h4>
