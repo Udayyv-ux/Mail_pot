@@ -562,6 +562,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const el = (id) => document.getElementById(id);
             if(el('pol-slug')) { el('pol-slug').value = p.slug; el('pol-slug').readOnly = true; }
             if(el('pol-title')) el('pol-title').value = p.title;
+            if(el('pol-icon')) el('pol-icon').value = p.icon || '';
+            if(el('pol-desc')) el('pol-desc').value = p.description || '';
             if(el('pol-content')) el('pol-content').value = p.content_html || '';
             document.getElementById('policy-modal')?.showModal();
         } catch(e){}
@@ -573,6 +575,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const payload = {
             slug: document.getElementById('pol-slug').value,
             title: document.getElementById('pol-title').value,
+            icon: document.getElementById('pol-icon') ? document.getElementById('pol-icon').value : '',
+            description: document.getElementById('pol-desc') ? document.getElementById('pol-desc').value : '',
             content_html: document.getElementById('pol-content').value,
             is_active: true
         };

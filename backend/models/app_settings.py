@@ -14,6 +14,8 @@ class Policy(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     title = Column(String, nullable=False)
     slug = Column(String, unique=True, nullable=False)  # e.g. "terms", "privacy", "refund"
+    icon = Column(String, default="📜")
+    description = Column(String, default="")
     content_html = Column(Text, default="")
     is_active = Column(Boolean, default=True)
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc),

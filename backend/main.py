@@ -95,6 +95,41 @@ async def lifespan(app: FastAPI):
             await conn.execute(text("ALTER TABLE email_logs ALTER COLUMN campaign_id DROP NOT NULL"))
     except Exception: pass
         
+    # Migrate policy columns
+    for col, col_def in [("icon", "VARCHAR DEFAULT '📜'"), ("description", "VARCHAR DEFAULT ''")]:
+        try:
+            async with engine.begin() as conn:
+                from sqlalchemy import text
+                await conn.execute(text(f"ALTER TABLE policies ADD COLUMN {col} {col_def}"))
+        except Exception: pass
+
+    # Seed Policies
+    try:
+        async with engine.begin() as conn:
+            from sqlalchemy import text
+            # Check if policies already exist
+            res = await conn.execute(text("SELECT COUNT(*) FROM policies"))
+            count = res.scalar()
+            if count == 0:
+                print("Seeding initial policies...")
+                from backend.models.app_settings import Policy
+                import uuid
+                default_policies = [
+                    ("Terms & Conditions", "terms", "Rules governing the use of Sheetx.io services and website.", "📜"),
+                    ("Privacy Policy", "privacy-policy", "How we collect, use, and protect personal information.", "🔒"),
+                    ("Consent Policy", "consent-policy", "How consent is obtained, recorded, and respected.", "✅"),
+                    ("Safeguarding Policy", "safeguarding-policy", "Protecting users and ensuring safe platform usage.", "🛡️"),
+                    ("Modern Slavery Statement", "modern-slavery-statement", "Our commitment to ethical operations and anti-slavery.", "🤝"),
+                    ("Carbon Reduction Plan", "carbon-reduction-plan", "Our steps to minimize environmental impact.", "🌱")
+                ]
+                for title, slug, desc, icon in default_policies:
+                    await conn.execute(
+                        text("INSERT INTO policies (id, title, slug, description, icon, content_html, is_active) VALUES (:id, :title, :slug, :desc, :icon, :content, true)"),
+                        {"id": str(uuid.uuid4()), "title": title, "slug": slug, "desc": desc, "icon": icon, "content": f"<h2>{title}</h2><p>This is a placeholder for the {title}. Please update it from the Super Admin dashboard.</p>"}
+                    )
+    except Exception as e: 
+        print(f"Policy seed failed: {e}")
+
     print("Database ready")
 
     # Start the 24/7 background engine

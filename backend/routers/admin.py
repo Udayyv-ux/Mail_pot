@@ -181,6 +181,8 @@ async def update_settings(settings: List[SettingUpdate], db: AsyncSession = Depe
 class PolicyCreateUpdate(BaseModel):
     title: str
     slug: str
+    icon: str = "📜"
+    description: str = ""
     content_html: str
     is_active: bool = True
 
@@ -197,6 +199,8 @@ async def save_policy(policy_data: PolicyCreateUpdate, db: AsyncSession = Depend
     
     if existing:
         existing.title = policy_data.title
+        existing.icon = policy_data.icon
+        existing.description = policy_data.description
         existing.content_html = policy_data.content_html
         existing.is_active = policy_data.is_active
     else:
