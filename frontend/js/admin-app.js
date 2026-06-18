@@ -413,6 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(s.key === 'LANDING_STEPS') document.getElementById('landing-steps').value = s.value;
                 if(s.key === 'LANDING_FAQ') document.getElementById('landing-faq').value = s.value;
                 if(s.key === 'LANDING_FOOTER') document.getElementById('landing-footer').value = s.value;
+                if(s.key === 'LANDING_REVIEWS') document.getElementById('landing-reviews').value = s.value;
             });
             
             // Populate defaults if empty to help the admin
@@ -440,6 +441,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     "Company": [{name: "About Us", url: "#about"}, {name: "Contact", url: "#contact"}],
                     "Legal": [{name: "Privacy Policy", url: "#"}, {name: "Terms of Service", url: "#"}]
                 }, null, 2);
+            }
+            if(!document.getElementById('landing-reviews').value) {
+                document.getElementById('landing-reviews').value = JSON.stringify([
+                    {quote: "Sheetx.io transformed our agency outreach. What used to take our SDR team 2 full days now takes under 2 hours.", name: "Amanda Clarke", role: "Head of Growth", initials: "A"},
+                    {quote: "The Google Sheets integration is seamless. Our team loves the timeline view, and configuration errors dropped to zero from day one.", name: "James Rawlinson", role: "Ops Director", initials: "J"},
+                    {quote: "We operate across multiple countries. Sheetx.io is the only platform that handles all dynamic tax rules without custom workarounds.", name: "Sarah Mitchell", role: "Finance Manager", initials: "S"}
+                ], null, 2);
             }
             
             // Render FAQ Builder UI
@@ -502,6 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
             JSON.parse(document.getElementById('landing-steps').value);
             JSON.parse(document.getElementById('landing-faq').value);
             JSON.parse(document.getElementById('landing-footer').value);
+            JSON.parse(document.getElementById('landing-reviews').value);
         } catch(err) {
             if(window.showToast) showToast("Invalid JSON format. Please check your syntax.", "error");
             return;
@@ -510,7 +519,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const payload = [
             {key: 'LANDING_STEPS', value: document.getElementById('landing-steps').value},
             {key: 'LANDING_FAQ', value: document.getElementById('landing-faq').value},
-            {key: 'LANDING_FOOTER', value: document.getElementById('landing-footer').value}
+            {key: 'LANDING_FOOTER', value: document.getElementById('landing-footer').value},
+            {key: 'LANDING_REVIEWS', value: document.getElementById('landing-reviews').value}
         ];
         try {
             await api.put('/admin/settings', payload);

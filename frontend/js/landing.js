@@ -48,10 +48,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         let stepsData = null;
         let faqData = null;
         let footerData = null;
+        let reviewsData = null;
 
         if (settings.LANDING_STEPS) stepsData = JSON.parse(settings.LANDING_STEPS);
         if (settings.LANDING_FAQ) faqData = JSON.parse(settings.LANDING_FAQ);
         if (settings.LANDING_FOOTER) footerData = JSON.parse(settings.LANDING_FOOTER);
+        if (settings.LANDING_REVIEWS) reviewsData = JSON.parse(settings.LANDING_REVIEWS);
         
         if (settings.LANDING_HOW_IT_WORKS_TITLE) {
             const el = document.getElementById('landing-how-it-works-title');
@@ -86,6 +88,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             "Support": [{name: "Privacy Policy", url: "#"}, {name: "Terms & Conditions", url: "#"}, {name: "Refund Policy", url: "#"}]
         };
 
+        if(!reviewsData) reviewsData = [
+            {quote: "Sheetx.io transformed our agency outreach. What used to take our SDR team 2 full days now takes under 2 hours.", name: "Amanda Clarke", role: "Head of Growth", initials: "A"},
+            {quote: "The Google Sheets integration is seamless. Our team loves the timeline view, and configuration errors dropped to zero from day one.", name: "James Rawlinson", role: "Ops Director", initials: "J"},
+            {quote: "We operate across multiple countries. Sheetx.io is the only platform that handles all dynamic tax rules without custom workarounds.", name: "Sarah Mitchell", role: "Finance Manager", initials: "S"}
+        ];
+
         // Render Steps
         const stepsContainer = document.getElementById('landing-steps-container');
         if(stepsContainer && stepsData) {
@@ -109,15 +117,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         const faqContainer = document.getElementById('landing-faq-container');
         if(faqContainer && faqData) {
             faqContainer.innerHTML = '';
-            faqData.forEach((faq, idx) => {
+            faqData.forEach(faq => {
                 faqContainer.innerHTML += `
-                    <div class="collapse collapse-arrow bg-base-200 border border-white/5">
-                        <input type="radio" name="faq-accordion" ${idx === 0 ? 'checked="checked"' : ''} /> 
-                        <div class="collapse-title text-lg font-bold">
+                    <div class="collapse collapse-plus bg-base-200 border border-white/5 mb-4 hover:border-primary/30 transition-colors rounded-2xl">
+                        <input type="radio" name="my-accordion-3" /> 
+                        <div class="collapse-title text-xl font-medium px-6 py-4">
                             ${faq.question}
                         </div>
-                        <div class="collapse-content text-gray-400"> 
+                        <div class="collapse-content px-6 text-gray-400"> 
                             <p>${faq.answer}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Render Testimonials
+        const testimonialsContainer = document.getElementById('landing-testimonials-container');
+        if(testimonialsContainer && reviewsData) {
+            testimonialsContainer.innerHTML = '';
+            reviewsData.forEach(review => {
+                testimonialsContainer.innerHTML += `
+                    <div class="bg-base-200/50 p-8 rounded-3xl border border-white/5 hover:border-white/20 transition-all shadow-xl flex flex-col h-full">
+                        <div class="flex text-amber-400 mb-6 space-x-1">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        </div>
+                        <p class="text-gray-300 text-lg flex-grow mb-8 font-medium">"${review.quote}"</p>
+                        <div class="flex items-center gap-4 mt-auto">
+                            <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary border border-primary/30">
+                                ${review.initials || review.name.charAt(0)}
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">${review.name}</h4>
+                                <p class="text-xs text-gray-500">${review.role}</p>
+                            </div>
                         </div>
                     </div>
                 `;
