@@ -124,13 +124,6 @@ async def get_client(id: str, db: AsyncSession = Depends(get_db), admin = Depend
         "status": client.status,
         "daily_email_limit": client.daily_email_limit,
         "emails_sent_today": client.emails_sent_today,
-        "google_sheet_id": client.google_sheet_id,
-        "target_columns": client.target_columns,
-        "status_column": client.status_column,
-        "smtp_host": client.smtp_host,
-        "smtp_port": client.smtp_port,
-        "smtp_email": client.smtp_email,
-        "groq_api_key_enc": client.groq_api_key_enc,
         "features_json": client.features_json,
         "user": {"email": client.user.email} if client.user else None,
         "plan": {"name": client.plan.name} if client.plan else None
