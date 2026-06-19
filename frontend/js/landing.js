@@ -83,9 +83,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if(!footerData) footerData = {
             "Product": [{name: "Features", url: "#features"}, {name: "Pricing", url: "#pricing"}],
-            "Company": [{name: "About Us", url: "#about"}, {name: "Contact", url: "#contact"}],
-            "Resources": [{name: "Documentation", url: "#"}, {name: "Help Centre", url: "#"}, {name: "API Docs", url: "#"}],
-            "Legal": [{name: "Regulations", url: "/regulations"}]
+            "Company": [{name: "About Us", url: "#about"}],
+            "Resources": [
+                {name: "Documentation", url: "#"}, 
+                {name: "Help Centre", url: "#"}, 
+                {name: "API Docs", url: "#"},
+                {name: "Status", url: "#"},
+                {name: "Regulations", url: "/regulations"}
+            ]
         };
 
         if(!reviewsData) reviewsData = [
