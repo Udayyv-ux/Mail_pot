@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         on(path, callback) { this.routes[path] = callback; },
         async navigate(path) {
             if (!path) return;
-            // Allow re-navigating to the same route (force refresh)
+            if (this.currentRoute === path) return;
             this.currentRoute = path;
             window.location.hash = path;
             
@@ -81,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
         router.on('settings', loadSettings);
         router.on('landing', loadLandingContent);
         router.on('policies', loadPolicies);
-        router.on('promo', loadPromoCodes);
         router.init();
     }
 
@@ -96,8 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if(el('stat-users')) el('stat-users').textContent = stats.total_clients || 0;
             if(el('stat-plans')) el('stat-plans').textContent = revenue.active_subscriptions || 0;
             if(el('stat-emails')) el('stat-emails').textContent = stats.total_emails_sent || 0;
-            if(el('stat-demos')) el('stat-demos').textContent = '-'; // We can populate this later
-
+            // stat-demos populated in loadDemoRequests
+            if(el('stat-mrr')) el('stat-mrr').textContent = '₹' + (revenue.mrr || 0);
 
             loadDemoRequests();
             loadAnalyticsChart();
@@ -110,6 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Backend endpoint: GET /api/admin/demo-requests
             const demos = await api.get('/admin/demo-requests');
+            const el = document.getElementById('stat-demos');
+            if(el) el.textContent = demos ? demos.length : 0;
+
             const list = document.getElementById('demo-requests-list');
             if(!list) return;
             list.innerHTML = '';
@@ -230,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.resetUsage = async (id) => {
         if(!confirm("Are you sure you want to reset this user's daily usage?")) return;
         try {
-            await api.post(`/admin/clients/${id}/reset`);
+            await api.post(`/admin/clients/${id}/reset-usage`);
             if(window.showToast) showToast("Usage reset successfully", "success");
             loadUsers();
         } catch (e) {
@@ -259,7 +261,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div><span class="text-gray-400">Status Col:</span> <span class="text-white">${client.status_column || 'Status'}</span></div>
                     
                     <div class="col-span-2 mt-4"><strong class="text-white">Custom Overrides</strong></div>
-
+                    <div><span class="text-gray-400">SMTP Host:</span> <span class="text-white">${client.smtp_host || 'Using Global'}</span></div>
+                    <div><span class="text-gray-400">SMTP Port:</span> <span class="text-white">${client.smtp_port || 'Using Global'}</span></div>
+                    <div><span class="text-gray-400">SMTP Email:</span> <span class="text-white">${client.smtp_email || 'Using Global'}</span></div>
                     <div><span class="text-gray-400">Groq Key:</span> <span class="text-white">${client.groq_api_key_enc ? 'Configured' : 'Using Global'}</span></div>
                 </div>
             `;
@@ -310,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.deletePlan = deletePlan;
 
     // --- Global Monitor ---
-    async function loadGlobalLogs() {
+    window.loadGlobalLogs = async () => {
         try {
             const logs = await api.get('/admin/email-logs');
             const tbody = document.getElementById('global-log-list');
@@ -452,7 +456,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const map = {};
             settings.forEach(s => {
                 if(s.key === 'GROQ_API_KEY') document.getElementById('admin-groq').value = s.value;
-
+                if(s.key === 'RESEND_API_KEY') document.getElementById('admin-resend').value = s.value;
+                if(s.key === 'SENDER_EMAIL') document.getElementById('admin-sender').value = s.value;
                 if(s.key === 'GCP_SERVICE_EMAIL') document.getElementById('admin-gcp-email').value = s.value;
                 if(s.key === 'GCP_CREDENTIALS_JSON') document.getElementById('admin-gcp-json').value = s.value;
                 if(s.key === 'RAZORPAY_KEY_ID') document.getElementById('admin-rzp-key').value = s.value;
@@ -461,13 +466,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(s.key === 'LANDING_HOW_IT_WORKS_TITLE') document.getElementById('admin-how-it-works-title').value = s.value;
                 if(s.key === 'LANDING_HOW_IT_WORKS_SUBTITLE') document.getElementById('admin-how-it-works-subtitle').value = s.value;
             });
-            
-            // Re-fetch the current logo to ensure it's not cached from an old upload if they just saved
-            const img = document.getElementById('admin-current-logo');
-            if (img) {
-                img.src = '/api/logo?v=' + new Date().getTime();
-                img.classList.remove('hidden');
-            }
         } catch(e) {}
     }
 
@@ -475,7 +473,8 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const payload = [
             {key: 'GROQ_API_KEY', value: document.getElementById('admin-groq').value},
-
+            {key: 'RESEND_API_KEY', value: document.getElementById('admin-resend').value},
+            {key: 'SENDER_EMAIL', value: document.getElementById('admin-sender').value},
             {key: 'GCP_SERVICE_EMAIL', value: document.getElementById('admin-gcp-email').value},
             {key: 'GCP_CREDENTIALS_JSON', value: document.getElementById('admin-gcp-json').value},
             {key: 'MAINTENANCE_MODE', value: document.getElementById('admin-maintenance').checked ? 'true' : 'false'},
@@ -517,7 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     {question: "Is there a free trial?", answer: "Yes, we offer a 14-day free trial on all paid plans so you can test our AI matching engine."},
                     {question: "Do I need to import my leads?", answer: "No importing required! Just paste your Google Sheet URL, and we sync directly with your live data."},
                     {question: "Will this affect my domain reputation?", answer: "We use smart sending features like built-in delays and throttling to ensure your domain reputation stays protected while scaling."},
-                    {question: "Can I bring my own email account?", answer: "Yes! You can connect your existing Google accounts securely via the Gmail API to send directly from your own domain."}
+                    {question: "Can I bring my own email account?", answer: "Yes! You can connect your existing email accounts via SMTP to send directly from your own domain."}
                 ], null, 2);
             }
             if(!document.getElementById('landing-footer').value) {
@@ -653,7 +652,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.editPolicy = async (slug) => {
         try {
-            const p = await api.get(`/public/policies/${slug}`);
+            const policies = await api.get(`/admin/policies`);
+            const p = policies.find(x => x.slug === slug);
+            if(!p) return;
             const el = (id) => document.getElementById(id);
             if(el('pol-slug')) { el('pol-slug').value = p.slug; el('pol-slug').readOnly = true; }
             if(el('pol-title')) el('pol-title').value = p.title;
@@ -768,16 +769,9 @@ document.addEventListener('DOMContentLoaded', () => {
     window.uploadLogo = async function() {
         const fileInput = document.getElementById('admin-logo-upload');
         if(!fileInput) return;
-        
-        if (!fileInput.files || fileInput.files.length === 0) {
-            fileInput.click();
-            fileInput.onchange = () => {
-                if (fileInput.files.length > 0) window.uploadLogo();
-            };
-            return;
-        }
-
         const file = fileInput.files[0];
+        if (!file) return alert('Please select an image file first.');
+
         const formData = new FormData();
         formData.append('file', file);
 
@@ -791,13 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (data.status === 'success') {
-                if(window.showToast) showToast('Site logo updated!', 'success');
-                const img = document.getElementById('admin-current-logo');
-                if(img) {
-                    img.src = '/api/logo?v=' + new Date().getTime();
-                    img.classList.remove('hidden');
-                }
-                fileInput.value = '';
+                alert('Logo uploaded successfully! Refresh the page to see changes.');
             } else {
                 alert('Upload failed: ' + JSON.stringify(data));
             }
