@@ -785,6 +785,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if(window.showToast) showToast('Deleted', 'success');
             loadPromoCodes();
         } catch(e) {}
+    };
+
     window.uploadLogo = async function() {
         const fileInput = document.getElementById('admin-logo-upload');
         if(!fileInput) return;
