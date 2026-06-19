@@ -11,6 +11,7 @@ import uuid
 from backend.config import settings
 from backend.models.user import User, UserRole
 from backend.models.client import Client
+from backend.models.app_settings import DemoRequest
 from backend.middleware.auth_middleware import create_access_token, create_refresh_token
 
 oauth = OAuth()
@@ -83,11 +84,28 @@ async def google_callback(request: Request, db: AsyncSession):
         
         # If client, create client profile
         if role == UserRole.CLIENT:
-            client = Client(
-                id=str(uuid.uuid4()),
-                user_id=user.id,
-                company_name=name + " Company"
+            # Check if there's a DemoRequest for this email
+            demo_req_result = await db.execute(
+                select(DemoRequest).where(DemoRequest.email == email).order_by(DemoRequest.created_at.desc())
             )
+            demo_req = demo_req_result.scalars().first()
+            
+            if demo_req:
+                client = Client(
+                    id=str(uuid.uuid4()),
+                    user_id=user.id,
+                    company_name=demo_req.company or (name + " Company"),
+                    is_demo=True,
+                    daily_email_limit=10
+                )
+                demo_req.status = "approved"
+                demo_req.user_id = user.id
+            else:
+                client = Client(
+                    id=str(uuid.uuid4()),
+                    user_id=user.id,
+                    company_name=name + " Company"
+                )
             db.add(client)
             
         await db.commit()

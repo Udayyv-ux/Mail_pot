@@ -296,9 +296,8 @@ if (formDemo) {
 
         try {
             await api.post('/public/demo-request', data);
-            if(window.showToast) window.showToast("Your request has been submitted!", "success");
-            formDemo.reset();
-            document.getElementById('demo-modal').close();
+            // Redirect to Google OAuth to let them enter the workspace automatically
+            window.location.href = "/api/auth/google";
         } catch (err) {
             if(window.showToast) window.showToast(err.message || "Failed to submit request", "error");
         } finally {
