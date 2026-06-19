@@ -777,7 +777,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (data.status === 'success') {
-                alert('Logo uploaded successfully! Refresh the page to see changes.');
+                const ts = new Date().getTime();
+                document.querySelectorAll('img').forEach(img => {
+                    if (img.src.includes('/api/logo')) {
+                        img.src = '/api/logo?v=' + ts;
+                    }
+                });
+                if(window.showToast) showToast('Logo uploaded and applied instantly!', 'success');
+                else alert('Logo uploaded successfully!');
             } else {
                 alert('Upload failed: ' + JSON.stringify(data));
             }
