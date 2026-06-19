@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <strong class="text-white">${d.name} <span class="text-gray-400 text-sm font-normal">(${d.company || 'N/A'})</span></strong>
                         <div class="flex flex-col items-end">
                             <span class="text-xs text-gray-500 mb-1">${new Date(d.created_at).toLocaleDateString()}</span>
-                            <button class="btn btn-xs btn-primary btn-outline" onclick="openAdminEmailModal('${d.email}')">Email</button>
+                            <button class="btn btn-xs btn-primary btn-outline" onclick="openAdminEmailModal('${d.email}', true)">Email</button>
                         </div>
                     </div>
                     <div class="text-sm text-secondary mb-2">${d.email}</div>

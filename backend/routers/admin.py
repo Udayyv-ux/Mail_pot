@@ -3,7 +3,7 @@ Super Admin API routes.
 """
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, delete
+from sqlalchemy import select, func, delete, update
 from pydantic import BaseModel
 from typing import List, Optional
 import aiosmtplib
@@ -487,5 +487,7 @@ async def send_admin_email(req: AdminEmailRequest, db: AsyncSession = Depends(ge
         success, err = await send_email_via_gmail_api(email, name, DummyTemplate(), access_token)
         if success:
             sent += 1
+            await db.execute(update(DemoRequest).where(DemoRequest.email == email).values(status="contacted"))
+    await db.commit()
             
     return {"status": "success", "sent": sent}
