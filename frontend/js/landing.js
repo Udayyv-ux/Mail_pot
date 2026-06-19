@@ -52,7 +52,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (settings.LANDING_STEPS) stepsData = JSON.parse(settings.LANDING_STEPS);
         if (settings.LANDING_FAQ) faqData = JSON.parse(settings.LANDING_FAQ);
-        if (settings.LANDING_FOOTER) footerData = JSON.parse(settings.LANDING_FOOTER);
         if (settings.LANDING_REVIEWS) reviewsData = JSON.parse(settings.LANDING_REVIEWS);
         
         if (settings.LANDING_HOW_IT_WORKS_TITLE) {
