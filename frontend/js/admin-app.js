@@ -461,7 +461,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(s.key === 'LANDING_HOW_IT_WORKS_TITLE') document.getElementById('admin-how-it-works-title').value = s.value;
                 if(s.key === 'LANDING_HOW_IT_WORKS_SUBTITLE') document.getElementById('admin-how-it-works-subtitle').value = s.value;
             });
-            loadLogoGallery();
+            
+            // Re-fetch the current logo to ensure it's not cached from an old upload if they just saved
+            const img = document.getElementById('admin-current-logo');
+            if (img) {
+                img.src = '/api/logo?v=' + new Date().getTime();
+                img.classList.remove('hidden');
+            }
         } catch(e) {}
     }
 
@@ -759,59 +765,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     router.on('promo', loadPromoCodes);
 
-    window.loadLogoGallery = async function() {
-        try {
-            const logos = await api.get('/admin/logos');
-            const gallery = document.getElementById('admin-logo-gallery');
-            if(!gallery) return;
-            
-            gallery.innerHTML = logos.map(logo => `
-                <div class="relative bg-base-200 border ${logo.is_active ? 'border-primary shadow-[0_0_15px_rgba(var(--primary-color-rgb),0.5)]' : 'border-white/10'} rounded-lg p-2 flex flex-col items-center justify-between group overflow-hidden transition-all hover:border-primary/50 h-32">
-                    <div class="h-20 w-full flex items-center justify-center p-2">
-                        <img src="${logo.data_uri}" class="max-h-full max-w-full object-contain drop-shadow-md">
-                    </div>
-                    
-                    ${logo.is_active ? `
-                        <div class="absolute top-0 right-0 bg-primary text-black text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">ACTIVE</div>
-                    ` : ''}
-
-                    <div class="absolute inset-0 bg-black/80 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                        ${!logo.is_active ? `<button onclick="selectLogo('${logo.id}')" class="btn btn-sm btn-primary">Select</button>` : ''}
-                        <button onclick="deleteLogo('${logo.id}')" class="btn btn-sm btn-error btn-square"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                </div>
-            `).join('') || '<div class="col-span-full text-center text-gray-500 py-4">No logos uploaded yet.</div>';
-        } catch(e) {
-            console.error('Error loading gallery:', e);
-        }
-    };
-
-    window.selectLogo = async function(id) {
-        try {
-            await api.post('/admin/settings/logo_select', { logo_id: id });
-            const ts = new Date().getTime();
-            document.querySelectorAll('img').forEach(img => {
-                if (img.src.includes('/api/logo')) {
-                    img.src = '/api/logo?v=' + ts;
-                }
-            });
-            if(window.showToast) showToast('Logo updated successfully!', 'success');
-            loadLogoGallery();
-        } catch(e) {
-            alert('Failed to update logo: ' + e);
-        }
-    };
-
-    window.deleteLogo = async function(id) {
-        if(!confirm('Are you sure you want to delete this logo?')) return;
-        try {
-            await api.delete('/admin/logos/' + id);
-            loadLogoGallery();
-        } catch(e) {
-            alert('Failed to delete logo: ' + e);
-        }
-    };
-
     window.uploadLogo = async function() {
         const fileInput = document.getElementById('admin-logo-upload');
         if(!fileInput) return;
@@ -829,7 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('file', file);
 
         try {
-            const res = await fetch('/api/admin/logos', {
+            const res = await fetch('/api/admin/settings/logo', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${api.getToken()}`
@@ -838,9 +791,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (data.status === 'success') {
-                if(window.showToast) showToast('Logo uploaded to gallery!', 'success');
+                if(window.showToast) showToast('Site logo updated!', 'success');
+                const img = document.getElementById('admin-current-logo');
+                if(img) {
+                    img.src = '/api/logo?v=' + new Date().getTime();
+                    img.classList.remove('hidden');
+                }
                 fileInput.value = '';
-                loadLogoGallery();
             } else {
                 alert('Upload failed: ' + JSON.stringify(data));
             }

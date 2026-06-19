@@ -210,50 +210,8 @@ async def update_settings(settings: List[SettingUpdate], db: AsyncSession = Depe
     await db.commit()
     return {"status": "success"}
 
-import uuid
-
-@router.get("/logos")
-async def get_logos(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
-    result = await db.execute(select(AppSetting).where(AppSetting.category == "logo_gallery"))
-    logos = result.scalars().all()
-    
-    # Also get the active logo to flag it
-    active_result = await db.execute(select(AppSetting).where(AppSetting.key == "SITE_LOGO"))
-    active_setting = active_result.scalar_one_or_none()
-    active_val = active_setting.value if active_setting else None
-
-    return [{
-        "id": l.key,
-        "data_uri": l.value,
-        "is_active": l.value == active_val
-    } for l in logos]
-
-@router.post("/logos")
-async def upload_logo(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
-    contents = await file.read()
-    b64 = base64.b64encode(contents).decode("utf-8")
-    mime = file.content_type if file.content_type else "image/png"
-    data_uri = f"data:{mime};base64,{b64}"
-
-    key = f"LOGO_GALLERY_{uuid.uuid4()}"
-    setting = AppSetting(key=key, category="logo_gallery", value=data_uri)
-    db.add(setting)
-
-    # Automatically set this newly uploaded logo as the active SITE_LOGO
-    active_result = await db.execute(select(AppSetting).where(AppSetting.key == "SITE_LOGO"))
-    active_setting = active_result.scalar_one_or_none()
-    if not active_setting:
-        active_setting = AppSetting(key="SITE_LOGO", category="general", value=data_uri)
-        db.add(active_setting)
-    else:
-        active_setting.value = data_uri
-
-    await db.commit()
-    return {"status": "success", "id": key}
-
 @router.post("/settings/logo")
-async def upload_logo_legacy(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
-    """Fallback endpoint for users who haven't hard refreshed and are using the v3 UI."""
+async def upload_logo(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
     contents = await file.read()
     b64 = base64.b64encode(contents).decode("utf-8")
     mime = file.content_type if file.content_type else "image/png"
@@ -267,39 +225,6 @@ async def upload_logo_legacy(file: UploadFile = File(...), db: AsyncSession = De
         db.add(setting)
     else:
         setting.value = data_uri
-        
-    await db.commit()
-    return {"status": "success", "url": "/api/logo"}
-
-@router.delete("/logos/{logo_id}")
-async def delete_logo(logo_id: str, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
-    result = await db.execute(select(AppSetting).where(AppSetting.key == logo_id, AppSetting.category == "logo_gallery"))
-    setting = result.scalar_one_or_none()
-    if setting:
-        await db.delete(setting)
-        await db.commit()
-    return {"status": "success"}
-
-class LogoSelectRequest(BaseModel):
-    logo_id: str
-
-@router.post("/settings/logo_select")
-async def select_logo(data: LogoSelectRequest, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
-    # Get the chosen logo
-    result = await db.execute(select(AppSetting).where(AppSetting.key == data.logo_id, AppSetting.category == "logo_gallery"))
-    gallery_item = result.scalar_one_or_none()
-    if not gallery_item:
-        raise HTTPException(status_code=404, detail="Logo not found in gallery")
-
-    # Update SITE_LOGO
-    site_result = await db.execute(select(AppSetting).where(AppSetting.key == "SITE_LOGO"))
-    site_setting = site_result.scalar_one_or_none()
-    
-    if not site_setting:
-        site_setting = AppSetting(key="SITE_LOGO", category="branding", value=gallery_item.value)
-        db.add(site_setting)
-    else:
-        site_setting.value = gallery_item.value
         
     await db.commit()
     return {"status": "success", "url": "/api/logo"}
