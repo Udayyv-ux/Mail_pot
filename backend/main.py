@@ -222,26 +222,31 @@ async def get_uploaded_image(image_id: str, db = Depends(get_db)):
 
 @app.get("/api/logo")
 async def get_site_logo(db = Depends(get_db)):
+    """Serve the active site logo, or a transparent fallback."""
+    from fastapi.responses import Response
+    import base64
     from sqlalchemy import select
     from backend.models.app_settings import AppSetting
+
     result = await db.execute(select(AppSetting).where(AppSetting.key == "SITE_LOGO"))
     setting = result.scalar_one_or_none()
-    if setting and setting.value.startswith("data:"):
-        import base64
-        from fastapi.responses import Response
+    
+    if setting and setting.value:
         try:
-            header, b64 = setting.value.split(",", 1)
-            mime = header.split(":")[1].split(";")[0]
-            if "octet-stream" in mime or not mime.startswith("image/"):
-                mime = "image/png"  # Force image mime type so browsers render it
-            img_data = base64.b64decode(b64)
-            return Response(content=img_data, media_type=mime, headers={
-                "Cache-Control": "no-cache, no-store, must-revalidate",
-                "Pragma": "no-cache",
-                "Expires": "0"
-            })
+            if setting.value.startswith("data:"):
+                header, b64 = setting.value.split(",", 1)
+                mime = header.split(":")[1].split(";")[0]
+                if "octet-stream" in mime or not mime.startswith("image/"):
+                    mime = "image/png"
+                img_data = base64.b64decode(b64)
+                return Response(content=img_data, media_type=mime, headers={
+                    "Cache-Control": "no-cache, no-store, must-revalidate",
+                    "Pragma": "no-cache",
+                    "Expires": "0"
+                })
         except Exception:
             pass
+            
     # Fallback: Transparent 1x1 GIF
     fallback_gif = base64.b64decode("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7")
     return Response(content=fallback_gif, media_type="image/gif", headers={
