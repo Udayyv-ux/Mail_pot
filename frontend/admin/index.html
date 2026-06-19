@@ -138,8 +138,12 @@
 
             <!-- Users Page -->
             <section id="page-users" class="page-section max-w-7xl mx-auto">
-                <h2 class="text-3xl font-bold mb-8">Client Management</h2>
-                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">Client Management</h2>
+                </div>
+                
+                <h3 class="text-xl font-semibold mb-4 text-white">Active Clients</h3>
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto mb-8">
                     <table class="table table-zebra w-full text-left">
                         <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
                             <tr>
@@ -150,6 +154,23 @@
                             </tr>
                         </thead>
                         <tbody id="client-list" class="border-t border-white/5">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="text-xl font-semibold mb-4 text-white">Demo Users</h3>
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                    <table class="table table-zebra w-full text-left">
+                        <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
+                            <tr>
+                                <th class="p-4 font-semibold">Email</th>
+                                <th class="p-4 font-semibold">Company</th>
+                                <th class="p-4 font-semibold">Active Plan</th>
+                                <th class="p-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="demo-user-list" class="border-t border-white/5">
                             <!-- Populated by JS -->
                         </tbody>
                     </table>

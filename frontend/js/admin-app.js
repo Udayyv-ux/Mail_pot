@@ -185,38 +185,57 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Users ---
     async function loadUsers() {
         try {
-            // Backend endpoint: GET /api/admin/clients
-            // Returns: [{ id, company_name, status, emails_sent_today }]
             const clients = await api.get('/admin/clients');
-            const tbody = document.getElementById('client-list');
-            if(!tbody) return;
-            tbody.innerHTML = '';
+            const tbodyActive = document.getElementById('client-list');
+            const tbodyDemo = document.getElementById('demo-user-list');
+            if(!tbodyActive || !tbodyDemo) return;
             
-            if(!clients || clients.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No clients registered yet.</td></tr>';
-                return;
-            }
+            tbodyActive.innerHTML = '';
+            tbodyDemo.innerHTML = '';
             
-            clients.forEach(c => {
+            const activeClients = clients.filter(c => !c.is_demo);
+            const demoClients = clients.filter(c => c.is_demo);
+            
+            const renderRow = (c, tbody, isDemo) => {
                 const tr = document.createElement('tr');
+                const demoAction = isDemo 
+                    ? `<button class="text-accent hover:text-white font-semibold text-sm mr-2" onclick="toggleDemoStatus('${c.id}', false)">Make Active</button>`
+                    : `<button class="text-accent hover:text-white font-semibold text-sm mr-2" onclick="toggleDemoStatus('${c.id}', true)">Make Demo</button>`;
+                
                 tr.innerHTML = `
                     <td class="p-4 text-white font-medium">${c.email}</td>
                     <td class="p-4 text-gray-300">${c.company_name || 'N/A'}</td>
                     <td class="p-4 text-gray-300"><span class="bg-primary/20 text-primary px-2 py-1 rounded-full text-xs">${c.plan || 'Free'}</span></td>
                     <td class="p-4 text-right">
-                        <button onclick="resetUsage('${c.id}')" class="text-xs bg-dark/50 hover:bg-white/10 text-gray-300 py-1 px-3 rounded transition-colors mr-2">Reset Usage</button>
-                        <button class="text-secondary hover:text-pink-400 font-semibold text-sm" onclick="viewClientDetails('${c.id}')">Details</button>
-                        <button class="text-secondary hover:text-pink-400 font-semibold text-sm mr-2" onclick="openClientFeatures('${c.id}', '${c.company_name || "Client"}')">Features</button>
-                        <button class="text-accent hover:text-white font-semibold text-sm mr-2" onclick="impersonateClient('${c.user_id}')">Impersonate</button>
-                        <button class="text-primary hover:text-white font-semibold text-sm" onclick="openAdminEmailModal('${c.email}')">Email</button>
+                        <button onclick="resetUsage('${c.id}')" class="text-xs bg-dark/50 hover:bg-white/10 text-gray-300 py-1 px-3 rounded transition-colors mr-2">Reset</button>
+                        <button class="text-secondary hover:text-pink-400 font-semibold text-sm mr-2" onclick="viewClientDetails('${c.id}')">Details</button>
+                        ${demoAction}
+                        <button class="text-primary hover:text-white font-semibold text-sm" onclick="openAdminEmailModal('${c.email}', ${isDemo})">Email</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
-            });
+            };
+
+            if(activeClients.length === 0) tbodyActive.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No active clients.</td></tr>';
+            else activeClients.forEach(c => renderRow(c, tbodyActive, false));
+
+            if(demoClients.length === 0) tbodyDemo.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No demo users.</td></tr>';
+            else demoClients.forEach(c => renderRow(c, tbodyDemo, true));
+
         } catch(e) {
             console.error("Load users error:", e);
         }
     }
+
+    window.toggleDemoStatus = async (id, is_demo) => {
+        try {
+            await api.put(`/admin/clients/${id}/demo-status`, { is_demo });
+            showToast(`User moved to ${is_demo ? 'Demo Users' : 'Active Clients'}`, "success");
+            loadUsers();
+        } catch(e) {
+            showToast("Failed to update status", "error");
+        }
+    };
 
     window.impersonateClient = async (userId) => {
         if(!confirm("Are you sure you want to impersonate this user? You will be redirected to the Client Portal.")) return;
@@ -744,10 +763,24 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(err) { if(window.showToast) showToast(err.message, "error"); }
     });
 
-    window.openAdminEmailModal = (email) => {
+    window.openAdminEmailModal = (email, isDemo = false) => {
         document.getElementById('form-admin-email')?.reset();
         const toInput = document.getElementById('admin-email-to');
         if(toInput) toInput.value = email;
+        
+        if (isDemo) {
+            const subjectInput = document.getElementById('admin-email-subject');
+            const bodyInput = document.getElementById('admin-email-body');
+            if (subjectInput) subjectInput.value = "Welcome to your Demo!";
+            if (bodyInput) {
+                bodyInput.value = `<h2>Welcome to the Platform!</h2>
+<p>Hi there,</p>
+<p>We noticed you recently registered a demo account. We'd love to help you get the most out of our platform.</p>
+<p>If you have any questions or would like a guided tour, please reply to this email or book a setup call with us.</p>
+<p>Best,<br>The Team</p>`;
+            }
+        }
+        
         document.getElementById('admin-email-modal')?.showModal();
     };
 

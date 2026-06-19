@@ -106,7 +106,8 @@ async def list_clients(db: AsyncSession = Depends(get_db), admin = Depends(requi
         "company_name": c.company_name, 
         "plan": c.plan.name if c.plan else "Free",
         "status": c.status, 
-        "emails_sent_today": c.emails_sent_today
+        "emails_sent_today": c.emails_sent_today,
+        "is_demo": getattr(c, "is_demo", False)
     } for c in clients]
 
 @router.get("/clients/{id}")
@@ -143,6 +144,18 @@ async def reset_client_usage(id: str, db: AsyncSession = Depends(get_db), admin 
     client.emails_sent_today = 0
     await db.commit()
     return {"status": "success"}
+
+class DemoStatusUpdate(BaseModel):
+    is_demo: bool
+
+@router.put("/clients/{id}/demo-status")
+async def update_demo_status(id: str, status: DemoStatusUpdate, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    client = await db.get(Client, id)
+    if not client:
+        raise HTTPException(404, "Client not found")
+    client.is_demo = status.is_demo
+    await db.commit()
+    return {"status": "success", "is_demo": client.is_demo}
 
 class ClientFeaturesUpdate(BaseModel):
     ai_matcher: bool
