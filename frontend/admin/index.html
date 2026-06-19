@@ -436,7 +436,7 @@
     <dialog id="notif-modal" class="modal">
         <div class="modal-box bg-base-100 border border-white/10">
             <form method="dialog">
-                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">?</button>
             </form>
             <h3 class="font-bold text-2xl mb-6">Broadcast Announcement</h3>
             <form id="form-notif" class="space-y-4">
@@ -444,7 +444,43 @@
                     <label class="label"><span class="label-text text-gray-400">Message</span></label>
                     <textarea id="notif-msg" class="textarea textarea-bordered bg-base-200 border-white/10 focus:border-secondary h-32" required></textarea>
                 </div>
+                <div class="form-control">
+                    <label class="cursor-pointer label justify-start gap-4">
+                        <input type="checkbox" id="notif-send-email" class="checkbox checkbox-primary">
+                        <span class="label-text text-gray-300">Also send as Email to all users</span>
+                    </label>
+                </div>
+                <div class="form-control" id="notif-subject-container" style="display: none;">
+                    <label class="label"><span class="label-text text-gray-400">Email Subject</span></label>
+                    <input type="text" id="notif-subject" class="input input-bordered bg-base-200 border-white/10" placeholder="Important Announcement">
+                </div>
                 <button type="submit" class="btn btn-primary text-white w-full">Send to All Users</button>
+            </form>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+    <!-- Admin Email Modal -->
+    <dialog id="admin-email-modal" class="modal">
+        <div class="modal-box w-11/12 max-w-2xl bg-base-100 border border-white/10">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">?</button>
+            </form>
+            <h3 class="font-bold text-2xl mb-6">Send Email to User</h3>
+            <form id="form-admin-email" class="space-y-4">
+                <div class="form-control">
+                    <label class="label"><span class="label-text text-gray-400">To Email</span></label>
+                    <input type="email" id="admin-email-to" class="input input-bordered bg-base-200 border-white/10 text-white font-bold" required readonly>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text text-gray-400">Subject</span></label>
+                    <input type="text" id="admin-email-subject" class="input input-bordered bg-base-200 border-white/10" required>
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text text-gray-400">Body (HTML allowed)</span></label>
+                    <textarea id="admin-email-body" class="textarea textarea-bordered bg-base-200 border-white/10 focus:border-secondary h-48" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary text-white w-full">Send Email</button>
             </form>
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
@@ -550,3 +586,4 @@
     <script src="/js/admin-app.js?v=5"></script>
 </body>
 </html>
+

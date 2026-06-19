@@ -128,7 +128,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 div.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
                         <strong class="text-white">${d.name} <span class="text-gray-400 text-sm font-normal">(${d.company || 'N/A'})</span></strong>
-                        <span class="text-xs text-gray-500">${new Date(d.created_at).toLocaleDateString()}</span>
+                        <div class="flex flex-col items-end">
+                            <span class="text-xs text-gray-500 mb-1">${new Date(d.created_at).toLocaleDateString()}</span>
+                            <button class="btn btn-xs btn-primary btn-outline" onclick="openAdminEmailModal('${d.email}')">Email</button>
+                        </div>
                     </div>
                     <div class="text-sm text-secondary mb-2">${d.email}</div>
                     <div class="text-sm text-gray-300 bg-dark/50 p-2 rounded">${d.message || 'No message provided.'}</div>
@@ -204,7 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button onclick="resetUsage('${c.id}')" class="text-xs bg-dark/50 hover:bg-white/10 text-gray-300 py-1 px-3 rounded transition-colors mr-2">Reset Usage</button>
                         <button class="text-secondary hover:text-pink-400 font-semibold text-sm" onclick="viewClientDetails('${c.id}')">Details</button>
                         <button class="text-secondary hover:text-pink-400 font-semibold text-sm mr-2" onclick="openClientFeatures('${c.id}', '${c.company_name || "Client"}')">Features</button>
-                        <button class="text-accent hover:text-white font-semibold text-sm" onclick="impersonateClient('${c.user_id}')">Impersonate</button>
+                        <button class="text-accent hover:text-white font-semibold text-sm mr-2" onclick="impersonateClient('${c.user_id}')">Impersonate</button>
+                        <button class="text-primary hover:text-white font-semibold text-sm" onclick="openAdminEmailModal('${c.email}')">Email</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -711,16 +715,56 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Notifications ---
+    const notifCheckbox = document.getElementById('notif-send-email');
+    const notifSubjContainer = document.getElementById('notif-subject-container');
+    if (notifCheckbox && notifSubjContainer) {
+        notifCheckbox.addEventListener('change', (e) => {
+            notifSubjContainer.style.display = e.target.checked ? 'block' : 'none';
+        });
+    }
+
     document.getElementById('form-notif')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const msg = document.getElementById('notif-msg')?.value;
+        const sendEmail = document.getElementById('notif-send-email')?.checked;
+        const subject = document.getElementById('notif-subject')?.value || "Important Announcement";
+        
         if(!msg) return;
         try {
             await api.post('/admin/notifications', { message: msg });
+            
+            if (sendEmail) {
+                await api.post('/admin/send-email', { target_email: "all_users", subject: subject, body_html: msg });
+            }
+            
             if(window.showToast) showToast("Broadcast sent!", "success");
             document.getElementById('notif-modal')?.close();
             document.getElementById('form-notif')?.reset();
+            if(notifSubjContainer) notifSubjContainer.style.display = 'none';
         } catch(err) { if(window.showToast) showToast(err.message, "error"); }
+    });
+
+    window.openAdminEmailModal = (email) => {
+        document.getElementById('form-admin-email')?.reset();
+        const toInput = document.getElementById('admin-email-to');
+        if(toInput) toInput.value = email;
+        document.getElementById('admin-email-modal')?.showModal();
+    };
+
+    document.getElementById('form-admin-email')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const to = document.getElementById('admin-email-to').value;
+        const subject = document.getElementById('admin-email-subject').value;
+        const body = document.getElementById('admin-email-body').value;
+        
+        try {
+            await api.post('/admin/send-email', { target_email: to, subject: subject, body_html: body });
+            if(window.showToast) showToast("Email sent!", "success");
+            document.getElementById('admin-email-modal')?.close();
+            document.getElementById('form-admin-email')?.reset();
+        } catch(err) {
+            if(window.showToast) showToast(err.message, "error");
+        }
     });
 
     // --- Promo Codes ---

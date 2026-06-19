@@ -116,7 +116,24 @@ async def get_client(id: str, db: AsyncSession = Depends(get_db), admin = Depend
     client = result.scalar_one_or_none()
     if not client:
         raise HTTPException(404, "Client not found")
-    return client
+    
+    return {
+        "id": client.id,
+        "company_name": client.company_name,
+        "status": client.status,
+        "daily_email_limit": client.daily_email_limit,
+        "emails_sent_today": client.emails_sent_today,
+        "google_sheet_id": client.google_sheet_id,
+        "target_columns": client.target_columns,
+        "status_column": client.status_column,
+        "smtp_host": client.smtp_host,
+        "smtp_port": client.smtp_port,
+        "smtp_email": client.smtp_email,
+        "groq_api_key_enc": client.groq_api_key_enc,
+        "features_json": client.features_json,
+        "user": {"email": client.user.email} if client.user else None,
+        "plan": {"name": client.plan.name} if client.plan else None
+    }
 
 @router.post("/clients/{id}/reset-usage")
 async def reset_client_usage(id: str, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
@@ -437,3 +454,55 @@ async def delete_promo_code(id: str, db: AsyncSession = Depends(get_db), current
     await db.delete(pc)
     await db.commit()
     return {"status": "success"}
+
+class AdminEmailRequest(BaseModel):
+    target_email: str
+    subject: str
+    body_html: str
+
+@router.post("/send-email")
+async def send_admin_email(req: AdminEmailRequest, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    if not settings.DEFAULT_SMTP_EMAIL or not settings.DEFAULT_SMTP_PASSWORD:
+        raise HTTPException(400, "Super Admin SMTP credentials are not set in .env")
+        
+    targets = []
+    if req.target_email == "all_users":
+        res = await db.execute(select(Client))
+        for c in res.scalars().all():
+            if c.email:
+                targets.append(c.email)
+    else:
+        targets = [req.target_email]
+
+    if not targets:
+        return {"status": "success", "sent": 0, "message": "No targets found."}
+
+    smtp_client = aiosmtplib.SMTP(
+        hostname="smtp.gmail.com",
+        port=587,
+        use_tls=False,
+        start_tls=True
+    )
+    
+    try:
+        await smtp_client.connect()
+        await smtp_client.login(settings.DEFAULT_SMTP_EMAIL, settings.DEFAULT_SMTP_PASSWORD)
+        
+        sent = 0
+        for email in targets:
+            msg = EmailMessage()
+            msg["From"] = settings.DEFAULT_SMTP_EMAIL
+            msg["To"] = email
+            msg["Subject"] = req.subject
+            msg.set_content("Please view this email in an HTML-compatible client.")
+            msg.add_alternative(req.body_html, subtype='html')
+            try:
+                await smtp_client.send_message(msg)
+                sent += 1
+            except Exception:
+                pass
+                
+        await smtp_client.quit()
+        return {"status": "success", "sent": sent}
+    except Exception as e:
+        raise HTTPException(500, f"SMTP Error: {str(e)}")
