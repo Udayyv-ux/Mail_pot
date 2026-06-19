@@ -23,7 +23,12 @@ async def login_google(request: Request):
 @router.get("/callback")
 async def auth_callback(request: Request, db: AsyncSession = Depends(get_db)):
     """Google OAuth callback."""
-    result = await google_callback(request, db)
+    try:
+        result = await google_callback(request, db)
+    except HTTPException as e:
+        if e.status_code == 403:
+            return RedirectResponse(url="/?error=unauthorized_signup")
+        raise e
     
     access_token = result["access_token"]
     refresh_token = result["refresh_token"]

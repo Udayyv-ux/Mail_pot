@@ -100,13 +100,10 @@ async def google_callback(request: Request, db: AsyncSession):
                 )
                 demo_req.status = "approved"
                 demo_req.user_id = user.id
+                db.add(client)
             else:
-                client = Client(
-                    id=str(uuid.uuid4()),
-                    user_id=user.id,
-                    company_name=name + " Company"
-                )
-            db.add(client)
+                # Do NOT allow signups unless they requested a demo or are admin
+                raise HTTPException(status_code=403, detail="Signup not allowed without demo request.")
             
         await db.commit()
     else:
