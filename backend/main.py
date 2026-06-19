@@ -232,6 +232,8 @@ async def get_site_logo(db = Depends(get_db)):
         try:
             header, b64 = setting.value.split(",", 1)
             mime = header.split(":")[1].split(";")[0]
+            if "octet-stream" in mime or not mime.startswith("image/"):
+                mime = "image/png"  # Force image mime type so browsers render it
             img_data = base64.b64decode(b64)
             return Response(content=img_data, media_type=mime, headers={
                 "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -240,8 +242,12 @@ async def get_site_logo(db = Depends(get_db)):
             })
         except Exception:
             pass
-    return RedirectResponse("/img/logo.png", headers={
-        "Cache-Control": "no-cache, no-store, must-revalidate"
+    # Fallback: Transparent 1x1 GIF
+    fallback_gif = base64.b64decode("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7")
+    return Response(content=fallback_gif, media_type="image/gif", headers={
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
     })
 
 

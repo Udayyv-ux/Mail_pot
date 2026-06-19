@@ -761,8 +761,19 @@ document.addEventListener('DOMContentLoaded', () => {
     window.uploadLogo = async function() {
         const fileInput = document.getElementById('admin-logo-upload');
         if(!fileInput) return;
+        
+        if (!fileInput.files || fileInput.files.length === 0) {
+            // If they clicked the button but no file selected, open the dialog for them
+            fileInput.click();
+            
+            // Wait for them to select a file by attaching a one-time change listener
+            fileInput.onchange = () => {
+                if (fileInput.files.length > 0) window.uploadLogo();
+            };
+            return;
+        }
+
         const file = fileInput.files[0];
-        if (!file) return alert('Please select an image file first.');
 
         const formData = new FormData();
         formData.append('file', file);
