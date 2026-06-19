@@ -99,7 +99,7 @@
             <section id="page-dashboard" class="page-section active max-w-7xl mx-auto">
                 <h1 class="text-3xl font-bold mb-8">Platform Overview</h1>
                 
-                <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Total Users</div>
                         <div class="stat-value mt-1" id="stat-users">0</div>
@@ -115,14 +115,6 @@
                     <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Demos</div>
                         <div class="stat-value text-accent mt-1" id="stat-demos">0</div>
-                    </div>
-                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
-                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Total Users</div>
-                        <div class="stat-value text-white mt-1" id="stat-users">0</div>
-                    </div>
-                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
-                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">MRR</div>
-                        <div class="stat-value text-success mt-1" id="stat-mrr">₹0</div>
                     </div>
                 </div>
 
@@ -233,11 +225,6 @@
                                 <input type="password" id="admin-groq" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="Enter API Key">
                                 <label class="label"><span class="label-text-alt text-gray-500">Used for categorizing leads.</span></label>
                             </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-gray-400 font-medium">Global Resend API Key (HTTP Email Blasting)</span></label>
-                                <input type="password" id="admin-resend" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="re_...">
-                                <label class="label"><span class="label-text-alt text-gray-500">Bypasses blocked SMTP ports. All emails sent via HTTP API.</span></label>
-                            </div>
                             <div class="divider border-white/5">Landing Page Settings</div>
                             <div class="form-control">
                                 <label class="label"><span class="label-text text-gray-400 font-medium">"How It Works" Section Title</span></label>
@@ -246,11 +233,6 @@
                             <div class="form-control">
                                 <label class="label"><span class="label-text text-gray-400 font-medium">"How It Works" Section Subtitle</span></label>
                                 <input type="text" id="admin-how-it-works-subtitle" class="input input-bordered bg-base-300 border-white/10" placeholder="e.g. Set up your entire automation engine in less than 5 minutes.">
-                            </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-gray-400 font-medium">Global Sender Identity (From Email)</span></label>
-                                <input type="email" id="admin-sender" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="hello@yourverifieddomain.com">
-                                <label class="label"><span class="label-text-alt text-gray-500">Must be verified on Resend. Replies will go directly to your clients.</span></label>
                             </div>
                             <div class="form-control">
                                 <label class="label"><span class="label-text text-gray-400 font-medium">Google Service Account Email</span></label>

@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(el('stat-plans')) el('stat-plans').textContent = revenue.active_subscriptions || 0;
             if(el('stat-emails')) el('stat-emails').textContent = stats.total_emails_sent || 0;
             if(el('stat-demos')) el('stat-demos').textContent = '-'; // We can populate this later
-            if(el('stat-mrr')) el('stat-mrr').textContent = '₹' + (revenue.mrr || 0);
+
 
             loadDemoRequests();
             loadAnalyticsChart();
@@ -452,8 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const map = {};
             settings.forEach(s => {
                 if(s.key === 'GROQ_API_KEY') document.getElementById('admin-groq').value = s.value;
-                if(s.key === 'RESEND_API_KEY') document.getElementById('admin-resend').value = s.value;
-                if(s.key === 'SENDER_EMAIL') document.getElementById('admin-sender').value = s.value;
+
                 if(s.key === 'GCP_SERVICE_EMAIL') document.getElementById('admin-gcp-email').value = s.value;
                 if(s.key === 'GCP_CREDENTIALS_JSON') document.getElementById('admin-gcp-json').value = s.value;
                 if(s.key === 'RAZORPAY_KEY_ID') document.getElementById('admin-rzp-key').value = s.value;
@@ -469,8 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const payload = [
             {key: 'GROQ_API_KEY', value: document.getElementById('admin-groq').value},
-            {key: 'RESEND_API_KEY', value: document.getElementById('admin-resend').value},
-            {key: 'SENDER_EMAIL', value: document.getElementById('admin-sender').value},
+
             {key: 'GCP_SERVICE_EMAIL', value: document.getElementById('admin-gcp-email').value},
             {key: 'GCP_CREDENTIALS_JSON', value: document.getElementById('admin-gcp-json').value},
             {key: 'MAINTENANCE_MODE', value: document.getElementById('admin-maintenance').checked ? 'true' : 'false'},
