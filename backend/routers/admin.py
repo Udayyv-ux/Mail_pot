@@ -214,7 +214,7 @@ async def update_settings(settings: List[SettingUpdate], db: AsyncSession = Depe
 async def upload_logo(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
     contents = await file.read()
     b64 = base64.b64encode(contents).decode("utf-8")
-    mime = file.content_type
+    mime = file.content_type if file.content_type else "image/png"
     data_uri = f"data:{mime};base64,{b64}"
 
     result = await db.execute(select(AppSetting).where(AppSetting.key == "SITE_LOGO"))

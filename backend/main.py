@@ -226,7 +226,7 @@ async def get_site_logo(db = Depends(get_db)):
     from backend.models.app_settings import AppSetting
     result = await db.execute(select(AppSetting).where(AppSetting.key == "SITE_LOGO"))
     setting = result.scalar_one_or_none()
-    if setting and setting.value.startswith("data:image"):
+    if setting and setting.value.startswith("data:"):
         import base64
         from fastapi.responses import Response
         try:
