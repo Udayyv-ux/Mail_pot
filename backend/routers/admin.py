@@ -454,6 +454,7 @@ async def delete_promo_code(id: str, db: AsyncSession = Depends(get_db), current
 
 class AdminEmailRequest(BaseModel):
     target_email: str
+    target_emails: list[str] = []
     subject: str
     body_html: str
 
@@ -468,6 +469,10 @@ async def send_admin_email(req: AdminEmailRequest, db: AsyncSession = Depends(ge
         for c in res.scalars().all():
             if c.user and c.user.email:
                 targets.append((c.user.email, getattr(c, "company_name", "User")))
+    elif req.target_email == "multiple":
+        # New multi-select logic
+        for email in req.target_emails:
+            targets.append((email, "User"))
     else:
         targets = [(req.target_email, "User")]
 

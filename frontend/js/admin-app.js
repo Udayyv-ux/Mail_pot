@@ -198,11 +198,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const renderRow = (c, tbody, isDemo) => {
                 const tr = document.createElement('tr');
+                const typeStr = isDemo ? 'demo' : 'active';
                 const demoAction = isDemo 
                     ? `<button class="text-accent hover:text-white font-semibold text-sm mr-2" onclick="toggleDemoStatus('${c.id}', false)">Make Active</button>`
                     : `<button class="text-accent hover:text-white font-semibold text-sm mr-2" onclick="toggleDemoStatus('${c.id}', true)">Make Demo</button>`;
                 
                 tr.innerHTML = `
+                    <td class="p-4"><input type="checkbox" class="cb-${typeStr} checkbox checkbox-sm checkbox-primary" value="${c.email}" onchange="updateBulkEmailButton('${typeStr}')" /></td>
                     <td class="p-4 text-white font-medium">${c.email}</td>
                     <td class="p-4 text-gray-300">${c.company_name || 'N/A'}</td>
                     <td class="p-4 text-gray-300"><span class="bg-primary/20 text-primary px-2 py-1 rounded-full text-xs">${c.plan || 'Free'}</span></td>
@@ -216,10 +218,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 tbody.appendChild(tr);
             };
 
-            if(activeClients.length === 0) tbodyActive.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No active clients.</td></tr>';
+            if(activeClients.length === 0) tbodyActive.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">No active clients.</td></tr>';
             else activeClients.forEach(c => renderRow(c, tbodyActive, false));
 
-            if(demoClients.length === 0) tbodyDemo.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No demo users.</td></tr>';
+            if(demoClients.length === 0) tbodyDemo.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">No demo users.</td></tr>';
             else demoClients.forEach(c => renderRow(c, tbodyDemo, true));
 
         } catch(e) {
@@ -763,21 +765,70 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(err) { if(window.showToast) showToast(err.message, "error"); }
     });
 
-    window.openAdminEmailModal = (email, isDemo = false) => {
+    window.toggleSelectAll = (el, type) => {
+        const checkboxes = document.querySelectorAll(`.cb-${type}`);
+        checkboxes.forEach(cb => cb.checked = el.checked);
+        updateBulkEmailButton(type);
+    };
+
+    window.updateBulkEmailButton = (type) => {
+        const btn = document.getElementById(`btn-email-selected-${type}`);
+        if (!btn) return;
+        const checkedCount = document.querySelectorAll(`.cb-${type}:checked`).length;
+        if (checkedCount > 0) {
+            btn.classList.remove('hidden');
+            btn.textContent = `Email Selected (${checkedCount})`;
+        } else {
+            btn.classList.add('hidden');
+        }
+    };
+
+    window.openBulkAdminEmailModal = (isDemo) => {
+        const typeStr = isDemo ? 'demo' : 'active';
+        const checkboxes = document.querySelectorAll(`.cb-${typeStr}:checked`);
+        const emails = Array.from(checkboxes).map(cb => cb.value);
+        if (emails.length === 0) return;
+        
         document.getElementById('form-admin-email')?.reset();
+        
+        const form = document.getElementById('form-admin-email');
+        if(form) form.dataset.bulkEmails = JSON.stringify(emails);
+        
         const toInput = document.getElementById('admin-email-to');
-        if(toInput) toInput.value = email;
+        if(toInput) {
+            toInput.value = emails.join(', ');
+            toInput.readOnly = true;
+        }
         
         if (isDemo) {
             const subjectInput = document.getElementById('admin-email-subject');
             const bodyInput = document.getElementById('admin-email-body');
             if (subjectInput) subjectInput.value = "Welcome to your Demo!";
             if (bodyInput) {
-                bodyInput.value = `<h2>Welcome to the Platform!</h2>
-<p>Hi there,</p>
-<p>We noticed you recently registered a demo account. We'd love to help you get the most out of our platform.</p>
-<p>If you have any questions or would like a guided tour, please reply to this email or book a setup call with us.</p>
-<p>Best,<br>The Team</p>`;
+                bodyInput.value = `<h2>Welcome to the Platform!</h2>\n<p>Hi there,</p>\n<p>We noticed you recently registered a demo account. We'd love to help you get the most out of our platform.</p>\n<p>If you have any questions or would like a guided tour, please reply to this email or book a setup call with us.</p>\n<p>Best,<br>The Team</p>`;
+            }
+        }
+        
+        document.getElementById('admin-email-modal')?.showModal();
+    };
+
+    window.openAdminEmailModal = (email, isDemo = false) => {
+        document.getElementById('form-admin-email')?.reset();
+        const form = document.getElementById('form-admin-email');
+        if(form) delete form.dataset.bulkEmails;
+        
+        const toInput = document.getElementById('admin-email-to');
+        if(toInput) {
+            toInput.value = email;
+            toInput.readOnly = false;
+        }
+        
+        if (isDemo) {
+            const subjectInput = document.getElementById('admin-email-subject');
+            const bodyInput = document.getElementById('admin-email-body');
+            if (subjectInput) subjectInput.value = "Welcome to your Demo!";
+            if (bodyInput) {
+                bodyInput.value = `<h2>Welcome to the Platform!</h2>\n<p>Hi there,</p>\n<p>We noticed you recently registered a demo account. We'd love to help you get the most out of our platform.</p>\n<p>If you have any questions or would like a guided tour, please reply to this email or book a setup call with us.</p>\n<p>Best,<br>The Team</p>`;
             }
         }
         
@@ -790,8 +841,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const subject = document.getElementById('admin-email-subject').value;
         const body = document.getElementById('admin-email-body').value;
         
+        const form = document.getElementById('form-admin-email');
+        let targetEmailStr = to;
+        let targetEmailsArr = [];
+        if (form && form.dataset.bulkEmails) {
+            targetEmailStr = "multiple";
+            targetEmailsArr = JSON.parse(form.dataset.bulkEmails);
+        }
+        
         try {
-            await api.post('/admin/send-email', { target_email: to, subject: subject, body_html: body });
+            await api.post('/admin/send-email', { target_email: targetEmailStr, target_emails: targetEmailsArr, subject: subject, body_html: body });
             if(window.showToast) showToast("Email sent!", "success");
             document.getElementById('admin-email-modal')?.close();
             document.getElementById('form-admin-email')?.reset();

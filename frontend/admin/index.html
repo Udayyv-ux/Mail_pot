@@ -142,11 +142,15 @@
                     <h2 class="text-3xl font-bold">Client Management</h2>
                 </div>
                 
-                <h3 class="text-xl font-semibold mb-4 text-white">Active Clients</h3>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-white">Active Clients</h3>
+                    <button id="btn-email-selected-active" class="btn btn-sm btn-primary hidden" onclick="openBulkAdminEmailModal(false)">Email Selected</button>
+                </div>
                 <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto mb-8">
                     <table class="table table-zebra w-full text-left">
                         <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
                             <tr>
+                                <th class="p-4 w-12"><input type="checkbox" id="selectAllActive" class="checkbox checkbox-sm checkbox-primary" onchange="toggleSelectAll(this, 'active')" /></th>
                                 <th class="p-4 font-semibold">Email</th>
                                 <th class="p-4 font-semibold">Company</th>
                                 <th class="p-4 font-semibold">Active Plan</th>
@@ -159,11 +163,15 @@
                     </table>
                 </div>
 
-                <h3 class="text-xl font-semibold mb-4 text-white">Demo Users</h3>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-white">Demo Users</h3>
+                    <button id="btn-email-selected-demo" class="btn btn-sm btn-primary hidden" onclick="openBulkAdminEmailModal(true)">Email Selected</button>
+                </div>
                 <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
                     <table class="table table-zebra w-full text-left">
                         <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
                             <tr>
+                                <th class="p-4 w-12"><input type="checkbox" id="selectAllDemo" class="checkbox checkbox-sm checkbox-primary" onchange="toggleSelectAll(this, 'demo')" /></th>
                                 <th class="p-4 font-semibold">Email</th>
                                 <th class="p-4 font-semibold">Company</th>
                                 <th class="p-4 font-semibold">Active Plan</th>
