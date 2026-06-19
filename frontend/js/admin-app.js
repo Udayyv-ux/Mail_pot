@@ -77,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         router.on('dashboard', loadDashboard);
         router.on('users', loadUsers);
         router.on('plans', loadPlans);
+        router.on('promo', loadPromoCodes);
         router.on('monitor', loadGlobalLogs);
         router.on('settings', loadSettings);
         router.on('landing', loadLandingContent);
@@ -218,11 +219,11 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await api.post(`/admin/impersonate/${userId}`);
             // Save admin token so we can restore it later
-            const currentToken = localStorage.getItem('token');
+            const currentToken = localStorage.getItem('access_token');
             localStorage.setItem('admin_token', currentToken);
             
             // Set client token
-            localStorage.setItem('token', res.access_token);
+            localStorage.setItem('access_token', res.access_token);
             window.location.href = '/client';
         } catch (e) {
             alert("Failed to impersonate: " + e.message);
@@ -455,34 +456,56 @@ document.addEventListener('DOMContentLoaded', () => {
             const settings = await api.get('/admin/settings');
             const map = {};
             settings.forEach(s => {
-                if(s.key === 'GROQ_API_KEY') document.getElementById('admin-groq').value = s.value;
-                if(s.key === 'RESEND_API_KEY') document.getElementById('admin-resend').value = s.value;
-                if(s.key === 'SENDER_EMAIL') document.getElementById('admin-sender').value = s.value;
-                if(s.key === 'GCP_SERVICE_EMAIL') document.getElementById('admin-gcp-email').value = s.value;
-                if(s.key === 'GCP_CREDENTIALS_JSON') document.getElementById('admin-gcp-json').value = s.value;
-                if(s.key === 'RAZORPAY_KEY_ID') document.getElementById('admin-rzp-key').value = s.value;
-                if(s.key === 'RAZORPAY_SECRET') document.getElementById('admin-rzp-secret').value = s.value;
-                if(s.key === 'MAINTENANCE_MODE') document.getElementById('admin-maintenance').checked = (s.value === 'true');
-                if(s.key === 'LANDING_HOW_IT_WORKS_TITLE') document.getElementById('admin-how-it-works-title').value = s.value;
-                if(s.key === 'LANDING_HOW_IT_WORKS_SUBTITLE') document.getElementById('admin-how-it-works-subtitle').value = s.value;
+                const groqEl = document.getElementById('admin-groq');
+                const resendEl = document.getElementById('admin-resend');
+                const senderEl = document.getElementById('admin-sender');
+                const gcpEmailEl = document.getElementById('admin-gcp-email');
+                const gcpJsonEl = document.getElementById('admin-gcp-json');
+                const rzpKeyEl = document.getElementById('admin-rzp-key');
+                const rzpSecretEl = document.getElementById('admin-rzp-secret');
+                const maintEl = document.getElementById('admin-maintenance');
+                const hiwTitleEl = document.getElementById('admin-how-it-works-title');
+                const hiwSubEl = document.getElementById('admin-how-it-works-subtitle');
+
+                if(s.key === 'GROQ_API_KEY' && groqEl) groqEl.value = s.value;
+                if(s.key === 'RESEND_API_KEY' && resendEl) resendEl.value = s.value;
+                if(s.key === 'SENDER_EMAIL' && senderEl) senderEl.value = s.value;
+                if(s.key === 'GCP_SERVICE_EMAIL' && gcpEmailEl) gcpEmailEl.value = s.value;
+                if(s.key === 'GCP_CREDENTIALS_JSON' && gcpJsonEl) gcpJsonEl.value = s.value;
+                if(s.key === 'RAZORPAY_KEY_ID' && rzpKeyEl) rzpKeyEl.value = s.value;
+                if(s.key === 'RAZORPAY_SECRET' && rzpSecretEl) rzpSecretEl.value = s.value;
+                if(s.key === 'MAINTENANCE_MODE' && maintEl) maintEl.checked = (s.value === 'true');
+                if(s.key === 'LANDING_HOW_IT_WORKS_TITLE' && hiwTitleEl) hiwTitleEl.value = s.value;
+                if(s.key === 'LANDING_HOW_IT_WORKS_SUBTITLE' && hiwSubEl) hiwSubEl.value = s.value;
             });
         } catch(e) {}
     }
 
     document.getElementById('form-admin-settings')?.addEventListener('submit', async(e) => {
         e.preventDefault();
-        const payload = [
-            {key: 'GROQ_API_KEY', value: document.getElementById('admin-groq').value},
-            {key: 'RESEND_API_KEY', value: document.getElementById('admin-resend').value},
-            {key: 'SENDER_EMAIL', value: document.getElementById('admin-sender').value},
-            {key: 'GCP_SERVICE_EMAIL', value: document.getElementById('admin-gcp-email').value},
-            {key: 'GCP_CREDENTIALS_JSON', value: document.getElementById('admin-gcp-json').value},
-            {key: 'MAINTENANCE_MODE', value: document.getElementById('admin-maintenance').checked ? 'true' : 'false'},
-            {key: 'RAZORPAY_KEY_ID', value: document.getElementById('admin-rzp-key').value},
-            {key: 'RAZORPAY_SECRET', value: document.getElementById('admin-rzp-secret').value},
-            {key: 'LANDING_HOW_IT_WORKS_TITLE', value: document.getElementById('admin-how-it-works-title').value},
-            {key: 'LANDING_HOW_IT_WORKS_SUBTITLE', value: document.getElementById('admin-how-it-works-subtitle').value}
-        ];
+        const payload = [];
+        
+        const groqEl = document.getElementById('admin-groq');
+        const resendEl = document.getElementById('admin-resend');
+        const senderEl = document.getElementById('admin-sender');
+        const gcpEmailEl = document.getElementById('admin-gcp-email');
+        const gcpJsonEl = document.getElementById('admin-gcp-json');
+        const maintEl = document.getElementById('admin-maintenance');
+        const rzpKeyEl = document.getElementById('admin-rzp-key');
+        const rzpSecretEl = document.getElementById('admin-rzp-secret');
+        const hiwTitleEl = document.getElementById('admin-how-it-works-title');
+        const hiwSubEl = document.getElementById('admin-how-it-works-subtitle');
+
+        if(groqEl) payload.push({key: 'GROQ_API_KEY', value: groqEl.value});
+        if(resendEl) payload.push({key: 'RESEND_API_KEY', value: resendEl.value});
+        if(senderEl) payload.push({key: 'SENDER_EMAIL', value: senderEl.value});
+        if(gcpEmailEl) payload.push({key: 'GCP_SERVICE_EMAIL', value: gcpEmailEl.value});
+        if(gcpJsonEl) payload.push({key: 'GCP_CREDENTIALS_JSON', value: gcpJsonEl.value});
+        if(maintEl) payload.push({key: 'MAINTENANCE_MODE', value: maintEl.checked ? 'true' : 'false'});
+        if(rzpKeyEl) payload.push({key: 'RAZORPAY_KEY_ID', value: rzpKeyEl.value});
+        if(rzpSecretEl) payload.push({key: 'RAZORPAY_SECRET', value: rzpSecretEl.value});
+        if(hiwTitleEl) payload.push({key: 'LANDING_HOW_IT_WORKS_TITLE', value: hiwTitleEl.value});
+        if(hiwSubEl) payload.push({key: 'LANDING_HOW_IT_WORKS_SUBTITLE', value: hiwSubEl.value});
         try {
             await api.put('/admin/settings', payload);
             if(window.showToast) showToast("Settings saved", "success");
@@ -762,10 +785,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if(window.showToast) showToast('Deleted', 'success');
             loadPromoCodes();
         } catch(e) {}
-    };
-
-    router.on('promo', loadPromoCodes);
-
     window.uploadLogo = async function() {
         const fileInput = document.getElementById('admin-logo-upload');
         if(!fileInput) return;
