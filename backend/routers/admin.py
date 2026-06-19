@@ -342,9 +342,8 @@ class DemoEmailRequest(BaseModel):
 
 @router.post("/demo-requests/send-email")
 async def send_demo_emails(req: DemoEmailRequest, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
-    if not settings.DEFAULT_SMTP_EMAIL or not settings.DEFAULT_SMTP_PASSWORD:
-        raise HTTPException(400, "Super Admin SMTP credentials are not set in .env")
-
+    from backend.services.email_engine import send_email_via_gmail_api, refresh_google_token
+    
     # Get all pending demo requests
     result = await db.execute(select(DemoRequest).where(DemoRequest.status == "pending"))
     requests = result.scalars().all()
@@ -352,43 +351,28 @@ async def send_demo_emails(req: DemoEmailRequest, db: AsyncSession = Depends(get
     if not requests:
         return {"status": "success", "message": "No pending demo requests found.", "sent_count": 0}
 
-    smtp_client = aiosmtplib.SMTP(
-        hostname="smtp.gmail.com",
-        port=587,
-        use_tls=False,
-        start_tls=True
-    )
-    
-    try:
-        await smtp_client.connect()
-        await smtp_client.login(settings.DEFAULT_SMTP_EMAIL, settings.DEFAULT_SMTP_PASSWORD)
-        
-        sent_count = 0
-        for dr in requests:
-            msg = EmailMessage()
-            msg["From"] = settings.DEFAULT_SMTP_EMAIL
-            msg["To"] = dr.email
-            msg["Subject"] = req.subject
+    # Use the admin's OAuth token
+    admin_user = await db.get(User, admin.id) if hasattr(admin, 'id') else admin
+    access_token = await refresh_google_token(admin_user, db)
+    if not access_token:
+        raise HTTPException(400, "Super Admin Google OAuth token is missing or expired. Please re-login.")
+
+    sent_count = 0
+    for dr in requests:
+        class PersonalizedTemplate:
+            subject = req.subject
+            body_html = req.body_html.replace("{name}", dr.name).replace("{company}", dr.company or "your company")
+            banner_url = None
+
+        success, err = await send_email_via_gmail_api(dr.email, dr.name, PersonalizedTemplate(), access_token)
+        if success:
+            dr.status = "contacted"
+            sent_count += 1
+            await asyncio.sleep(1) # delay
+        else:
+            print(f"Failed to send demo email to {dr.email}: {err}")
             
-            # Simple personalization
-            personalized_body = req.body_html.replace("{name}", dr.name).replace("{company}", dr.company or "your company")
-            msg.add_alternative(personalized_body, subtype="html")
-            
-            try:
-                await smtp_client.send_message(msg)
-                dr.status = "contacted"
-                sent_count += 1
-                await asyncio.sleep(1) # delay to prevent spam flagging
-            except Exception as e:
-                print(f"Failed to send demo email to {dr.email}: {e}")
-                
-        await db.commit()
-    finally:
-        try:
-            await smtp_client.quit()
-        except:
-            pass
-            
+    await db.commit()
     return {"status": "success", "sent_count": sent_count}
 
 @router.get("/revenue")
@@ -462,47 +446,34 @@ class AdminEmailRequest(BaseModel):
 
 @router.post("/send-email")
 async def send_admin_email(req: AdminEmailRequest, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
-    if not settings.DEFAULT_SMTP_EMAIL or not settings.DEFAULT_SMTP_PASSWORD:
-        raise HTTPException(400, "Super Admin SMTP credentials are not set in .env")
-        
+    from backend.services.email_engine import send_email_via_gmail_api, refresh_google_token
+    
     targets = []
     if req.target_email == "all_users":
         res = await db.execute(select(Client))
         for c in res.scalars().all():
             if c.email:
-                targets.append(c.email)
+                targets.append((c.email, getattr(c, "company_name", "User")))
     else:
-        targets = [req.target_email]
+        targets = [(req.target_email, "User")]
 
     if not targets:
         return {"status": "success", "sent": 0, "message": "No targets found."}
 
-    smtp_client = aiosmtplib.SMTP(
-        hostname="smtp.gmail.com",
-        port=587,
-        use_tls=False,
-        start_tls=True
-    )
-    
-    try:
-        await smtp_client.connect()
-        await smtp_client.login(settings.DEFAULT_SMTP_EMAIL, settings.DEFAULT_SMTP_PASSWORD)
-        
-        sent = 0
-        for email in targets:
-            msg = EmailMessage()
-            msg["From"] = settings.DEFAULT_SMTP_EMAIL
-            msg["To"] = email
-            msg["Subject"] = req.subject
-            msg.set_content("Please view this email in an HTML-compatible client.")
-            msg.add_alternative(req.body_html, subtype='html')
-            try:
-                await smtp_client.send_message(msg)
-                sent += 1
-            except Exception:
-                pass
-                
-        await smtp_client.quit()
-        return {"status": "success", "sent": sent}
-    except Exception as e:
-        raise HTTPException(500, f"SMTP Error: {str(e)}")
+    admin_user = await db.get(User, admin.id) if hasattr(admin, 'id') else admin
+    access_token = await refresh_google_token(admin_user, db)
+    if not access_token:
+        raise HTTPException(400, "Super Admin Google OAuth token is missing or expired. Please re-login.")
+
+    class DummyTemplate:
+        subject = req.subject
+        body_html = req.body_html
+        banner_url = None
+
+    sent = 0
+    for email, name in targets:
+        success, err = await send_email_via_gmail_api(email, name, DummyTemplate(), access_token)
+        if success:
+            sent += 1
+            
+    return {"status": "success", "sent": sent}
