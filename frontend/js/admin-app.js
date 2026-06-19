@@ -310,9 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    window.savePlan = savePlan;
-    window.editPlan = editPlan;
-    window.deletePlan = deletePlan;
+
 
     // --- Global Monitor ---
     window.loadGlobalLogs = async () => {
