@@ -276,6 +276,21 @@ async def maintenance_page():
     """Serve the maintenance screen."""
     return FileResponse(os.path.join(FRONTEND_DIR, "maintenance.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
+@app.get("/docs.html")
+async def docs_page():
+    """Serve the documentation page."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "docs.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+
+@app.get("/help.html")
+async def help_page():
+    """Serve the help centre page."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "help.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+
+@app.get("/status.html")
+async def status_page():
+    """Serve the system status page."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "status.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+
 
 @app.get("/client")
 async def client_portal_redirect():
