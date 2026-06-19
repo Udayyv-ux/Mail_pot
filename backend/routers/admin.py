@@ -450,10 +450,11 @@ async def send_admin_email(req: AdminEmailRequest, db: AsyncSession = Depends(ge
     
     targets = []
     if req.target_email == "all_users":
-        res = await db.execute(select(Client))
+        from sqlalchemy.orm import selectinload
+        res = await db.execute(select(Client).options(selectinload(Client.user)).where(Client.status == "active"))
         for c in res.scalars().all():
-            if c.email:
-                targets.append((c.email, getattr(c, "company_name", "User")))
+            if c.user and c.user.email:
+                targets.append((c.user.email, getattr(c, "company_name", "User")))
     else:
         targets = [(req.target_email, "User")]
 
