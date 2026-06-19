@@ -147,7 +147,9 @@ async def list_campaigns(db: AsyncSession = Depends(get_db), current_user = Depe
         "send_hours_end": c.send_hours_end,
         "review_mode": getattr(c, 'review_mode', False),
         "is_active": c.is_active,
-        "created_at": c.created_at
+        "created_at": c.created_at,
+        "last_error": c.last_error,
+        "last_run_at": c.last_run_at.isoformat() if getattr(c, 'last_run_at', None) else None
     } for c in campaigns]
 
 @router.post("/campaigns")

@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.endImpersonation = () => {
         const adminToken = localStorage.getItem('admin_token');
         if (adminToken) {
-            localStorage.setItem('token', adminToken);
+            localStorage.setItem('access_token', adminToken);
             localStorage.removeItem('admin_token');
             window.location.href = '/admin';
         }

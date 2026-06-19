@@ -34,6 +34,8 @@ class Campaign(Base):
     
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    last_run_at = Column(DateTime(timezone=True), nullable=True)
+    last_error = Column(Text, nullable=True)
 
     # Relationships
     client = relationship("Client", back_populates="campaigns", lazy="selectin")

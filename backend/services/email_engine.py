@@ -208,7 +208,24 @@ async def run_247_engine():
                     await db.commit()
             
             # --- PROCESS CAMPAIGNS ---
-            for campaign in campaigns:
+            # Enforce limits by grouping campaigns
+            client_campaigns = {}
+            for c in campaigns:
+                if c.client_id not in client_campaigns:
+                    client_campaigns[c.client_id] = []
+                client_campaigns[c.client_id].append(c)
+
+            allowed_campaigns = []
+            async with SessionLocal() as db:
+                for cid, camps in client_campaigns.items():
+                    db_client = await db.get(Client, cid)
+                    if db_client and db_client.status == "active":
+                        await db.refresh(db_client, ['plan'])
+                        limit = db_client.plan.campaign_limit if db_client.plan else 3
+                        camps.sort(key=lambda x: x.created_at)
+                        allowed_campaigns.extend(camps[:limit])
+
+            for campaign in allowed_campaigns:
                 async with SessionLocal() as db:
                     db_client = await db.get(Client, campaign.client_id)
                     if not db_client or db_client.status != "active":
@@ -249,6 +266,11 @@ async def run_247_engine():
                 status_idx = get_col_index(headers, status_col_name)
                 
                 if email_idx == -1 or status_idx == -1:
+                    async with SessionLocal() as db:
+                        db_camp = await db.get(Campaign, campaign.id)
+                        if db_camp:
+                            db_camp.last_error = f"Missing Email or {status_col_name} column."
+                        await db.commit()
                     continue
                     
                 from datetime import timedelta
