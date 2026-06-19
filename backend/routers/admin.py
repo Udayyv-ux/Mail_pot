@@ -238,6 +238,16 @@ async def upload_logo(file: UploadFile = File(...), db: AsyncSession = Depends(g
     key = f"LOGO_GALLERY_{uuid.uuid4()}"
     setting = AppSetting(key=key, category="logo_gallery", value=data_uri)
     db.add(setting)
+
+    # Automatically set this newly uploaded logo as the active SITE_LOGO
+    active_result = await db.execute(select(AppSetting).where(AppSetting.key == "SITE_LOGO"))
+    active_setting = active_result.scalar_one_or_none()
+    if not active_setting:
+        active_setting = AppSetting(key="SITE_LOGO", category="general", value=data_uri)
+        db.add(active_setting)
+    else:
+        active_setting.value = data_uri
+
     await db.commit()
     return {"status": "success", "id": key}
 
