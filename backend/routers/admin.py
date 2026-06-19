@@ -241,6 +241,26 @@ async def upload_logo(file: UploadFile = File(...), db: AsyncSession = Depends(g
     await db.commit()
     return {"status": "success", "id": key}
 
+@router.post("/settings/logo")
+async def upload_logo_legacy(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    """Fallback endpoint for users who haven't hard refreshed and are using the v3 UI."""
+    contents = await file.read()
+    b64 = base64.b64encode(contents).decode("utf-8")
+    mime = file.content_type if file.content_type else "image/png"
+    data_uri = f"data:{mime};base64,{b64}"
+
+    # Upsert the SITE_LOGO directly
+    result = await db.execute(select(AppSetting).where(AppSetting.key == "SITE_LOGO"))
+    setting = result.scalar_one_or_none()
+    if not setting:
+        setting = AppSetting(key="SITE_LOGO", category="general", value=data_uri)
+        db.add(setting)
+    else:
+        setting.value = data_uri
+        
+    await db.commit()
+    return {"status": "success", "url": "/api/logo"}
+
 @router.delete("/logos/{logo_id}")
 async def delete_logo(logo_id: str, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
     result = await db.execute(select(AppSetting).where(AppSetting.key == logo_id, AppSetting.category == "logo_gallery"))
