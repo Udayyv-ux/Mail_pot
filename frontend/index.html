@@ -68,26 +68,32 @@
     <div class="space-bg" id="space-bg"></div>
 
     <!-- Navigation -->
-    <header class="bg-base-100/50 backdrop-blur-md sticky top-0 z-50 border-b border-white/5">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="navbar py-4">
+    <!-- Floating Aesthetic Navbar -->
+    <header class="fixed top-0 left-0 right-0 z-50 pt-4 px-4 sm:px-6 lg:px-8 transition-all duration-300" id="main-nav">
+        <div class="max-w-6xl mx-auto">
+            <div class="navbar bg-dark/60 backdrop-blur-xl border border-white/10 rounded-full px-6 py-2 shadow-2xl shadow-primary/10 transition-all duration-300">
                 <div class="navbar-start">
-                    <a href="#" class="flex items-center gap-2">
-                        <img src="/api/logo?v=3" alt="Logo" class="h-10 object-contain">
+                    <a href="#" class="flex items-center gap-2 group">
+                        <div class="p-1 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors duration-300">
+                            <img src="/api/logo?v=3" alt="Logo" class="h-8 object-contain">
+                        </div>
                     </a>
                 </div>
                 <div class="navbar-center hidden lg:flex">
-                    <ul class="menu menu-horizontal px-1 gap-4 text-gray-300 font-medium text-sm">
-                        <li><a href="#how-it-works" class="hover:text-white transition-colors">How it works</a></li>
-                        <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
-                        <li><a href="#pricing" class="hover:text-white transition-colors">Pricing</a></li>
-                        <li><a href="#testimonials" class="hover:text-white transition-colors">Testimonials</a></li>
-                        <li><a href="#faq" class="hover:text-white transition-colors">FAQ</a></li>
+                    <ul class="flex items-center gap-1 px-2 py-1 bg-white/5 rounded-full border border-white/5">
+                        <li><a href="#how-it-works" class="px-4 py-2 rounded-full text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300">How it works</a></li>
+                        <li><a href="#features" class="px-4 py-2 rounded-full text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300">Features</a></li>
+                        <li><a href="#pricing" class="px-4 py-2 rounded-full text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300">Pricing</a></li>
+                        <li><a href="#testimonials" class="px-4 py-2 rounded-full text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300">Testimonials</a></li>
+                        <li><a href="#faq" class="px-4 py-2 rounded-full text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300">FAQ</a></li>
                     </ul>
                 </div>
-                <div class="navbar-end gap-4">
-                    <button onclick="document.getElementById('login-modal').showModal()" class="btn btn-ghost text-gray-300 hover:text-white">Log in</button>
-                    <button onclick="document.getElementById('register-modal').showModal()" class="btn bg-primary hover:bg-violet-600 text-white border-none shadow-lg shadow-primary/20">Get Started</button>
+                <div class="navbar-end gap-3">
+                    <button onclick="document.getElementById('login-modal').showModal()" class="text-sm font-semibold text-gray-300 hover:text-white px-4 py-2 rounded-full hover:bg-white/5 transition-colors duration-300">Log in</button>
+                    <button onclick="document.getElementById('register-modal').showModal()" class="btn btn-sm h-10 px-6 rounded-full bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white border-none shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] transition-all duration-300">
+                        Get Started
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                    </button>
                 </div>
             </div>
         </div>
