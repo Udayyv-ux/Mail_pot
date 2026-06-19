@@ -11,9 +11,9 @@ from backend.models.payment import Payment
 from backend.models.app_settings import Policy, AppSetting, DemoRequest, Notification
 from backend.models.email_queue import EmailQueue
 from backend.models.promo_code import PromoCode
-
+from backend.models.image import UploadedImage
 __all__ = [
     "User", "Client", "Plan", "Template", "Campaign",
     "EmailLog", "Payment", "Policy", "AppSetting", "DemoRequest", "Notification",
-    "EmailQueue", "PromoCode"
+    "EmailQueue", "PromoCode", "UploadedImage"
 ]

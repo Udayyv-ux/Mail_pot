@@ -21,6 +21,8 @@ import uuid
 import re
 from backend.utils.encryption import encrypt_value
 from backend.models.campaign import Campaign
+from backend.models.image import UploadedImage
+import base64
 
 router = APIRouter(prefix="/api/client", tags=["client"])
 
@@ -222,16 +224,19 @@ async def get_client_chart(db: AsyncSession = Depends(get_db), current_user = De
     return {"labels": labels, "data": data}
 
 @router.post("/upload")
-async def upload_image(file: UploadFile = File(...), current_user = Depends(require_client)):
-    ext = file.filename.split(".")[-1]
-    filename = f"{uuid.uuid4()}.{ext}"
-    uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
-    os.makedirs(uploads_dir, exist_ok=True)
-    file_path = os.path.join(uploads_dir, filename)
-    with open(file_path, "wb") as f:
-        content = await file.read()
-        f.write(content)
-    return {"url": f"/uploads/{filename}"}
+async def upload_image(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    client = await get_client_profile(current_user, db)
+    
+    contents = await file.read()
+    b64 = base64.b64encode(contents).decode("utf-8")
+    mime = file.content_type or "image/png"
+    data_uri = f"data:{mime};base64,{b64}"
+    
+    img = UploadedImage(client_id=client.id, data_uri=data_uri)
+    db.add(img)
+    await db.commit()
+    
+    return {"url": f"/api/images/{img.id}"}
 @router.get("/queue")
 async def list_email_queue(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client = await get_client_profile(current_user, db)

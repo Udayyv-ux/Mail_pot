@@ -200,9 +200,22 @@ app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND_DIR, "js")), name="
 if os.path.exists(os.path.join(FRONTEND_DIR, "assets")):
     app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="assets")
 
-UPLOADS_DIR = os.path.join(os.path.dirname(__file__), "uploads")
-os.makedirs(UPLOADS_DIR, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
+@app.get("/api/images/{image_id}")
+async def get_uploaded_image(image_id: str, db = Depends(get_db)):
+    from sqlalchemy import select
+    from backend.models.image import UploadedImage
+    result = await db.execute(select(UploadedImage).where(UploadedImage.id == image_id))
+    img = result.scalar_one_or_none()
+    if not img or not img.data_uri.startswith("data:image"):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Image not found")
+        
+    header, b64 = img.data_uri.split(",", 1)
+    mime = header.split(":")[1].split(";")[0]
+    import base64
+    from fastapi.responses import Response
+    img_data = base64.b64decode(b64)
+    return Response(content=img_data, media_type=mime, headers={"Cache-Control": "public, max-age=31536000"})
 
 
 # ── Frontend Page Routes ─────────────────────────────────────────────────────
@@ -220,10 +233,16 @@ async def get_site_logo(db = Depends(get_db)):
             header, b64 = setting.value.split(",", 1)
             mime = header.split(":")[1].split(";")[0]
             img_data = base64.b64decode(b64)
-            return Response(content=img_data, media_type=mime)
+            return Response(content=img_data, media_type=mime, headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            })
         except Exception:
             pass
-    return RedirectResponse("/img/logo.png")
+    return RedirectResponse("/img/logo.png", headers={
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+    })
 
 
 @app.get("/")
