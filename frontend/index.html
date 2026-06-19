@@ -68,7 +68,7 @@
     <div class="space-bg" id="space-bg"></div>
 
     <!-- Navigation -->
-    <div class="navbar bg-base-100/50 backdrop-blur-md sticky top-0 z-50 border-b border-white/5 px-6">
+    <div class="navbar bg-base-100/50 backdrop-blur-md sticky top-0 z-50 border-b border-white/5 px-6 py-2">
         <div class="navbar-start">
             <a href="#" class="flex items-center gap-2">
                 <img src="/api/logo" alt="Sheetx Logo" class="h-8 object-contain">
@@ -268,8 +268,21 @@
             </div>
         </section>
 
+    <!-- How It Works (Steps) -->
+        <section id="how-it-works" class="py-24 border-t border-white/5 relative z-10">
+            <div class="max-w-4xl mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 id="landing-how-it-works-title" class="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight">Up and running in minutes</h2>
+                    <p id="landing-how-it-works-subtitle" class="text-xl text-gray-400 font-light leading-relaxed max-w-3xl mx-auto">No implementation consultants. No lengthy onboarding. Just sign up and start managing your outreach.</p>
+                </div>
+                <div id="landing-steps-container" class="space-y-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </section>
+
     <!-- Features -->
-        <section id="features" class="py-24 border-t border-white/5">
+        <section id="features" class="py-24 border-y border-white/5">
             <div class="max-w-7xl mx-auto px-6">
                 <div class="text-center mb-16">
                     <h2 class="text-3xl md:text-5xl font-bold mb-4">Everything your business needs</h2>
@@ -295,19 +308,6 @@
                             <p class="text-gray-400 text-sm mt-2">Bring your own SMTP. We throttle sending speeds to protect your domain reputation automatically.</p>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-    <!-- How It Works (Steps) -->
-        <section id="how-it-works" class="py-24 border-y border-white/5 relative z-10">
-            <div class="max-w-4xl mx-auto px-6">
-                <div class="text-center mb-16">
-                    <h2 id="landing-how-it-works-title" class="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight">Up and running in minutes</h2>
-                    <p id="landing-how-it-works-subtitle" class="text-xl text-gray-400 font-light leading-relaxed max-w-3xl mx-auto">No implementation consultants. No lengthy onboarding. Just sign up and start managing your outreach.</p>
-                </div>
-                <div id="landing-steps-container" class="space-y-4">
-                    <!-- Populated by JS -->
                 </div>
             </div>
         </section>
@@ -382,6 +382,8 @@
                         <p class="text-lg text-gray-400 font-light leading-relaxed mb-10">
                             We started Sheetx.io because we were exhausted from fighting clunky CRM integrations just to send personalized emails. 
                             We wanted a tool that respected the beautiful simplicity of Google Sheets, but delivered the devastating power of an enterprise outreach platform.
+                            <br/><br/>
+                            <span class="text-white font-medium">Owned and operated by Sixedge Innovation.</span>
                         </p>
                         <div class="flex gap-4">
                             <div class="flex items-center gap-4 bg-base-200/50 p-4 rounded-2xl border border-white/5 hover:border-primary/30 transition-colors cursor-default">
@@ -449,10 +451,7 @@
             </div>
             
             <div class="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/5 text-sm text-gray-500">
-                <p>© 2026 Sheetx.io. All rights reserved.</p>
-                <div class="mt-4 md:mt-0" id="footer-policies">
-                    <!-- Additional generic policies here if needed -->
-                </div>
+                <p>© 2026 Sheetx.io. All rights reserved. Owned and operated by Sixedge Innovation.</p>
             </div>
         </div>
     </footer>
