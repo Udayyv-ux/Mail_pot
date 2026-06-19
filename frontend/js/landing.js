@@ -274,3 +274,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Failed to load plans", e);
     }
 });
+
+
+// --- Demo / Request Info Form ---
+const formDemo = document.getElementById('form-demo-request');
+if (formDemo) {
+    formDemo.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-demo-submit');
+        btn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Submitting...';
+        btn.disabled = true;
+
+        const data = {
+            name: document.getElementById('demo-name').value,
+            email: document.getElementById('demo-email').value,
+            phone: document.getElementById('demo-phone').value,
+            company: document.getElementById('demo-company').value,
+            inquiry_type: document.getElementById('demo-type').value,
+            message: document.getElementById('demo-message').value
+        };
+
+        try {
+            await api.post('/public/demo-request', data);
+            if(window.showToast) window.showToast("Your request has been submitted!", "success");
+            formDemo.reset();
+            document.getElementById('demo-modal').close();
+        } catch (err) {
+            if(window.showToast) window.showToast(err.message || "Failed to submit request", "error");
+        } finally {
+            btn.innerHTML = 'Submit Request';
+            btn.disabled = false;
+        }
+    });
+}

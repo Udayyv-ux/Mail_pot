@@ -59,6 +59,7 @@ async def lifespan(app: FastAPI):
         ("campaigns", "created_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"),
         ("policies", "icon", "VARCHAR DEFAULT '📜'"),
         ("policies", "description", "VARCHAR DEFAULT ''"),
+        ("demo_requests", "inquiry_type", "VARCHAR DEFAULT 'Demo'"),
     ]
 
     from sqlalchemy import text

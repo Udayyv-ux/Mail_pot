@@ -133,7 +133,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button class="btn btn-xs btn-primary btn-outline" onclick="openAdminEmailModal('${d.email}', true)">Email</button>
                         </div>
                     </div>
-                    <div class="text-sm text-secondary mb-2">${d.email}</div>
+                    <div class="text-sm text-secondary mb-1">${d.email} <span class="text-gray-500 ml-2">${d.phone || ''}</span></div>
+                    <div class="mb-2">
+                        <span class="badge badge-sm badge-outline text-gray-300">${d.inquiry_type || 'Demo'}</span>
+                        <span class="badge badge-sm ${d.status === 'contacted' ? 'badge-success' : 'badge-warning'} ml-2">${d.status}</span>
+                    </div>
                     <div class="text-sm text-gray-300 bg-dark/50 p-2 rounded">${d.message || 'No message provided.'}</div>
                 `;
                 list.appendChild(div);

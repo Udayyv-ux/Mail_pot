@@ -50,6 +50,7 @@ class DemoRequest(Base):
     company = Column(String, default="")
     phone = Column(String, default="")
     message = Column(Text, default="")
+    inquiry_type = Column(String, default="Demo")
     status = Column(String, default="pending")  # pending, approved, rejected
     user_id = Column(String, ForeignKey("users.id"), nullable=True)  # linked after approval
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

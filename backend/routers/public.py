@@ -36,6 +36,7 @@ class DemoSubmit(BaseModel):
     company: str = ""
     phone: str = ""
     message: str = ""
+    inquiry_type: str = "Demo"
 
 @router.post("/demo-request")
 async def submit_demo(data: DemoSubmit, db: AsyncSession = Depends(get_db)):
