@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Centre - Sheetx.io</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: { primary: '#8b5cf6', secondary: '#3b82f6', dark: '#0f172a' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: transparent; color: #f8fafc; overflow-x: hidden; }
+        .hero-bg { background: radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%); }
+        .space-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -10; background: #0b0f19; overflow: hidden; }
+    </style>
+</head>
+<body class="antialiased hero-bg min-h-screen flex flex-col">
+    <div class="space-bg"></div>
+
+    <header class="bg-base-100/50 backdrop-blur-md sticky top-0 z-50 border-b border-white/5">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="navbar py-4">
+                <div class="navbar-start">
+                    <a href="/" class="flex items-center gap-2">
+                        <img src="/api/logo?v=3" alt="Logo" class="h-10 object-contain">
+                    </a>
+                </div>
+                <div class="navbar-end gap-4">
+                    <a href="/" class="btn btn-ghost text-gray-300 hover:text-white">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 py-24">
+        <div class="max-w-3xl mx-auto px-6 text-center">
+            <h1 class="text-4xl font-bold mb-6">How can we help?</h1>
+            <div class="relative w-full max-w-lg mx-auto mb-16">
+                <input type="text" placeholder="Search for articles, tutorials, or FAQs..." class="input input-bordered w-full pl-12 rounded-full bg-base-200/50 border-white/10 text-white placeholder-gray-500 focus:border-primary">
+                <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+            <a href="#" class="block bg-base-200/50 border border-white/5 rounded-xl p-6 hover:border-primary/50 transition-colors">
+                <h3 class="text-xl font-bold mb-2">Getting Started</h3>
+                <p class="text-sm text-gray-400">Learn how to connect your first Google Sheet and send your first campaign.</p>
+            </a>
+            <a href="#" class="block bg-base-200/50 border border-white/5 rounded-xl p-6 hover:border-primary/50 transition-colors">
+                <h3 class="text-xl font-bold mb-2">AI Templates</h3>
+                <p class="text-sm text-gray-400">Understand how our AI matches leads to the perfect email template automatically.</p>
+            </a>
+            <a href="#" class="block bg-base-200/50 border border-white/5 rounded-xl p-6 hover:border-primary/50 transition-colors">
+                <h3 class="text-xl font-bold mb-2">Billing & Pricing</h3>
+                <p class="text-sm text-gray-400">Manage your subscription, upgrade your plan, and understand daily limits.</p>
+            </a>
+            <a href="#" class="block bg-base-200/50 border border-white/5 rounded-xl p-6 hover:border-primary/50 transition-colors">
+                <h3 class="text-xl font-bold mb-2">Deliverability Tips</h3>
+                <p class="text-sm text-gray-400">Best practices to ensure your automated emails avoid the spam folder.</p>
+            </a>
+        </div>
+
+        <div class="max-w-2xl mx-auto px-6 text-center">
+            <h2 class="text-2xl font-bold mb-4">Still need help?</h2>
+            <p class="text-gray-400 mb-8">Our support team is available 24/7 to assist you with any technical issues.</p>
+            <a href="mailto:hello@keyroutes.co" class="btn btn-primary px-8 rounded-full">Contact Support</a>
+        </div>
+    </main>
+
+    <footer class="bg-base-300/50 border-t border-white/5 py-8 mt-auto text-center">
+        <p class="text-sm text-gray-500">© 2026 Sheetx.io. All rights reserved.</p>
+    </footer>
+</body>
+</html>

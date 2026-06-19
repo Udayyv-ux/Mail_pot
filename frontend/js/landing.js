@@ -85,10 +85,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             "Product": [{name: "Features", url: "#features"}, {name: "Pricing", url: "#pricing"}],
             "Company": [{name: "About Us", url: "#about"}],
             "Resources": [
-                {name: "Documentation", url: "#"}, 
-                {name: "Help Centre", url: "#"}, 
-                {name: "API Docs", url: "#"},
-                {name: "Status", url: "#"},
+                {name: "Documentation", url: "/docs.html"}, 
+                {name: "Help Centre", url: "/help.html"}, 
+                {name: "API Docs", url: "/docs.html"},
+                {name: "Status", url: "/status.html"},
                 {name: "Regulations", url: "/regulations"}
             ]
         };

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation & API Docs - Sheetx.io</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: { primary: '#8b5cf6', secondary: '#3b82f6', dark: '#0f172a' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: transparent; color: #f8fafc; overflow-x: hidden; }
+        .hero-bg { background: radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%); }
+        .space-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -10; background: #0b0f19; overflow: hidden; }
+    </style>
+</head>
+<body class="antialiased hero-bg min-h-screen flex flex-col">
+    <div class="space-bg"></div>
+
+    <header class="bg-base-100/50 backdrop-blur-md sticky top-0 z-50 border-b border-white/5">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="navbar py-4">
+                <div class="navbar-start">
+                    <a href="/" class="flex items-center gap-2">
+                        <img src="/api/logo?v=3" alt="Logo" class="h-10 object-contain">
+                    </a>
+                </div>
+                <div class="navbar-end gap-4">
+                    <a href="/" class="btn btn-ghost text-gray-300 hover:text-white">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 py-24">
+        <div class="max-w-4xl mx-auto px-6">
+            <h1 class="text-4xl font-bold mb-6">Developer Documentation & API</h1>
+            <p class="text-gray-400 mb-12 text-lg">Integrate Sheetx.io seamlessly into your workflows.</p>
+
+            <div class="bg-base-200/50 border border-white/5 rounded-xl p-8 mb-8">
+                <h2 class="text-2xl font-semibold mb-4 text-primary">Authentication</h2>
+                <p class="text-gray-300 mb-4">All API requests require a Bearer token passed in the Authorization header. You can generate a new API key from your dashboard under Settings.</p>
+                <div class="mockup-code bg-base-300/80 mt-4">
+                    <pre><code>Authorization: Bearer sk_test_1234567890abcdef</code></pre>
+                </div>
+            </div>
+
+            <div class="bg-base-200/50 border border-white/5 rounded-xl p-8 mb-8">
+                <h2 class="text-2xl font-semibold mb-4 text-primary">Core Endpoints</h2>
+                <div class="overflow-x-auto">
+                    <table class="table">
+                        <thead>
+                            <tr class="text-gray-400 border-white/5">
+                                <th>Method</th>
+                                <th>Endpoint</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-white/5">
+                                <td><span class="badge badge-primary badge-sm">POST</span></td>
+                                <td class="font-mono text-sm">/api/v1/campaigns</td>
+                                <td>Create a new email campaign.</td>
+                            </tr>
+                            <tr class="border-white/5">
+                                <td><span class="badge badge-success badge-sm">GET</span></td>
+                                <td class="font-mono text-sm">/api/v1/leads</td>
+                                <td>Fetch all synced leads.</td>
+                            </tr>
+                            <tr class="border-white/5">
+                                <td><span class="badge badge-warning badge-sm">PUT</span></td>
+                                <td class="font-mono text-sm">/api/v1/templates/{id}</td>
+                                <td>Update an existing AI template.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-base-200/50 border border-white/5 rounded-xl p-8">
+                <h2 class="text-2xl font-semibold mb-4 text-primary">Webhooks</h2>
+                <p class="text-gray-300 mb-4">You can configure webhooks to receive real-time notifications for events such as `email.sent`, `email.opened`, and `lead.replied`.</p>
+                <p class="text-sm text-gray-500">More detailed documentation is coming soon in Q3 2026.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-base-300/50 border-t border-white/5 py-8 mt-auto text-center">
+        <p class="text-sm text-gray-500">© 2026 Sheetx.io. All rights reserved.</p>
+    </footer>
+</body>
+</html>

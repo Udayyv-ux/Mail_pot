@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Status - Sheetx.io</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: { primary: '#8b5cf6', secondary: '#3b82f6', dark: '#0f172a' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: transparent; color: #f8fafc; overflow-x: hidden; }
+        .hero-bg { background: radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%); }
+        .space-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -10; background: #0b0f19; overflow: hidden; }
+    </style>
+</head>
+<body class="antialiased hero-bg min-h-screen flex flex-col">
+    <div class="space-bg"></div>
+
+    <header class="bg-base-100/50 backdrop-blur-md sticky top-0 z-50 border-b border-white/5">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="navbar py-4">
+                <div class="navbar-start">
+                    <a href="/" class="flex items-center gap-2">
+                        <img src="/api/logo?v=3" alt="Logo" class="h-10 object-contain">
+                    </a>
+                </div>
+                <div class="navbar-end gap-4">
+                    <a href="/" class="btn btn-ghost text-gray-300 hover:text-white">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 py-24">
+        <div class="max-w-4xl mx-auto px-6">
+            <h1 class="text-4xl font-bold mb-2">System Status</h1>
+            <p class="text-gray-400 mb-12">Current operational status for Sheetx.io services.</p>
+
+            <div class="bg-green-500/10 border border-green-500/20 rounded-xl p-6 mb-12 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-white">All Systems Operational</h2>
+                    <p class="text-sm text-green-400">Uptime over the last 90 days is 99.99%.</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-base-200/50 border border-white/5 rounded-lg p-5 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-lg">API Services</h3>
+                        <p class="text-sm text-gray-400">Core REST API and Webhooks</p>
+                    </div>
+                    <span class="badge badge-success bg-green-500/20 text-green-400 border-none">Operational</span>
+                </div>
+                
+                <div class="bg-base-200/50 border border-white/5 rounded-lg p-5 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-lg">Web Application</h3>
+                        <p class="text-sm text-gray-400">Dashboard, Admin Panel, and Frontend</p>
+                    </div>
+                    <span class="badge badge-success bg-green-500/20 text-green-400 border-none">Operational</span>
+                </div>
+
+                <div class="bg-base-200/50 border border-white/5 rounded-lg p-5 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-lg">Email Dispatch Engine</h3>
+                        <p class="text-sm text-gray-400">SMTP Integration and Queue Processing</p>
+                    </div>
+                    <span class="badge badge-success bg-green-500/20 text-green-400 border-none">Operational</span>
+                </div>
+
+                <div class="bg-base-200/50 border border-white/5 rounded-lg p-5 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-lg">Google Sheets Sync</h3>
+                        <p class="text-sm text-gray-400">Bi-directional syncing with Google Sheets</p>
+                    </div>
+                    <span class="badge badge-success bg-green-500/20 text-green-400 border-none">Operational</span>
+                </div>
+            </div>
+            
+            <div class="mt-12 text-center text-sm text-gray-500">
+                Next scheduled maintenance: None.
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-base-300/50 border-t border-white/5 py-8 mt-auto text-center">
+        <p class="text-sm text-gray-500">© 2026 Sheetx.io. All rights reserved.</p>
+    </footer>
+</body>
+</html>
