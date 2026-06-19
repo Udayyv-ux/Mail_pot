@@ -548,6 +548,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(s.key === 'LANDING_FAQ') document.getElementById('landing-faq').value = s.value;
                 if(s.key === 'LANDING_FOOTER') document.getElementById('landing-footer').value = s.value;
                 if(s.key === 'LANDING_REVIEWS') document.getElementById('landing-reviews').value = s.value;
+                
+                if(s.key === 'partner_title' && document.getElementById('set-partner-title')) document.getElementById('set-partner-title').value = s.value;
+                if(s.key === 'partner_subtitle' && document.getElementById('set-partner-subtitle')) document.getElementById('set-partner-subtitle').value = s.value;
+                if(s.key === 'partner_b1_title' && document.getElementById('set-partner-b1-title')) document.getElementById('set-partner-b1-title').value = s.value;
+                if(s.key === 'partner_b1_desc' && document.getElementById('set-partner-b1-desc')) document.getElementById('set-partner-b1-desc').value = s.value;
+                if(s.key === 'partner_b2_title' && document.getElementById('set-partner-b2-title')) document.getElementById('set-partner-b2-title').value = s.value;
+                if(s.key === 'partner_b2_desc' && document.getElementById('set-partner-b2-desc')) document.getElementById('set-partner-b2-desc').value = s.value;
+                if(s.key === 'partner_b3_title' && document.getElementById('set-partner-b3-title')) document.getElementById('set-partner-b3-title').value = s.value;
+                if(s.key === 'partner_b3_desc' && document.getElementById('set-partner-b3-desc')) document.getElementById('set-partner-b3-desc').value = s.value;
             });
             
             // Populate defaults if empty to help the admin
@@ -654,7 +663,15 @@ document.addEventListener('DOMContentLoaded', () => {
             {key: 'LANDING_STEPS', value: document.getElementById('landing-steps').value},
             {key: 'LANDING_FAQ', value: document.getElementById('landing-faq').value},
             {key: 'LANDING_FOOTER', value: document.getElementById('landing-footer').value},
-            {key: 'LANDING_REVIEWS', value: document.getElementById('landing-reviews').value}
+            {key: 'LANDING_REVIEWS', value: document.getElementById('landing-reviews').value},
+            {category: 'landing', key: 'partner_title', value: document.getElementById('set-partner-title')?.value || ''},
+            {category: 'landing', key: 'partner_subtitle', value: document.getElementById('set-partner-subtitle')?.value || ''},
+            {category: 'landing', key: 'partner_b1_title', value: document.getElementById('set-partner-b1-title')?.value || ''},
+            {category: 'landing', key: 'partner_b1_desc', value: document.getElementById('set-partner-b1-desc')?.value || ''},
+            {category: 'landing', key: 'partner_b2_title', value: document.getElementById('set-partner-b2-title')?.value || ''},
+            {category: 'landing', key: 'partner_b2_desc', value: document.getElementById('set-partner-b2-desc')?.value || ''},
+            {category: 'landing', key: 'partner_b3_title', value: document.getElementById('set-partner-b3-title')?.value || ''},
+            {category: 'landing', key: 'partner_b3_desc', value: document.getElementById('set-partner-b3-desc')?.value || ''}
         ];
         try {
             await api.put('/admin/settings', payload);
