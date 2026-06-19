@@ -332,10 +332,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             campaigns.forEach(function (c) {
                 var tr = document.createElement('tr');
                 var followUpText = (c.follow_up_days && c.follow_up_days > 0) ? ('Wait ' + c.follow_up_days + ' days') : 'Disabled';
+                
+                let statusHtml = '';
+                if (!c.is_active) {
+                    statusHtml = '<span class="badge badge-warning badge-sm">Paused</span>';
+                } else if (c.last_error) {
+                    statusHtml = `<div class="tooltip tooltip-error cursor-help" data-tip="${c.last_error.replace(/"/g, '&quot;')}"><span class="badge badge-error badge-sm">Error</span></div>`;
+                } else {
+                    statusHtml = '<span class="badge badge-success badge-sm">Running</span>';
+                }
+                
+                let runText = c.last_run_at ? `<div class="text-xs text-gray-500 mt-1">Last run: ${new Date(c.last_run_at).toLocaleString()}</div>` : '';
+
                 tr.innerHTML =
                     '<td class="p-4 font-bold text-white">' + c.name + '</td>' +
                     '<td class="p-4 text-gray-300 truncate max-w-xs font-mono text-xs">' + c.google_sheet_id + '</td>' +
                     '<td class="p-4 text-gray-400 text-sm">' + followUpText + '</td>' +
+                    '<td class="p-4">' + statusHtml + runText + '</td>' +
                     '<td class="p-4 text-right space-x-2">' +
                         '<button class="text-red-400 hover:text-red-300 font-semibold text-sm" onclick="deleteCampaign(\'' + c.id + '\')">Delete</button>' +
                     '</td>';
