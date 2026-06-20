@@ -114,15 +114,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if(el) el.textContent = demos ? demos.length : 0;
 
             const list = document.getElementById('demo-requests-list');
-            if(!list) return;
+            const feedbackList = document.getElementById('feedback-list');
+            if(!list || !feedbackList) return;
+            
             list.innerHTML = '';
+            feedbackList.innerHTML = '';
             
             if(!demos || demos.length === 0) {
                 list.innerHTML = '<div class="p-4 text-center text-gray-500">No demo requests yet.</div>';
+                feedbackList.innerHTML = '<div class="p-4 text-center text-gray-500">No feedback yet.</div>';
                 return;
             }
             
+            let demoCount = 0;
+            let feedbackCount = 0;
+
             demos.forEach(d => {
+                const isFeedback = d.inquiry_type && d.inquiry_type.startsWith('Feedback');
+                
                 const div = document.createElement('div');
                 div.className = 'p-4 border-b border-white/10';
                 div.innerHTML = `
@@ -140,8 +149,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="text-sm text-gray-300 bg-dark/50 p-2 rounded">${d.message || 'No message provided.'}</div>
                 `;
-                list.appendChild(div);
+                
+                if (isFeedback) {
+                    feedbackList.appendChild(div);
+                    feedbackCount++;
+                } else {
+                    list.appendChild(div);
+                    demoCount++;
+                }
             });
+            
+            if (demoCount === 0) list.innerHTML = '<div class="p-4 text-center text-gray-500">No demo requests yet.</div>';
+            if (feedbackCount === 0) feedbackList.innerHTML = '<div class="p-4 text-center text-gray-500">No feedback yet.</div>';
         } catch(e) {
             console.log("Demo requests error:", e);
         }
