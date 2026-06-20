@@ -9,17 +9,17 @@
     <!-- DaisyUI -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
                     colors: {
                         dark: '#0f172a',
-                        primary: '#3b82f6',
-                        secondary: '#8b5cf6',
+                        primary: '#8b5cf6',
+                        secondary: '#3b82f6',
                     }
                 }
             }
@@ -37,21 +37,24 @@
 </head>
 <body class="min-h-screen flex flex-col bg-[#0f172a] text-slate-200">
 
-    <!-- Header -->
-    <header class="fixed w-full top-0 z-50 bg-[#0f172a]/80 backdrop-blur-md border-b border-white/5">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-bold text-white shadow-lg shadow-primary/20">S</div>
-                <span class="text-xl font-bold tracking-tight">Sheetx<span class="text-primary">.io</span></span>
-            </a>
-            <nav class="hidden md:flex gap-8 text-sm font-medium">
-                <a href="/#features" class="text-gray-300 hover:text-white transition-colors">Features</a>
-                <a href="/#how-it-works" class="text-gray-300 hover:text-white transition-colors">How it works</a>
-                <a href="/#pricing" class="text-gray-300 hover:text-white transition-colors">Pricing</a>
-            </nav>
-            <div class="flex items-center gap-4">
-                <a href="/admin/" class="text-sm font-medium text-gray-300 hover:text-white transition-colors">Log in</a>
-                <button class="btn btn-primary btn-sm rounded-full text-white px-6 hidden sm:flex shadow-lg shadow-primary/20" onclick="window.location.href='/admin/'">Get Started</button>
+    <!-- Floating Aesthetic Navbar -->
+    <header class="fixed top-0 left-0 right-0 z-50 pt-4 px-4 sm:px-6 lg:px-8 transition-all duration-300" id="main-nav">
+        <div class="max-w-6xl mx-auto">
+            <div class="navbar bg-dark/60 backdrop-blur-xl border border-white/10 rounded-full px-6 py-2 shadow-2xl shadow-primary/10 transition-all duration-300">
+                <div class="navbar-start">
+                    <a href="/" class="flex items-center gap-2 group">
+                        <div class="p-1 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors duration-300">
+                            <img src="/api/logo?v=3" alt="Logo" class="h-8 object-contain">
+                        </div>
+                    </a>
+                </div>
+                <div class="navbar-end gap-3">
+                    <a href="/admin/" class="text-sm font-semibold text-gray-300 hover:text-white px-4 py-2 rounded-full hover:bg-white/5 transition-colors duration-300 hidden sm:inline-flex">Log in</a>
+                    <a href="/admin/" class="btn btn-sm h-10 px-6 rounded-full bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white border-none shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] transition-all duration-300">
+                        Get Started
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                    </a>
+                </div>
             </div>
         </div>
     </header>

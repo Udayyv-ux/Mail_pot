@@ -17,7 +17,7 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
-                    colors: { primary: '#4f46e5', secondary: '#ec4899', dark: '#0f172a', card: '#1e293b' }
+                    colors: { primary: '#8b5cf6', secondary: '#3b82f6', dark: '#0f172a', card: '#1e293b' }
                 }
             }
         }
@@ -34,13 +34,28 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body class="antialiased selection:bg-primary selection:text-white flex flex-col min-h-screen">
-    <nav class="w-full z-40 glass border-b border-white/10">
-        <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="/" class="text-2xl font-bold tracking-tight">Sheetx<span class="text-primary">.io</span></a>
-            <a href="/" class="text-sm text-gray-400 hover:text-white transition-colors">Back to Home</a>
+    <!-- Floating Aesthetic Navbar -->
+    <header class="fixed top-0 left-0 right-0 z-50 pt-4 px-4 sm:px-6 lg:px-8 transition-all duration-300" id="main-nav">
+        <div class="max-w-6xl mx-auto">
+            <div class="navbar bg-dark/60 backdrop-blur-xl border border-white/10 rounded-full px-6 py-2 shadow-2xl shadow-primary/10 transition-all duration-300">
+                <div class="navbar-start">
+                    <a href="/" class="flex items-center gap-2 group">
+                        <div class="p-1 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors duration-300">
+                            <img src="/api/logo?v=3" alt="Logo" class="h-8 object-contain">
+                        </div>
+                    </a>
+                </div>
+                <div class="navbar-end gap-3">
+                    <a href="/admin/" class="text-sm font-semibold text-gray-300 hover:text-white px-4 py-2 rounded-full hover:bg-white/5 transition-colors duration-300 hidden sm:inline-flex">Log in</a>
+                    <a href="/admin/" class="btn btn-sm h-10 px-6 rounded-full bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white border-none shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] transition-all duration-300">
+                        Get Started
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                    </a>
+                </div>
+            </div>
         </div>
-    </nav>
-    <main class="flex-1 max-w-4xl mx-auto px-6 py-12 w-full">
+    </header>
+    <main class="flex-1 max-w-4xl mx-auto px-6 py-12 w-full pt-32">
         <div id="content" class="markdown-body glass p-8 md:p-12 rounded-2xl shadow-2xl">
             <p class="text-center text-gray-400">Loading policy...</p>
         </div>
