@@ -183,103 +183,102 @@
             </div>
         </div>
 
-        <!-- ROI Calculator Slider Section -->
-        <section class="py-20 border-t border-white/5 bg-gradient-to-b from-transparent to-base-200/50 relative z-10">
-            <div class="max-w-4xl mx-auto px-6 text-center">
-                <h2 class="text-3xl font-bold mb-4">Calculate Your ROI</h2>
-                <p class="text-gray-400 mb-12">See exactly how much time and money you save by automating your spreadsheet outreach.</p>
-                
-                <div class="bg-base-100 border border-white/10 rounded-3xl p-8 shadow-2xl relative">
-                    <!-- Slider -->
-                    <div class="mb-10">
-                        <label class="block text-left text-sm font-bold text-gray-300 mb-4">Emails sent per week: <span id="roi-emails-label" class="text-primary text-xl ml-2">250</span></label>
-                        <input type="range" min="10" max="2000" value="250" class="range range-primary w-full" id="roi-slider" />
-                        <div class="w-full flex justify-between text-xs px-2 mt-2 text-gray-500 font-mono">
-                            <span>10</span>
-                            <span>500</span>
-                            <span>1000</span>
-                            <span>1500</span>
-                            <span>2000</span>
-                        </div>
-                    </div>
+        <!-- ROI & Comparison Section -->
+        <section class="py-24 border-t border-white/5 bg-gradient-to-b from-transparent to-base-200/50 relative z-10">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="grid lg:grid-cols-2 gap-16 items-start">
                     
-                    <!-- Results -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-base-300 rounded-xl p-6 border border-red-500/20 text-left">
-                            <div class="text-xs font-bold text-red-400 uppercase tracking-widest mb-1">Manual Approach</div>
-                            <div class="text-3xl font-bold text-white mb-2"><span id="roi-manual-hours">25</span> <span class="text-lg text-gray-400 font-normal">hours/wk</span></div>
-                            <div class="text-sm text-gray-500">Approx. <span id="roi-manual-cost" class="text-red-300 font-mono">$750</span> in labor cost</div>
+                    <!-- Left Side: Calculator -->
+                    <div>
+                        <div class="mb-8">
+                            <h2 class="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Calculate Your ROI</h2>
+                            <p class="text-lg text-gray-400 font-light">See exactly how much time and money you save by automating your spreadsheet outreach instead of doing it manually.</p>
                         </div>
-                        <div class="bg-primary/10 rounded-xl p-6 border border-primary/30 text-left relative overflow-hidden">
-                            <div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/20 rounded-full blur-xl"></div>
-                            <div class="text-xs font-bold text-primary uppercase tracking-widest mb-1">With Sheetx.io</div>
-                            <div class="text-3xl font-bold text-white mb-2"><span id="roi-sheetx-hours">0.5</span> <span class="text-lg text-gray-400 font-normal">hours/wk</span></div>
-                            <div class="text-sm text-green-400 font-bold">You save <span id="roi-savings" class="font-mono">$735</span> every week!</div>
+                        
+                        <div class="bg-base-100 border border-white/10 rounded-3xl p-8 shadow-2xl relative">
+                            <!-- Slider -->
+                            <div class="mb-10">
+                                <label class="block text-left text-sm font-bold text-gray-300 mb-4">Emails sent per week: <span id="roi-emails-label" class="text-primary text-xl ml-2">250</span></label>
+                                <input type="range" min="10" max="2000" value="250" class="range range-primary w-full" id="roi-slider" />
+                                <div class="w-full flex justify-between text-xs px-2 mt-2 text-gray-500 font-mono">
+                                    <span>10</span>
+                                    <span>500</span>
+                                    <span>1000</span>
+                                    <span>1500</span>
+                                    <span>2000</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Results -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="bg-base-300 rounded-xl p-6 border border-red-500/20 text-left">
+                                    <div class="text-xs font-bold text-red-400 uppercase tracking-widest mb-1">Manual Approach</div>
+                                    <div class="text-3xl font-bold text-white mb-2"><span id="roi-manual-hours">25</span> <span class="text-lg text-gray-400 font-normal">hours/wk</span></div>
+                                    <div class="text-sm text-gray-500">Approx. <span id="roi-manual-cost" class="text-red-300 font-mono">$750</span> in labor cost</div>
+                                </div>
+                                <div class="bg-primary/10 rounded-xl p-6 border border-primary/30 text-left relative overflow-hidden">
+                                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/20 rounded-full blur-xl"></div>
+                                    <div class="text-xs font-bold text-primary uppercase tracking-widest mb-1">With Sheetx.io</div>
+                                    <div class="text-3xl font-bold text-white mb-2"><span id="roi-sheetx-hours">0.5</span> <span class="text-lg text-gray-400 font-normal">hours/wk</span></div>
+                                    <div class="text-sm text-green-400 font-bold">You save <span id="roi-savings" class="font-mono">$735</span> every week!</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Right Side: Comparison Cards -->
+                    <div>
+                        <div class="mb-8">
+                            <h2 class="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">The Unfair Advantage</h2>
+                            <p class="text-lg text-gray-400 font-light">Why we built a purpose-driven Native Engine instead of relying on bulk mailers or generic Zapier webhooks.</p>
+                        </div>
+                        
+                        <div class="flex flex-col gap-6">
+                            <!-- Vs Bulk Mailers Card -->
+                            <div class="relative bg-base-200/40 backdrop-blur-xl border border-white/10 hover:border-primary/40 transition-all duration-500 rounded-[2rem] p-8 shadow-2xl group overflow-hidden">
+                                <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                
+                                <div class="relative z-10 flex items-center justify-between mb-6">
+                                    <h3 class="text-xl font-bold text-white">Vs. Bulk Mailers<br/><span class="text-xs text-gray-400 font-normal">Mailchimp, Apollo, SendGrid</span></h3>
+                                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">📨</div>
+                                </div>
+                                
+                                <div class="space-y-4 relative z-10">
+                                    <div>
+                                        <div class="flex items-center gap-2 text-green-400 font-bold text-sm mb-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 99% Primary Inbox Placement</div>
+                                        <p class="text-xs text-gray-400 pl-6">We use your personal Gmail API. Bulk mailers use shared IPs that get dumped into Promotions.</p>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2 text-green-400 font-bold text-sm mb-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Zero Technical Setup</div>
+                                        <p class="text-xs text-gray-400 pl-6">No complex DNS, DKIM, or DMARC records required. Just a 1-click Google Login.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Vs Zapier Card -->
+                            <div class="relative bg-base-200/40 backdrop-blur-xl border border-white/10 hover:border-secondary/40 transition-all duration-500 rounded-[2rem] p-8 shadow-2xl group overflow-hidden">
+                                <div class="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                
+                                <div class="relative z-10 flex items-center justify-between mb-6">
+                                    <h3 class="text-xl font-bold text-white">Vs. Make & Zapier<br/><span class="text-xs text-gray-400 font-normal">Complex Node Workflows</span></h3>
+                                    <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">⚡</div>
+                                </div>
+                                
+                                <div class="space-y-4 relative z-10">
+                                    <div>
+                                        <div class="flex items-center gap-2 text-green-400 font-bold text-sm mb-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Flat Predictable Cost</div>
+                                        <p class="text-xs text-gray-400 pl-6">Zapier charges per "task". Our native engine gives you unlimited tasks for a flat fee.</p>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2 text-green-400 font-bold text-sm mb-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Native Error Handling</div>
+                                        <p class="text-xs text-gray-400 pl-6">Zapier fails completely on API timeouts. We auto-pause and gracefully retry without you noticing.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
-
-                <!-- Comparison Cards: SheetX vs Alternatives -->
-                <div class="mt-20">
-                    <div class="text-center mb-12">
-                        <h2 class="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight">The Unfair Advantage</h2>
-                        <p class="text-xl text-gray-400 font-light leading-relaxed max-w-2xl mx-auto">Why we deliberately built a Native Engine instead of relying on bulk mailers or Zapier.</p>
-                    </div>
-
-                    <div class="grid md:grid-cols-2 gap-8">
-                        <!-- Vs Bulk Mailers Card -->
-                        <div class="relative bg-base-200/40 backdrop-blur-xl border border-white/10 hover:border-primary/40 transition-all duration-500 rounded-[2.5rem] p-8 lg:p-12 shadow-2xl group overflow-hidden">
-                            <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            
-                            <div class="relative z-10 flex items-center justify-between mb-8">
-                                <h3 class="text-2xl font-bold text-white">Vs. Bulk Mailers<br/><span class="text-sm text-gray-400 font-normal">Mailchimp, Apollo, SendGrid</span></h3>
-                                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl">📨</div>
-                            </div>
-                            
-                            <div class="space-y-6 relative z-10">
-                                <div>
-                                    <div class="flex items-center gap-2 text-green-400 font-bold mb-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 99% Primary Inbox Placement</div>
-                                    <p class="text-sm text-gray-400 pl-7">We use your personal Gmail API. Bulk mailers use shared IPs that get dumped into the Promotions tab.</p>
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2 text-green-400 font-bold mb-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Zero Technical Setup</div>
-                                    <p class="text-sm text-gray-400 pl-7">No complex DNS, DKIM, or DMARC records required. Just a 1-click Google Login.</p>
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2 text-green-400 font-bold mb-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> True AI Context</div>
-                                    <p class="text-sm text-gray-400 pl-7">Bulk mailers use basic {First Name} tags. We generate full, contextual, relationship-building sentences.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Vs Zapier Card -->
-                        <div class="relative bg-base-200/40 backdrop-blur-xl border border-white/10 hover:border-secondary/40 transition-all duration-500 rounded-[2.5rem] p-8 lg:p-12 shadow-2xl group overflow-hidden">
-                            <div class="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            
-                            <div class="relative z-10 flex items-center justify-between mb-8">
-                                <h3 class="text-2xl font-bold text-white">Vs. Make & Zapier<br/><span class="text-sm text-gray-400 font-normal">Complex Node Workflows</span></h3>
-                                <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary text-xl">⚡</div>
-                            </div>
-                            
-                            <div class="space-y-6 relative z-10">
-                                <div>
-                                    <div class="flex items-center gap-2 text-green-400 font-bold mb-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Flat Predictable Cost</div>
-                                    <p class="text-sm text-gray-400 pl-7">Zapier charges you per "task" execution. Our native engine gives you unlimited tasks for a flat monthly fee.</p>
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2 text-green-400 font-bold mb-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Native Error Handling</div>
-                                    <p class="text-sm text-gray-400 pl-7">If an API times out, Zapier fails completely. We auto-pause, wait 60 seconds, and gracefully retry without you noticing.</p>
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2 text-green-400 font-bold mb-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Zero Node Mapping</div>
-                                    <p class="text-sm text-gray-400 pl-7">Instead of spending hours wiring 50 different nodes together, you just paste your Google Sheet URL.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </section>
 
