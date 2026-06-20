@@ -44,7 +44,7 @@
         }
     </style>
 </head>
-<body class="antialiased flex h-screen overflow-hidden selection:bg-secondary selection:text-white bg-base-300">
+<body class="antialiased h-screen overflow-hidden selection:bg-secondary selection:text-white bg-base-300">
 
     <!-- Auth Guard -->
     <div id="admin-login-screen" class="fixed inset-0 z-50 bg-base-300 flex items-center justify-center">
@@ -61,34 +61,22 @@
         </div>
     </div>
 
-    <!-- Sidebar -->
-    <aside class="w-64 bg-base-200 border-r border-white/5 flex flex-col h-full z-20 shrink-0 shadow-2xl shadow-black/50">
-        <div class="p-6 border-b border-white/5 flex justify-center">
-            <a href="#dashboard" class="flex items-center gap-2">
-                <img src="/api/logo?v=3" alt="Sheetx Logo" class="h-8 object-contain">
-            </a>
-        </div>
-        <nav class="flex-1 p-4 overflow-y-auto">
-            <ul class="menu w-full p-0 space-y-2">
-                <li><a class="nav-item active" data-route="dashboard">Dashboard</a></li>
-                <li><a class="nav-item" data-route="users">Users & Clients</a></li>
-                <li><a class="nav-item" data-route="plans">Pricing Plans</a></li>
-                <li><a class="nav-item" data-route="promo">Promo Codes</a></li>
-                <li><a class="nav-item" data-route="monitor">Global Monitor</a></li>
-                <li><a class="nav-item" data-route="settings">App Settings</a></li>
-                <li><a class="nav-item" data-route="landing">Landing Page</a></li>
-                <li><a class="nav-item" data-route="policies">Policies (CMS)</a></li>
-            </ul>
-        </nav>
-        <div class="p-4 border-t border-white/5">
-            <button id="btn-admin-logout" class="btn btn-outline btn-sm w-full border-white/10 hover:bg-white/10 text-gray-400">Lock Admin</button>
-        </div>
-    </aside>
+    
 
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col h-full relative z-10 overflow-hidden bg-base-300">
-        <header class="h-16 border-b border-white/5 flex justify-between items-center px-8 bg-base-200 shadow-sm">
-            <h2 id="topbar-title" class="text-xl font-bold">Super Admin</h2>
+        <!-- Drawer Wrapper -->
+    <div class="drawer lg:drawer-open h-full w-full">
+        <input id="portal-drawer" type="checkbox" class="drawer-toggle" />
+        
+        <!-- Main Content -->
+        <div class="drawer-content flex flex-col h-full relative z-10 overflow-hidden bg-base-300">
+            <!-- Topbar -->
+            <header class="h-16 border-b border-white/5 flex justify-between items-center px-4 md:px-8 bg-base-200 shadow-sm shrink-0">
+                <div class="flex items-center gap-3">
+                    <label for="portal-drawer" class="btn btn-square btn-ghost lg:hidden text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-5 h-5 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </label>
+                    <h2 id="topbar-title" class="text-xl font-bold">Super Admin</h2>
+                </div>
             <div class="flex gap-4">
                 <button class="btn btn-sm btn-ghost bg-primary/10 text-primary hover:bg-primary/20 border-none" onclick="document.getElementById('notif-modal').showModal()">🔔 Broadcast Notification</button>
             </div>
@@ -427,8 +415,37 @@
                     </div>
                 </div>
             </section>
-        </main>
-    </div>
+                </main>
+        </div> <!-- End drawer-content -->
+        
+        <!-- Drawer Side (Sidebar) -->
+        <div class="drawer-side z-50">
+            <label for="portal-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+            <!-- Sidebar -->
+    <aside class="w-64 bg-base-200 border-r border-white/5 flex flex-col h-full z-20 shrink-0 shadow-2xl shadow-black/50">
+        <div class="p-6 border-b border-white/5 flex justify-center">
+            <a href="#dashboard" class="flex items-center gap-2">
+                <img src="/api/logo?v=3" alt="Sheetx Logo" class="h-8 object-contain">
+            </a>
+        </div>
+        <nav class="flex-1 p-4 overflow-y-auto">
+            <ul class="menu w-full p-0 space-y-2">
+                <li><a class="nav-item active" data-route="dashboard">Dashboard</a></li>
+                <li><a class="nav-item" data-route="users">Users & Clients</a></li>
+                <li><a class="nav-item" data-route="plans">Pricing Plans</a></li>
+                <li><a class="nav-item" data-route="promo">Promo Codes</a></li>
+                <li><a class="nav-item" data-route="monitor">Global Monitor</a></li>
+                <li><a class="nav-item" data-route="settings">App Settings</a></li>
+                <li><a class="nav-item" data-route="landing">Landing Page</a></li>
+                <li><a class="nav-item" data-route="policies">Policies (CMS)</a></li>
+            </ul>
+        </nav>
+        <div class="p-4 border-t border-white/5">
+            <button id="btn-admin-logout" class="btn btn-outline btn-sm w-full border-white/10 hover:bg-white/10 text-gray-400">Lock Admin</button>
+        </div>
+    </aside>
+        </div>
+    </div> <!-- End drawer -->
 
     <!-- Modals (DaisyUI) -->
 
@@ -673,4 +690,5 @@
     <script src="/js/admin-app.js?v=5"></script>
 </body>
 </html>
+
 
