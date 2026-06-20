@@ -31,14 +31,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         allPolicies.forEach(policy => {
             const card = document.createElement('a');
             card.href = `/regulations?policy=${policy.slug}`;
-            card.className = "bg-base-100 hover:bg-base-200 border border-white/5 hover:border-primary/50 transition-all rounded-3xl p-8 flex flex-col items-center text-center group shadow-xl hover:shadow-primary/10 cursor-pointer";
+            card.className = "relative bg-base-200/50 backdrop-blur-xl border border-white/10 hover:border-primary/50 transition-all duration-500 rounded-[2rem] p-10 flex flex-col items-center text-center group shadow-2xl overflow-hidden cursor-pointer";
             
             card.innerHTML = `
-                <div class="text-5xl mb-6 transform group-hover:scale-110 transition-transform">${policy.icon || '📜'}</div>
-                <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-primary transition-colors">${policy.title}</h3>
-                <p class="text-gray-400 text-sm leading-relaxed mb-8 flex-grow">${policy.description || 'Read our ' + policy.title}</p>
-                <div class="text-primary mt-auto">
-                    <svg class="w-6 h-6 inline-block transform group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div class="relative z-10 text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-500 drop-shadow-2xl">${policy.icon || '📜'}</div>
+                <h3 class="relative z-10 text-2xl font-bold text-white mb-4 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-secondary transition-all duration-300">${policy.title}</h3>
+                <p class="relative z-10 text-gray-400 text-sm leading-relaxed mb-8 flex-grow">${policy.description || 'Read our ' + policy.title}</p>
+                <div class="relative z-10 text-white/50 group-hover:text-primary mt-auto flex items-center justify-center w-12 h-12 rounded-full bg-white/5 group-hover:bg-primary/20 transition-all duration-300">
+                    <svg class="w-6 h-6 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </div>
             `;
             gridContainer.appendChild(card);
