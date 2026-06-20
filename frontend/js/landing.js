@@ -87,6 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 {name: "Documentation", url: "/docs.html"}, 
                 {name: "Help Centre", url: "/help.html"}, 
                 {name: "API Docs", url: "/docs.html"},
+                {name: "Feedback", url: "/feedback.html"},
                 {name: "Status", url: "/status.html"}
             ]
         };

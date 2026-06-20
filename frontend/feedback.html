@@ -1,0 +1,184 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - Sheetx.io</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind & DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        primary: '#8b5cf6',
+                        secondary: '#3b82f6',
+                        dark: '#0f172a',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: transparent; color: #f8fafc; overflow-x: hidden; }
+        .gradient-text { background: linear-gradient(to right, #8b5cf6, #3b82f6); -webkit-background-clip: text; color: transparent; }
+        
+        .space-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -10;
+            background: #0b0f19;
+            overflow: hidden;
+        }
+        .glass-nav {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        /* Star animation */
+        .star { position: absolute; background: white; border-radius: 50%; animation: twinkle var(--duration, 3s) infinite ease-in-out alternate; }
+        .star-sm { width: 1px; height: 1px; box-shadow: 0 0 2px rgba(255,255,255,0.4); }
+        .star-md { width: 2px; height: 2px; box-shadow: 0 0 4px rgba(255,255,255,0.6); }
+        @keyframes twinkle { 0% { opacity: 0.2; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
+    </style>
+</head>
+<body class="bg-dark antialiased">
+    
+    <div class="space-bg" id="space-container"></div>
+    
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-50 glass-nav transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='/'">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/20">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                </div>
+                <span class="text-2xl font-extrabold tracking-tight text-white">Sheet<span class="text-primary">x</span></span>
+            </div>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="/#features" class="text-sm font-medium text-gray-300 hover:text-white transition-colors">Features</a>
+                <a href="/#pricing" class="text-sm font-medium text-gray-300 hover:text-white transition-colors">Pricing</a>
+                <a href="/status.html" class="text-sm font-medium text-gray-300 hover:text-white transition-colors">System Status</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="/login.html" class="text-sm font-bold text-white hover:text-primary transition-colors">Login</a>
+                <a href="/login.html" class="btn border-0 bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 shadow-lg shadow-primary/25 rounded-full px-8 hidden md:flex">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="min-h-screen pt-32 pb-20 px-6 flex flex-col items-center">
+        
+        <div class="max-w-3xl w-full text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-6 text-white tracking-tight">We value your <span class="gradient-text">Feedback</span></h1>
+            <p class="text-lg text-gray-400 font-light max-w-2xl mx-auto">
+                Have a suggestion, found a bug, or just want to tell us how we're doing? We're all ears.
+            </p>
+        </div>
+
+        <div class="w-full max-w-2xl bg-base-200/40 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
+            <!-- Decorative blur -->
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-primary/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-secondary/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <form id="feedback-form" class="relative z-10 space-y-6">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-control">
+                        <label class="label"><span class="label-text text-gray-300 font-medium">Your Name</span></label>
+                        <input type="text" id="fb-name" required class="input bg-base-300/50 border-white/5 focus:border-primary/50 text-white w-full rounded-xl transition-colors" placeholder="John Doe">
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text text-gray-300 font-medium">Email Address</span></label>
+                        <input type="email" id="fb-email" required class="input bg-base-300/50 border-white/5 focus:border-primary/50 text-white w-full rounded-xl transition-colors" placeholder="john@company.com">
+                    </div>
+                </div>
+
+                <div class="form-control">
+                    <label class="label"><span class="label-text text-gray-300 font-medium">Feedback Type</span></label>
+                    <select id="fb-type" class="select bg-base-300/50 border-white/5 focus:border-primary/50 text-white w-full rounded-xl transition-colors">
+                        <option value="General">General Feedback</option>
+                        <option value="Feature Request">Feature Request</option>
+                        <option value="Bug Report">Bug Report</option>
+                        <option value="Billing">Billing Issue</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-control">
+                    <label class="label"><span class="label-text text-gray-300 font-medium">Your Message</span></label>
+                    <textarea id="fb-message" required class="textarea bg-base-300/50 border-white/5 focus:border-primary/50 text-white w-full rounded-xl h-32 transition-colors resize-none" placeholder="Please describe your experience, suggestion, or issue in detail..."></textarea>
+                </div>
+
+                <button type="submit" id="fb-submit" class="btn w-full border-0 bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 shadow-lg shadow-primary/25 rounded-xl h-14 text-lg">
+                    Submit Feedback
+                </button>
+                <div id="fb-success" class="hidden text-center text-green-400 font-medium mt-4">Thank you! Your feedback has been received.</div>
+                <div id="fb-error" class="hidden text-center text-red-400 font-medium mt-4">An error occurred. Please try again later.</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Background script -->
+    <script>
+        const container = document.getElementById('space-container');
+        for(let i=0; i<100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star ' + (Math.random() > 0.5 ? 'star-sm' : 'star-md');
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.top = Math.random() * 100 + 'vh';
+            star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+            star.style.animationDelay = (Math.random() * 3) + 's';
+            container.appendChild(star);
+        }
+
+        document.getElementById('feedback-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('fb-submit');
+            btn.innerHTML = '<span class="loading loading-spinner"></span> Sending...';
+            btn.disabled = true;
+            document.getElementById('fb-success').classList.add('hidden');
+            document.getElementById('fb-error').classList.add('hidden');
+
+            const payload = {
+                name: document.getElementById('fb-name').value,
+                email: document.getElementById('fb-email').value,
+                company: "N/A",
+                phone: "N/A",
+                message: document.getElementById('fb-message').value,
+                inquiry_type: "Feedback - " + document.getElementById('fb-type').value
+            };
+
+            try {
+                const res = await fetch('/api/public/demo-request', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if(res.ok) {
+                    document.getElementById('fb-success').classList.remove('hidden');
+                    document.getElementById('feedback-form').reset();
+                } else {
+                    document.getElementById('fb-error').classList.remove('hidden');
+                }
+            } catch(err) {
+                document.getElementById('fb-error').classList.remove('hidden');
+            } finally {
+                btn.innerHTML = 'Submit Feedback';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
