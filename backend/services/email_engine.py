@@ -103,6 +103,8 @@ async def refresh_google_token(user, db) -> str | None:
                     user.google_access_token = new_access_token
                     await db.commit()
                     return new_access_token
+            else:
+                print(f"Token refresh failed with {resp.status_code}: {resp.text}")
             return user.google_access_token
     except Exception as e:
         print(f"Token refresh failed: {e}")
@@ -249,11 +251,26 @@ async def run_247_engine():
                 
                 try:
                     _, rows = await get_sheet_data(campaign.google_sheet_id)
+                    async with SessionLocal() as db:
+                        db_camp = await db.get(Campaign, campaign.id)
+                        if db_camp:
+                            db_camp.last_error = None
+                        await db.commit()
                 except Exception as e:
-                    print(f"❌ Failed to read sheet for Campaign {campaign.id}: {e}")
+                    print(f"\u274c Failed to read sheet for Campaign {campaign.id}: {e}")
+                    async with SessionLocal() as db:
+                        db_camp = await db.get(Campaign, campaign.id)
+                        if db_camp:
+                            db_camp.last_error = f"Failed to read sheet: {str(e)}"
+                        await db.commit()
                     continue
                     
                 if not rows or len(rows) < 2: 
+                    async with SessionLocal() as db:
+                        db_camp = await db.get(Campaign, campaign.id)
+                        if db_camp:
+                            db_camp.last_error = "Sheet is empty or missing headers."
+                        await db.commit()
                     continue
                 
                 headers = rows[0]
@@ -395,10 +412,16 @@ async def run_247_engine():
                         await update_sheet_cells_batch(campaign.google_sheet_id, batch_updates)
                     except Exception as e:
                         print(f"❌ Failed to batch update sheet: {e}")
+                
+                async with SessionLocal() as db:
+                    db_camp = await db.get(Campaign, campaign.id)
+                    if db_camp:
+                        db_camp.last_run_at = datetime.now(timezone.utc)
+                    await db.commit()
                             
         except Exception as e:
             print(f"24/7 Engine Iteration Error: {e}")
             
+
+
         await asyncio.sleep(60) # Poll every minute
-
-

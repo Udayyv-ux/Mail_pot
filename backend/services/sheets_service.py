@@ -4,18 +4,34 @@ Google Sheets integration service.
 import gspread
 import json
 import re
-
-from backend.config import settings
+from sqlalchemy import select
+from backend.database import SessionLocal
+from backend.models.app_settings import AppSetting
 
 _gspread_client = None
+_cached_creds_str = None
 
-def get_gspread_client():
-    global _gspread_client
-    if _gspread_client is None:
-        if not settings.GOOGLE_SERVICE_ACCOUNT_JSON:
-            raise ValueError("Missing Google Service Account credentials")
-        creds_dict = json.loads(settings.GOOGLE_SERVICE_ACCOUNT_JSON)
-        _gspread_client = gspread.service_account_from_dict(creds_dict)
+async def get_gspread_client():
+    global _gspread_client, _cached_creds_str
+    
+    async with SessionLocal() as db:
+        res = await db.execute(select(AppSetting).where(AppSetting.key == 'GCP_CREDENTIALS_JSON'))
+        setting = res.scalar_one_or_none()
+        
+        if not setting or not setting.value:
+            raise ValueError("Missing Google Service Account credentials in Super Admin Settings")
+            
+        creds_str = setting.value
+        
+        # Only re-initialize if the credentials changed
+        if _gspread_client is None or creds_str != _cached_creds_str:
+            try:
+                creds_dict = json.loads(creds_str)
+                _gspread_client = gspread.service_account_from_dict(creds_dict)
+                _cached_creds_str = creds_str
+            except Exception as e:
+                raise ValueError(f"Invalid Google Service Account JSON: {str(e)}")
+                
     return _gspread_client
 
 async def get_sheet_data(sheet_url_or_id: str) -> tuple[str, list]:
@@ -28,7 +44,7 @@ async def get_sheet_data(sheet_url_or_id: str) -> tuple[str, list]:
     sheet_id = match.group(1) if match else sheet_url_or_id.strip()
     
     try:
-        gc = get_gspread_client()
+        gc = await get_gspread_client()
         sheet = gc.open_by_key(sheet_id).sheet1
         records = sheet.get_all_values()
         return sheet_id, records
@@ -38,7 +54,7 @@ async def get_sheet_data(sheet_url_or_id: str) -> tuple[str, list]:
 async def update_sheet_cell(sheet_id: str, row: int, col: int, value: str):
     """Update a specific cell in the sheet."""
     try:
-        gc = get_gspread_client()
+        gc = await get_gspread_client()
         sheet = gc.open_by_key(sheet_id).sheet1
         sheet.update_cell(row, col, value)
     except Exception as e:
@@ -52,7 +68,7 @@ async def update_sheet_cells_batch(sheet_id: str, updates: list):
     if not updates:
         return
     try:
-        gc = get_gspread_client()
+        gc = await get_gspread_client()
         sheet = gc.open_by_key(sheet_id).sheet1
         cells = []
         for u in updates:

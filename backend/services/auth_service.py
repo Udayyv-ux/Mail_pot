@@ -36,7 +36,12 @@ def setup_oauth(app):
 
 async def google_login(request: Request, redirect_uri: str):
     """Initiate Google OAuth flow."""
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+    return await oauth.google.authorize_redirect(
+        request, 
+        redirect_uri,
+        access_type='offline',
+        prompt='consent'
+    )
 
 async def google_callback(request: Request, db: AsyncSession):
     """Handle Google OAuth callback, create/find user, issue JWT."""
