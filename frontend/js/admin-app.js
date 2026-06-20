@@ -304,16 +304,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div><span class="text-gray-400">Daily Limit:</span> <span class="text-white">${client.daily_email_limit}</span></div>
                     <div><span class="text-gray-400">Sent Today:</span> <span class="text-white">${client.emails_sent_today}</span></div>
                     
-                    <div class="col-span-2 mt-4"><strong class="text-white">Sheet Integration</strong></div>
-                    <div class="col-span-2"><span class="text-gray-400">Sheet ID:</span> <span class="text-white break-all">${client.google_sheet_id || 'Not Connected'}</span></div>
-                    <div><span class="text-gray-400">Target Cols:</span> <span class="text-white">${client.target_columns || 'Name, Email, Inquiry'}</span></div>
-                    <div><span class="text-gray-400">Status Col:</span> <span class="text-white">${client.status_column || 'Status'}</span></div>
+                    <div class="col-span-2 mt-4 pb-2 border-b border-white/10"><strong class="text-white text-lg">Account Insights</strong></div>
+                    <div><span class="text-gray-400">Account Created:</span> <span class="text-white">${client.insights?.created_at ? new Date(client.insights.created_at).toLocaleDateString() : 'N/A'}</span></div>
+                    <div><span class="text-gray-400">Total Lifetime Emails:</span> <span class="text-white font-bold text-primary">${client.insights?.total_emails_sent || 0}</span></div>
                     
-                    <div class="col-span-2 mt-4"><strong class="text-white">Custom Overrides</strong></div>
-                    <div><span class="text-gray-400">SMTP Host:</span> <span class="text-white">${client.smtp_host || 'Using Global'}</span></div>
-                    <div><span class="text-gray-400">SMTP Port:</span> <span class="text-white">${client.smtp_port || 'Using Global'}</span></div>
-                    <div><span class="text-gray-400">SMTP Email:</span> <span class="text-white">${client.smtp_email || 'Using Global'}</span></div>
-                    <div><span class="text-gray-400">Groq Key:</span> <span class="text-white">${client.groq_api_key_enc ? 'Configured' : 'Using Global'}</span></div>
+                    <div><span class="text-gray-400">Total Campaigns:</span> <span class="text-white">${client.insights?.total_campaigns || 0}</span></div>
+                    <div><span class="text-gray-400">Active Campaigns:</span> <span class="text-green-400 font-bold">${client.insights?.active_campaigns || 0}</span></div>
+                    
+                    <div class="col-span-2 mt-4">
+                        <div class="text-gray-400 mb-2">Daily Utilization</div>
+                        <progress class="progress ${client.emails_sent_today >= client.daily_email_limit ? 'progress-error' : 'progress-primary'} w-full" value="${client.emails_sent_today}" max="${client.daily_email_limit}"></progress>
+                        <div class="text-xs text-right mt-1 text-gray-500">${Math.round((client.emails_sent_today / client.daily_email_limit) * 100) || 0}% used</div>
+                    </div>
                 </div>
             `;
             

@@ -19,6 +19,7 @@ from backend.models.plan import Plan
 from backend.models.payment import Payment
 from backend.models.app_settings import Policy, AppSetting, DemoRequest
 from backend.models.email_log import EmailLog
+from backend.models.campaign import Campaign
 from datetime import datetime, timedelta, timezone
 from fastapi import UploadFile, File
 import base64
@@ -118,15 +119,25 @@ async def get_client(id: str, db: AsyncSession = Depends(get_db), admin = Depend
     if not client:
         raise HTTPException(404, "Client not found")
     
+    # Fetch insights
+    total_emails_sent = await db.scalar(select(func.count(EmailLog.id)).where(EmailLog.client_id == id))
+    total_campaigns = await db.scalar(select(func.count(Campaign.id)).where(Campaign.client_id == id))
+    active_campaigns = await db.scalar(select(func.count(Campaign.id)).where(Campaign.client_id == id, Campaign.is_active == True))
+    
     return {
         "id": client.id,
         "company_name": client.company_name,
         "status": client.status,
         "daily_email_limit": client.daily_email_limit,
         "emails_sent_today": client.emails_sent_today,
-        "features_json": client.features_json,
         "user": {"email": client.user.email} if client.user else None,
-        "plan": {"name": client.plan.name} if client.plan else None
+        "plan": {"name": client.plan.name} if client.plan else None,
+        "insights": {
+            "total_emails_sent": total_emails_sent or 0,
+            "total_campaigns": total_campaigns or 0,
+            "active_campaigns": active_campaigns or 0,
+            "created_at": client.created_at.isoformat() if client.created_at else None
+        }
     }
 
 @router.post("/clients/{id}/reset-usage")
