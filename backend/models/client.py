@@ -28,8 +28,9 @@ class Client(Base):
     emails_sent_today = Column(Integer, default=0)
     last_reset_date = Column(String, nullable=True)
 
-    # Trial
+    # Trial & Subscriptions
     trial_ends_at = Column(DateTime(timezone=True), nullable=True)
+    subscription_ends_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     # Feature Flags

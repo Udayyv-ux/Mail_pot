@@ -16,6 +16,7 @@ class Payment(Base):
     plan_id = Column(String, ForeignKey("plans.id"), nullable=True)
     amount = Column(Float, nullable=False)
     currency = Column(String, default="INR")
+    billing_cycle = Column(String, default="monthly")
     razorpay_order_id = Column(String, nullable=True, index=True)
     razorpay_payment_id = Column(String, nullable=True, index=True)
     razorpay_signature = Column(String, nullable=True)

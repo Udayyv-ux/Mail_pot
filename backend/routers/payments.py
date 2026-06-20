@@ -69,6 +69,7 @@ async def api_create_order(req: OrderRequest, db: AsyncSession = Depends(get_db)
             client_id=client.id,
             plan_id=plan.id,
             amount=amount,
+            billing_cycle=req.billing_cycle,
             razorpay_order_id=order["id"],
             status="created"
         )
@@ -101,6 +102,16 @@ async def api_verify_payment(req: VerifyRequest, db: AsyncSession = Depends(get_
             client = await db.get(Client, payment.client_id)
             if client:
                 client.plan_id = payment.plan_id
+                
+                # Calculate expiration
+                from datetime import datetime, timedelta, timezone
+                if payment.billing_cycle == "yearly":
+                    client.subscription_ends_at = datetime.now(timezone.utc) + timedelta(days=365)
+                elif payment.billing_cycle == "half_yearly":
+                    client.subscription_ends_at = datetime.now(timezone.utc) + timedelta(days=180)
+                else:
+                    client.subscription_ends_at = datetime.now(timezone.utc) + timedelta(days=30)
+                    
                 plan = await db.get(Plan, payment.plan_id)
                 if plan:
                     client.daily_email_limit = plan.email_limit_daily

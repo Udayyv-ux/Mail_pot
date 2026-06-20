@@ -27,6 +27,7 @@ import base64
 router = APIRouter(prefix="/api/client", tags=["client"])
 
 async def get_client_profile(user, db: AsyncSession):
+    from datetime import datetime, timezone
     result = await db.execute(select(Client).where(Client.user_id == user.id))
     client = result.scalar_one_or_none()
     if not client:
@@ -39,6 +40,14 @@ async def get_client_profile(user, db: AsyncSession):
         db.add(client)
         await db.commit()
         await db.refresh(client)
+        
+    # Lazy subscription expiration check
+    if client.plan_id and client.subscription_ends_at:
+        if datetime.now(timezone.utc) > client.subscription_ends_at:
+            client.plan_id = None
+            client.daily_email_limit = 50  # Default free tier limit
+            await db.commit()
+            
     return client
 
 @router.get("/dashboard")
