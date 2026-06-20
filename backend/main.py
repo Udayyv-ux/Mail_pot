@@ -292,6 +292,11 @@ async def status_page():
     """Serve the system status page."""
     return FileResponse(os.path.join(FRONTEND_DIR, "status.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
+@app.get("/feedback.html")
+async def feedback_page():
+    """Serve the feedback page."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "feedback.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+
 
 @app.get("/client")
 async def client_portal_redirect():
