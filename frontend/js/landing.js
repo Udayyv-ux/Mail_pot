@@ -81,14 +81,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         ];
 
         if(!footerData) footerData = {
-            "Product": [{name: "Features", url: "#features"}, {name: "Pricing", url: "#pricing"}],
-            "Company": [{name: "About Us", url: "#about"}],
+            "Product": [
+                {name: "Features", url: "#features"}, 
+                {name: "Pricing", url: "#pricing"}
+            ],
+            "Company": [
+                {name: "About Us", url: "#about"}, 
+                {name: "Partner With Us", url: "#partner-title"},
+                {name: "Contact Sales", url: "mailto:hello@keyroutes.co"}
+            ],
+            "Enterprise": [
+                {name: "Security & Compliance", url: "/policy.html"},
+                {name: "Service Level Agreement (SLA)", url: "/legal.html"},
+                {name: "Privacy Policy", url: "/policy.html"},
+                {name: "Terms of Service", url: "/legal.html"}
+            ],
             "Resources": [
                 {name: "Documentation", url: "/docs.html"}, 
                 {name: "Help Centre", url: "/help.html"}, 
                 {name: "API Docs", url: "/docs.html"},
-                {name: "Feedback", url: "/feedback.html"},
-                {name: "Status", url: "/status.html"}
+                {name: "Report a Problem / Feedback", url: "/feedback.html"},
+                {name: "System Status", url: "/status.html"}
             ]
         };
 
