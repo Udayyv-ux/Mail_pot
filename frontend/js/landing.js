@@ -91,10 +91,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 {name: "Contact Sales", url: "mailto:hello@keyroutes.co"}
             ],
             "Enterprise": [
-                {name: "Security & Compliance", url: "/policy.html"},
-                {name: "Service Level Agreement (SLA)", url: "/legal.html"},
-                {name: "Privacy Policy", url: "/policy.html"},
-                {name: "Terms of Service", url: "/legal.html"}
+                {name: "Security & Compliance", url: "/legal.html?policy=security"},
+                {name: "Service Level Agreement (SLA)", url: "/legal.html?policy=sla"}
             ],
             "Resources": [
                 {name: "Documentation", url: "/docs.html"}, 
