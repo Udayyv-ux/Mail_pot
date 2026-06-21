@@ -101,7 +101,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (el('dash-emails-sent')) el('dash-emails-sent').textContent = data.emails_sent_today || 0;
             if (el('dash-emails-limit')) el('dash-emails-limit').textContent = data.daily_limit || 0;
-            if (el('dash-total')) el('dash-total').textContent = data.emails_sent_today || 0;
+            if (el('dash-total')) el('dash-total').textContent = data.total_emails_sent || 0;
+            if (el('dash-failed')) el('dash-failed').textContent = data.total_emails_failed || 0;
+            
+            const recentList = el('recent-activity-list');
+            if (recentList && data.recent_activity) {
+                if (data.recent_activity.length === 0) {
+                    recentList.innerHTML = '<div class="text-center text-gray-500 mt-10">No recent activity</div>';
+                } else {
+                    recentList.innerHTML = data.recent_activity.map(a => {
+                        const isSent = a.status === 'sent';
+                        const colorClass = isSent ? 'text-success' : (a.status === 'failed' ? 'text-error' : 'text-warning');
+                        const icon = isSent ? '✓' : (a.status === 'failed' ? '✗' : '⟳');
+                        const dateStr = a.sent_at ? new Date(a.sent_at).toLocaleString() : 'Just now';
+                        const errMsg = a.error_message ? `<div class="text-xs text-error/80 mt-1 truncate" title="${a.error_message}">${a.error_message}</div>` : '';
+                        
+                        return `
+                        <div class="bg-base-300 rounded-lg p-3 border border-white/5 flex items-start gap-3">
+                            <div class="mt-0.5 ${colorClass} font-bold">${icon}</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium text-sm truncate" title="${a.recipient_email}">${a.recipient_email}</div>
+                                <div class="text-xs text-gray-500">${dateStr}</div>
+                                ${errMsg}
+                            </div>
+                            <div class="text-xs font-semibold capitalize ${colorClass}">${a.status}</div>
+                        </div>
+                        `;
+                    }).join('');
+                }
+            }
 
             // Repurpose the "templates" stat card as "Active Campaigns"
             if (el('dash-templates')) {

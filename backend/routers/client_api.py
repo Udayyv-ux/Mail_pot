@@ -66,15 +66,34 @@ async def get_dashboard(db: AsyncSession = Depends(get_db), current_user = Depen
     except Exception:
         pass
     
-    # Count email logs sent
+    # Count email logs sent, failed, and recent activity
     try:
-        from sqlalchemy import func as sa_func
+        from sqlalchemy import func as sa_func, desc
         log_result = await db.execute(select(func.count(EmailLog.id)).where(
             EmailLog.client_id == client.id, EmailLog.status == "sent"
         ))
         total_emails_sent = log_result.scalar() or 0
-    except Exception:
+        
+        failed_result = await db.execute(select(func.count(EmailLog.id)).where(
+            EmailLog.client_id == client.id, EmailLog.status == "failed"
+        ))
+        total_emails_failed = failed_result.scalar() or 0
+        
+        recent_res = await db.execute(select(EmailLog).where(
+            EmailLog.client_id == client.id
+        ).order_by(desc(EmailLog.sent_at)).limit(10))
+        recent_logs = recent_res.scalars().all()
+        recent_activity = [{
+            "id": r.id,
+            "recipient_email": r.recipient_email,
+            "status": r.status,
+            "sent_at": r.sent_at.isoformat() if r.sent_at else None,
+            "error_message": r.error_message
+        } for r in recent_logs]
+    except Exception as e:
         total_emails_sent = client.emails_sent_today
+        total_emails_failed = 0
+        recent_activity = []
     
     return {
         "emails_sent_today": client.emails_sent_today,
@@ -82,6 +101,8 @@ async def get_dashboard(db: AsyncSession = Depends(get_db), current_user = Depen
         "active_campaigns": active_campaigns,
         "total_campaigns": total_campaigns,
         "total_emails_sent": total_emails_sent,
+        "total_emails_failed": total_emails_failed,
+        "recent_activity": recent_activity,
         "company_name": client.company_name
     }
 
