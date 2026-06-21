@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         gridContainer.innerHTML = '';
         allPolicies.forEach(policy => {
             const card = document.createElement('a');
-            card.href = `/regulations?policy=${policy.slug}`;
+            card.href = `/legal.html?policy=${policy.slug}`;
             card.className = "relative bg-base-200/50 backdrop-blur-xl border border-white/10 hover:border-primary/50 transition-all duration-500 rounded-[2rem] p-10 flex flex-col items-center text-center group shadow-2xl overflow-hidden cursor-pointer";
             
             card.innerHTML = `
@@ -80,3 +80,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.scrollTo({ top: 0, behavior: 'instant' });
     }
 });
+

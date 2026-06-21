@@ -77,11 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
         router.on('dashboard', loadDashboard);
         router.on('users', loadUsers);
         router.on('plans', loadPlans);
-        router.on('promo', loadPromoCodes);
         router.on('monitor', loadGlobalLogs);
         router.on('settings', loadSettings);
         router.on('landing', loadLandingContent);
         router.on('policies', loadPolicies);
+        router.on('promo', loadPromoCodes);
         router.init();
     }
 
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(el('stat-users')) el('stat-users').textContent = stats.total_clients || 0;
             if(el('stat-plans')) el('stat-plans').textContent = revenue.active_subscriptions || 0;
             if(el('stat-emails')) el('stat-emails').textContent = stats.total_emails_sent || 0;
-            // stat-demos populated in loadDemoRequests
+            if(el('stat-demos')) el('stat-demos').textContent = '-'; // We can populate this later
             if(el('stat-mrr')) el('stat-mrr').textContent = '₹' + (revenue.mrr || 0);
 
             loadDemoRequests();
@@ -110,57 +110,28 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Backend endpoint: GET /api/admin/demo-requests
             const demos = await api.get('/admin/demo-requests');
-            const el = document.getElementById('stat-demos');
-            if(el) el.textContent = demos ? demos.length : 0;
-
             const list = document.getElementById('demo-requests-list');
-            const feedbackList = document.getElementById('feedback-list');
-            if(!list || !feedbackList) return;
-            
+            if(!list) return;
             list.innerHTML = '';
-            feedbackList.innerHTML = '';
             
             if(!demos || demos.length === 0) {
                 list.innerHTML = '<div class="p-4 text-center text-gray-500">No demo requests yet.</div>';
-                feedbackList.innerHTML = '<div class="p-4 text-center text-gray-500">No feedback yet.</div>';
                 return;
             }
             
-            let demoCount = 0;
-            let feedbackCount = 0;
-
             demos.forEach(d => {
-                const isFeedback = d.inquiry_type && d.inquiry_type.startsWith('Feedback');
-                
                 const div = document.createElement('div');
                 div.className = 'p-4 border-b border-white/10';
                 div.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
                         <strong class="text-white">${d.name} <span class="text-gray-400 text-sm font-normal">(${d.company || 'N/A'})</span></strong>
-                        <div class="flex flex-col items-end">
-                            <span class="text-xs text-gray-500 mb-1">${new Date(d.created_at).toLocaleDateString()}</span>
-                            <button class="btn btn-xs btn-primary btn-outline" onclick="openAdminEmailModal('${d.email}', true)">Email</button>
-                        </div>
+                        <span class="text-xs text-gray-500">${new Date(d.created_at).toLocaleDateString()}</span>
                     </div>
-                    <div class="text-sm text-secondary mb-1">${d.email} <span class="text-gray-500 ml-2">${d.phone || ''}</span></div>
-                    <div class="mb-2">
-                        <span class="badge badge-sm badge-outline text-gray-300">${d.inquiry_type || 'Demo'}</span>
-                        <span class="badge badge-sm ${d.status === 'contacted' ? 'badge-success' : 'badge-warning'} ml-2">${d.status}</span>
-                    </div>
+                    <div class="text-sm text-secondary mb-2">${d.email}</div>
                     <div class="text-sm text-gray-300 bg-dark/50 p-2 rounded">${d.message || 'No message provided.'}</div>
                 `;
-                
-                if (isFeedback) {
-                    feedbackList.appendChild(div);
-                    feedbackCount++;
-                } else {
-                    list.appendChild(div);
-                    demoCount++;
-                }
+                list.appendChild(div);
             });
-            
-            if (demoCount === 0) list.innerHTML = '<div class="p-4 text-center text-gray-500">No demo requests yet.</div>';
-            if (feedbackCount === 0) feedbackList.innerHTML = '<div class="p-4 text-center text-gray-500">No feedback yet.</div>';
         } catch(e) {
             console.log("Demo requests error:", e);
         }
@@ -208,70 +179,48 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Users ---
     async function loadUsers() {
         try {
+            // Backend endpoint: GET /api/admin/clients
+            // Returns: [{ id, company_name, status, emails_sent_today }]
             const clients = await api.get('/admin/clients');
-            const tbodyActive = document.getElementById('client-list');
-            const tbodyDemo = document.getElementById('demo-user-list');
-            if(!tbodyActive || !tbodyDemo) return;
+            const tbody = document.getElementById('client-list');
+            if(!tbody) return;
+            tbody.innerHTML = '';
             
-            tbodyActive.innerHTML = '';
-            tbodyDemo.innerHTML = '';
+            if(!clients || clients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No clients registered yet.</td></tr>';
+                return;
+            }
             
-            const activeClients = clients.filter(c => !c.is_demo);
-            const demoClients = clients.filter(c => c.is_demo);
-            
-            const renderRow = (c, tbody, isDemo) => {
+            clients.forEach(c => {
                 const tr = document.createElement('tr');
-                const typeStr = isDemo ? 'demo' : 'active';
-                const demoAction = isDemo 
-                    ? `<button class="text-accent hover:text-white font-semibold text-sm mr-2" onclick="toggleDemoStatus('${c.id}', false)">Make Active</button>`
-                    : `<button class="text-accent hover:text-white font-semibold text-sm mr-2" onclick="toggleDemoStatus('${c.id}', true)">Make Demo</button>`;
-                
                 tr.innerHTML = `
-                    <td class="p-4"><input type="checkbox" class="cb-${typeStr} checkbox checkbox-sm checkbox-primary" value="${c.email}" onchange="updateBulkEmailButton('${typeStr}')" /></td>
                     <td class="p-4 text-white font-medium">${c.email}</td>
                     <td class="p-4 text-gray-300">${c.company_name || 'N/A'}</td>
                     <td class="p-4 text-gray-300"><span class="bg-primary/20 text-primary px-2 py-1 rounded-full text-xs">${c.plan || 'Free'}</span></td>
                     <td class="p-4 text-right">
-                        <button onclick="resetUsage('${c.id}')" class="text-xs bg-dark/50 hover:bg-white/10 text-gray-300 py-1 px-3 rounded transition-colors mr-2">Reset</button>
-                        <button class="text-secondary hover:text-pink-400 font-semibold text-sm mr-2" onclick="viewClientDetails('${c.id}')">Details</button>
-                        ${demoAction}
-                        <button class="text-primary hover:text-white font-semibold text-sm" onclick="openAdminEmailModal('${c.email}', ${isDemo})">Email</button>
+                        <button onclick="resetUsage('${c.id}')" class="text-xs bg-dark/50 hover:bg-white/10 text-gray-300 py-1 px-3 rounded transition-colors mr-2">Reset Usage</button>
+                        <button class="text-secondary hover:text-pink-400 font-semibold text-sm" onclick="viewClientDetails('${c.id}')">Details</button>
+                        <button class="text-secondary hover:text-pink-400 font-semibold text-sm mr-2" onclick="openClientFeatures('${c.id}', '${c.company_name || "Client"}')">Features</button>
+                        <button class="text-accent hover:text-white font-semibold text-sm" onclick="impersonateClient('${c.user_id}')">Impersonate</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
-            };
-
-            if(activeClients.length === 0) tbodyActive.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">No active clients.</td></tr>';
-            else activeClients.forEach(c => renderRow(c, tbodyActive, false));
-
-            if(demoClients.length === 0) tbodyDemo.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">No demo users.</td></tr>';
-            else demoClients.forEach(c => renderRow(c, tbodyDemo, true));
-
+            });
         } catch(e) {
             console.error("Load users error:", e);
         }
     }
-
-    window.toggleDemoStatus = async (id, is_demo) => {
-        try {
-            await api.put(`/admin/clients/${id}/demo-status`, { is_demo });
-            showToast(`User moved to ${is_demo ? 'Demo Users' : 'Active Clients'}`, "success");
-            loadUsers();
-        } catch(e) {
-            showToast("Failed to update status", "error");
-        }
-    };
 
     window.impersonateClient = async (userId) => {
         if(!confirm("Are you sure you want to impersonate this user? You will be redirected to the Client Portal.")) return;
         try {
             const res = await api.post(`/admin/impersonate/${userId}`);
             // Save admin token so we can restore it later
-            const currentToken = localStorage.getItem('access_token');
+            const currentToken = localStorage.getItem('token');
             localStorage.setItem('admin_token', currentToken);
             
             // Set client token
-            localStorage.setItem('access_token', res.access_token);
+            localStorage.setItem('token', res.access_token);
             window.location.href = '/client';
         } catch (e) {
             alert("Failed to impersonate: " + e.message);
@@ -281,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.resetUsage = async (id) => {
         if(!confirm("Are you sure you want to reset this user's daily usage?")) return;
         try {
-            await api.post(`/admin/clients/${id}/reset-usage`);
+            await api.post(`/admin/clients/${id}/reset`);
             if(window.showToast) showToast("Usage reset successfully", "success");
             loadUsers();
         } catch (e) {
@@ -304,18 +253,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div><span class="text-gray-400">Daily Limit:</span> <span class="text-white">${client.daily_email_limit}</span></div>
                     <div><span class="text-gray-400">Sent Today:</span> <span class="text-white">${client.emails_sent_today}</span></div>
                     
-                    <div class="col-span-2 mt-4 pb-2 border-b border-white/10"><strong class="text-white text-lg">Account Insights</strong></div>
-                    <div><span class="text-gray-400">Account Created:</span> <span class="text-white">${client.insights?.created_at ? new Date(client.insights.created_at).toLocaleDateString() : 'N/A'}</span></div>
-                    <div><span class="text-gray-400">Total Lifetime Emails:</span> <span class="text-white font-bold text-primary">${client.insights?.total_emails_sent || 0}</span></div>
+                    <div class="col-span-2 mt-4"><strong class="text-white">Sheet Integration</strong></div>
+                    <div class="col-span-2"><span class="text-gray-400">Sheet ID:</span> <span class="text-white break-all">${client.google_sheet_id || 'Not Connected'}</span></div>
+                    <div><span class="text-gray-400">Target Cols:</span> <span class="text-white">${client.target_columns || 'Name, Email, Inquiry'}</span></div>
+                    <div><span class="text-gray-400">Status Col:</span> <span class="text-white">${client.status_column || 'Status'}</span></div>
                     
-                    <div><span class="text-gray-400">Total Campaigns:</span> <span class="text-white">${client.insights?.total_campaigns || 0}</span></div>
-                    <div><span class="text-gray-400">Active Campaigns:</span> <span class="text-green-400 font-bold">${client.insights?.active_campaigns || 0}</span></div>
-                    
-                    <div class="col-span-2 mt-4">
-                        <div class="text-gray-400 mb-2">Daily Utilization</div>
-                        <progress class="progress ${client.emails_sent_today >= client.daily_email_limit ? 'progress-error' : 'progress-primary'} w-full" value="${client.emails_sent_today}" max="${client.daily_email_limit}"></progress>
-                        <div class="text-xs text-right mt-1 text-gray-500">${Math.round((client.emails_sent_today / client.daily_email_limit) * 100) || 0}% used</div>
-                    </div>
+                    <div class="col-span-2 mt-4"><strong class="text-white">Custom Overrides</strong></div>
+                    <div><span class="text-gray-400">SMTP Host:</span> <span class="text-white">${client.smtp_host || 'Using Global'}</span></div>
+                    <div><span class="text-gray-400">SMTP Port:</span> <span class="text-white">${client.smtp_port || 'Using Global'}</span></div>
+                    <div><span class="text-gray-400">SMTP Email:</span> <span class="text-white">${client.smtp_email || 'Using Global'}</span></div>
+                    <div><span class="text-gray-400">Groq Key:</span> <span class="text-white">${client.groq_api_key_enc ? 'Configured' : 'Using Global'}</span></div>
                 </div>
             `;
             
@@ -360,7 +307,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-
+    window.savePlan = savePlan;
+    window.editPlan = editPlan;
+    window.deletePlan = deletePlan;
 
     // --- Global Monitor ---
     window.loadGlobalLogs = async () => {
@@ -504,56 +453,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const settings = await api.get('/admin/settings');
             const map = {};
             settings.forEach(s => {
-                const groqEl = document.getElementById('admin-groq');
-                const resendEl = document.getElementById('admin-resend');
-                const senderEl = document.getElementById('admin-sender');
-                const gcpEmailEl = document.getElementById('admin-gcp-email');
-                const gcpJsonEl = document.getElementById('admin-gcp-json');
-                const rzpKeyEl = document.getElementById('admin-rzp-key');
-                const rzpSecretEl = document.getElementById('admin-rzp-secret');
-                const maintEl = document.getElementById('admin-maintenance');
-                const hiwTitleEl = document.getElementById('admin-how-it-works-title');
-                const hiwSubEl = document.getElementById('admin-how-it-works-subtitle');
-
-                if(s.key === 'GROQ_API_KEY' && groqEl) groqEl.value = s.value;
-                if(s.key === 'RESEND_API_KEY' && resendEl) resendEl.value = s.value;
-                if(s.key === 'SENDER_EMAIL' && senderEl) senderEl.value = s.value;
-                if(s.key === 'GCP_SERVICE_EMAIL' && gcpEmailEl) gcpEmailEl.value = s.value;
-                if(s.key === 'GCP_CREDENTIALS_JSON' && gcpJsonEl) gcpJsonEl.value = s.value;
-                if(s.key === 'RAZORPAY_KEY_ID' && rzpKeyEl) rzpKeyEl.value = s.value;
-                if(s.key === 'RAZORPAY_SECRET' && rzpSecretEl) rzpSecretEl.value = s.value;
-                if(s.key === 'MAINTENANCE_MODE' && maintEl) maintEl.checked = (s.value === 'true');
-                if(s.key === 'LANDING_HOW_IT_WORKS_TITLE' && hiwTitleEl) hiwTitleEl.value = s.value;
-                if(s.key === 'LANDING_HOW_IT_WORKS_SUBTITLE' && hiwSubEl) hiwSubEl.value = s.value;
+                if(s.key === 'GROQ_API_KEY') document.getElementById('admin-groq').value = s.value;
+                if(s.key === 'RESEND_API_KEY') document.getElementById('admin-resend').value = s.value;
+                if(s.key === 'SENDER_EMAIL') document.getElementById('admin-sender').value = s.value;
+                if(s.key === 'GCP_SERVICE_EMAIL') document.getElementById('admin-gcp-email').value = s.value;
+                if(s.key === 'GCP_CREDENTIALS_JSON') document.getElementById('admin-gcp-json').value = s.value;
+                if(s.key === 'RAZORPAY_KEY_ID') document.getElementById('admin-rzp-key').value = s.value;
+                if(s.key === 'RAZORPAY_SECRET') document.getElementById('admin-rzp-secret').value = s.value;
+                if(s.key === 'MAINTENANCE_MODE') document.getElementById('admin-maintenance').checked = (s.value === 'true');
+                if(s.key === 'LANDING_HOW_IT_WORKS_TITLE') document.getElementById('admin-how-it-works-title').value = s.value;
+                if(s.key === 'LANDING_HOW_IT_WORKS_SUBTITLE') document.getElementById('admin-how-it-works-subtitle').value = s.value;
             });
         } catch(e) {}
     }
 
     document.getElementById('form-admin-settings')?.addEventListener('submit', async(e) => {
         e.preventDefault();
-        const payload = [];
-        
-        const groqEl = document.getElementById('admin-groq');
-        const resendEl = document.getElementById('admin-resend');
-        const senderEl = document.getElementById('admin-sender');
-        const gcpEmailEl = document.getElementById('admin-gcp-email');
-        const gcpJsonEl = document.getElementById('admin-gcp-json');
-        const maintEl = document.getElementById('admin-maintenance');
-        const rzpKeyEl = document.getElementById('admin-rzp-key');
-        const rzpSecretEl = document.getElementById('admin-rzp-secret');
-        const hiwTitleEl = document.getElementById('admin-how-it-works-title');
-        const hiwSubEl = document.getElementById('admin-how-it-works-subtitle');
-
-        if(groqEl) payload.push({key: 'GROQ_API_KEY', value: groqEl.value});
-        if(resendEl) payload.push({key: 'RESEND_API_KEY', value: resendEl.value});
-        if(senderEl) payload.push({key: 'SENDER_EMAIL', value: senderEl.value});
-        if(gcpEmailEl) payload.push({key: 'GCP_SERVICE_EMAIL', value: gcpEmailEl.value});
-        if(gcpJsonEl) payload.push({key: 'GCP_CREDENTIALS_JSON', value: gcpJsonEl.value});
-        if(maintEl) payload.push({key: 'MAINTENANCE_MODE', value: maintEl.checked ? 'true' : 'false'});
-        if(rzpKeyEl) payload.push({key: 'RAZORPAY_KEY_ID', value: rzpKeyEl.value});
-        if(rzpSecretEl) payload.push({key: 'RAZORPAY_SECRET', value: rzpSecretEl.value});
-        if(hiwTitleEl) payload.push({key: 'LANDING_HOW_IT_WORKS_TITLE', value: hiwTitleEl.value});
-        if(hiwSubEl) payload.push({key: 'LANDING_HOW_IT_WORKS_SUBTITLE', value: hiwSubEl.value});
+        const payload = [
+            {key: 'GROQ_API_KEY', value: document.getElementById('admin-groq').value},
+            {key: 'RESEND_API_KEY', value: document.getElementById('admin-resend').value},
+            {key: 'SENDER_EMAIL', value: document.getElementById('admin-sender').value},
+            {key: 'GCP_SERVICE_EMAIL', value: document.getElementById('admin-gcp-email').value},
+            {key: 'GCP_CREDENTIALS_JSON', value: document.getElementById('admin-gcp-json').value},
+            {key: 'MAINTENANCE_MODE', value: document.getElementById('admin-maintenance').checked ? 'true' : 'false'},
+            {key: 'RAZORPAY_KEY_ID', value: document.getElementById('admin-rzp-key').value},
+            {key: 'RAZORPAY_SECRET', value: document.getElementById('admin-rzp-secret').value},
+            {key: 'LANDING_HOW_IT_WORKS_TITLE', value: document.getElementById('admin-how-it-works-title').value},
+            {key: 'LANDING_HOW_IT_WORKS_SUBTITLE', value: document.getElementById('admin-how-it-works-subtitle').value}
+        ];
         try {
             await api.put('/admin/settings', payload);
             if(window.showToast) showToast("Settings saved", "success");
@@ -569,15 +496,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(s.key === 'LANDING_FAQ') document.getElementById('landing-faq').value = s.value;
                 if(s.key === 'LANDING_FOOTER') document.getElementById('landing-footer').value = s.value;
                 if(s.key === 'LANDING_REVIEWS') document.getElementById('landing-reviews').value = s.value;
-                
-                if(s.key === 'partner_title' && document.getElementById('set-partner-title')) document.getElementById('set-partner-title').value = s.value;
-                if(s.key === 'partner_subtitle' && document.getElementById('set-partner-subtitle')) document.getElementById('set-partner-subtitle').value = s.value;
-                if(s.key === 'partner_b1_title' && document.getElementById('set-partner-b1-title')) document.getElementById('set-partner-b1-title').value = s.value;
-                if(s.key === 'partner_b1_desc' && document.getElementById('set-partner-b1-desc')) document.getElementById('set-partner-b1-desc').value = s.value;
-                if(s.key === 'partner_b2_title' && document.getElementById('set-partner-b2-title')) document.getElementById('set-partner-b2-title').value = s.value;
-                if(s.key === 'partner_b2_desc' && document.getElementById('set-partner-b2-desc')) document.getElementById('set-partner-b2-desc').value = s.value;
-                if(s.key === 'partner_b3_title' && document.getElementById('set-partner-b3-title')) document.getElementById('set-partner-b3-title').value = s.value;
-                if(s.key === 'partner_b3_desc' && document.getElementById('set-partner-b3-desc')) document.getElementById('set-partner-b3-desc').value = s.value;
             });
             
             // Populate defaults if empty to help the admin
@@ -603,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('landing-footer').value = JSON.stringify({
                     "Product": [{name: "Features", url: "#features"}, {name: "Pricing", url: "#pricing"}],
                     "Company": [{name: "About Us", url: "#about"}, {name: "Contact", url: "#contact"}],
-                    "Legal": [{name: "Regulations", url: "/legal.html"}]
+                    "Legal": [{name: "Regulations", url: "/regulations"}]
                 }, null, 2);
             }
             if(!document.getElementById('landing-reviews').value) {
@@ -684,15 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
             {key: 'LANDING_STEPS', value: document.getElementById('landing-steps').value},
             {key: 'LANDING_FAQ', value: document.getElementById('landing-faq').value},
             {key: 'LANDING_FOOTER', value: document.getElementById('landing-footer').value},
-            {key: 'LANDING_REVIEWS', value: document.getElementById('landing-reviews').value},
-            {category: 'landing', key: 'partner_title', value: document.getElementById('set-partner-title')?.value || ''},
-            {category: 'landing', key: 'partner_subtitle', value: document.getElementById('set-partner-subtitle')?.value || ''},
-            {category: 'landing', key: 'partner_b1_title', value: document.getElementById('set-partner-b1-title')?.value || ''},
-            {category: 'landing', key: 'partner_b1_desc', value: document.getElementById('set-partner-b1-desc')?.value || ''},
-            {category: 'landing', key: 'partner_b2_title', value: document.getElementById('set-partner-b2-title')?.value || ''},
-            {category: 'landing', key: 'partner_b2_desc', value: document.getElementById('set-partner-b2-desc')?.value || ''},
-            {category: 'landing', key: 'partner_b3_title', value: document.getElementById('set-partner-b3-title')?.value || ''},
-            {category: 'landing', key: 'partner_b3_desc', value: document.getElementById('set-partner-b3-desc')?.value || ''}
+            {key: 'LANDING_REVIEWS', value: document.getElementById('landing-reviews').value}
         ];
         try {
             await api.put('/admin/settings', payload);
@@ -740,9 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.editPolicy = async (slug) => {
         try {
-            const policies = await api.get(`/admin/policies`);
-            const p = policies.find(x => x.slug === slug);
-            if(!p) return;
+            const p = await api.get(`/public/policies/${slug}`);
             const el = (id) => document.getElementById(id);
             if(el('pol-slug')) { el('pol-slug').value = p.slug; el('pol-slug').readOnly = true; }
             if(el('pol-title')) el('pol-title').value = p.title;
@@ -778,127 +686,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Notifications ---
-    const notifCheckbox = document.getElementById('notif-send-email');
-    const notifSubjContainer = document.getElementById('notif-subject-container');
-    if (notifCheckbox && notifSubjContainer) {
-        notifCheckbox.addEventListener('change', (e) => {
-            notifSubjContainer.style.display = e.target.checked ? 'block' : 'none';
-        });
-    }
-
     document.getElementById('form-notif')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const msg = document.getElementById('notif-msg')?.value;
-        const sendEmail = document.getElementById('notif-send-email')?.checked;
-        const subject = document.getElementById('notif-subject')?.value || "Important Announcement";
-        
         if(!msg) return;
         try {
             await api.post('/admin/notifications', { message: msg });
-            
-            if (sendEmail) {
-                await api.post('/admin/send-email', { target_email: "all_users", subject: subject, body_html: msg });
-            }
-            
             if(window.showToast) showToast("Broadcast sent!", "success");
             document.getElementById('notif-modal')?.close();
             document.getElementById('form-notif')?.reset();
-            if(notifSubjContainer) notifSubjContainer.style.display = 'none';
         } catch(err) { if(window.showToast) showToast(err.message, "error"); }
-    });
-
-    window.toggleSelectAll = (el, type) => {
-        const checkboxes = document.querySelectorAll(`.cb-${type}`);
-        checkboxes.forEach(cb => cb.checked = el.checked);
-        updateBulkEmailButton(type);
-    };
-
-    window.updateBulkEmailButton = (type) => {
-        const btn = document.getElementById(`btn-email-selected-${type}`);
-        if (!btn) return;
-        const checkedCount = document.querySelectorAll(`.cb-${type}:checked`).length;
-        if (checkedCount > 0) {
-            btn.classList.remove('hidden');
-            btn.textContent = `Email Selected (${checkedCount})`;
-        } else {
-            btn.classList.add('hidden');
-        }
-    };
-
-    window.openBulkAdminEmailModal = (isDemo) => {
-        const typeStr = isDemo ? 'demo' : 'active';
-        const checkboxes = document.querySelectorAll(`.cb-${typeStr}:checked`);
-        const emails = Array.from(checkboxes).map(cb => cb.value);
-        if (emails.length === 0) return;
-        
-        document.getElementById('form-admin-email')?.reset();
-        
-        const form = document.getElementById('form-admin-email');
-        if(form) form.dataset.bulkEmails = JSON.stringify(emails);
-        
-        const toInput = document.getElementById('admin-email-to');
-        if(toInput) {
-            toInput.value = emails.join(', ');
-            toInput.readOnly = true;
-        }
-        
-        if (isDemo) {
-            const subjectInput = document.getElementById('admin-email-subject');
-            const bodyInput = document.getElementById('admin-email-body');
-            if (subjectInput) subjectInput.value = "Welcome to your Demo!";
-            if (bodyInput) {
-                bodyInput.value = `<h2>Welcome to the Platform!</h2>\n<p>Hi there,</p>\n<p>We noticed you recently registered a demo account. We'd love to help you get the most out of our platform.</p>\n<p>If you have any questions or would like a guided tour, please reply to this email or book a setup call with us.</p>\n<p>Best,<br>The Team</p>`;
-            }
-        }
-        
-        document.getElementById('admin-email-modal')?.showModal();
-    };
-
-    window.openAdminEmailModal = (email, isDemo = false) => {
-        document.getElementById('form-admin-email')?.reset();
-        const form = document.getElementById('form-admin-email');
-        if(form) delete form.dataset.bulkEmails;
-        
-        const toInput = document.getElementById('admin-email-to');
-        if(toInput) {
-            toInput.value = email;
-            toInput.readOnly = false;
-        }
-        
-        if (isDemo) {
-            const subjectInput = document.getElementById('admin-email-subject');
-            const bodyInput = document.getElementById('admin-email-body');
-            if (subjectInput) subjectInput.value = "Welcome to your Demo!";
-            if (bodyInput) {
-                bodyInput.value = `<h2>Welcome to the Platform!</h2>\n<p>Hi there,</p>\n<p>We noticed you recently registered a demo account. We'd love to help you get the most out of our platform.</p>\n<p>If you have any questions or would like a guided tour, please reply to this email or book a setup call with us.</p>\n<p>Best,<br>The Team</p>`;
-            }
-        }
-        
-        document.getElementById('admin-email-modal')?.showModal();
-    };
-
-    document.getElementById('form-admin-email')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const to = document.getElementById('admin-email-to').value;
-        const subject = document.getElementById('admin-email-subject').value;
-        const body = document.getElementById('admin-email-body').value;
-        
-        const form = document.getElementById('form-admin-email');
-        let targetEmailStr = to;
-        let targetEmailsArr = [];
-        if (form && form.dataset.bulkEmails) {
-            targetEmailStr = "multiple";
-            targetEmailsArr = JSON.parse(form.dataset.bulkEmails);
-        }
-        
-        try {
-            await api.post('/admin/send-email', { target_email: targetEmailStr, target_emails: targetEmailsArr, subject: subject, body_html: body });
-            if(window.showToast) showToast("Email sent!", "success");
-            document.getElementById('admin-email-modal')?.close();
-            document.getElementById('form-admin-email')?.reset();
-        } catch(err) {
-            if(window.showToast) showToast(err.message, "error");
-        }
     });
 
     // --- Promo Codes ---
@@ -963,6 +760,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(e) {}
     };
 
+    router.on('promo', loadPromoCodes);
+
     window.uploadLogo = async function() {
         const fileInput = document.getElementById('admin-logo-upload');
         if(!fileInput) return;
@@ -992,4 +791,3 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 });
-

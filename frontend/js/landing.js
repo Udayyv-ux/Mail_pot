@@ -184,8 +184,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const links = footerData[colName];
                 const linksHtml = links.map(l => {
                     let url = l.url;
-                    if (url === "#" && l.name.toLowerCase().includes("policy")) url = "/regulations?policy=" + l.name.toLowerCase().replace(/\s+/g, '-');
-                    if (url === "#" && l.name.toLowerCase().includes("terms")) url = "/regulations?policy=" + l.name.toLowerCase().replace(/\s+/g, '-');
+                    if (url === "#" && l.name.toLowerCase().includes("policy")) url = "/legal.html?policy=" + l.name.toLowerCase().replace(/\s+/g, '-');
+                    if (url === "#" && l.name.toLowerCase().includes("terms")) url = "/legal.html?policy=" + l.name.toLowerCase().replace(/\s+/g, '-');
                     return `<li><a href="${url}" class="text-gray-400 hover:text-white text-sm transition-colors">${l.name}</a></li>`;
                 }).join('');
                 footerGrid.innerHTML += `
@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const policies = await api.get('/public/policies');
             const policiesContainer = document.getElementById('footer-policies');
             if(policiesContainer && policies.length > 0) {
-                const links = policies.map(p => `<a href="/regulations?policy=${p.slug}" class="hover:text-white transition-colors ml-4">${p.title}</a>`);
+                const links = policies.map(p => `<a href="/legal.html?policy=${p.slug}" class="hover:text-white transition-colors ml-4">${p.title}</a>`);
                 policiesContainer.innerHTML = links.join('');
             }
         } catch(e) {
@@ -333,3 +333,4 @@ window.addEventListener('DOMContentLoaded', () => {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 });
+
