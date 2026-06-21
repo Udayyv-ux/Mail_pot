@@ -7,6 +7,7 @@ import re
 from sqlalchemy import select
 from backend.database import SessionLocal
 from backend.models.app_settings import AppSetting
+from backend.config import settings
 
 _gspread_client = None
 _cached_creds_str = None
@@ -19,9 +20,12 @@ async def get_gspread_client():
         setting = res.scalar_one_or_none()
         
         if not setting or not setting.value:
-            raise ValueError("Missing Google Service Account credentials in Super Admin Settings")
-            
-        creds_str = setting.value
+            if hasattr(settings, 'GOOGLE_SERVICE_ACCOUNT_JSON') and settings.GOOGLE_SERVICE_ACCOUNT_JSON:
+                creds_str = settings.GOOGLE_SERVICE_ACCOUNT_JSON
+            else:
+                raise ValueError("Missing Google Service Account credentials in Super Admin Settings or Environment Variables")
+        else:
+            creds_str = setting.value
         
         # Only re-initialize if the credentials changed
         if _gspread_client is None or creds_str != _cached_creds_str:
