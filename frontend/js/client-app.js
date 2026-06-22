@@ -86,6 +86,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             const initialPath = window.location.hash.replace('#', '') || 'dashboard';
             this.currentRoute = null; // reset so navigate fires
             this.navigate(initialPath);
+
+            // Auto-refresh the current active route every 10 seconds to keep data live
+            setInterval(() => {
+                if (this.currentRoute === 'dashboard') {
+                    loadDashboard();
+                } else if (this.currentRoute === 'campaigns') {
+                    // loadCampaigns(); // uncomment if you want campaigns table to auto refresh
+                }
+            }, 10000);
         }
     };
 
@@ -114,17 +123,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const colorClass = isSent ? 'text-success' : (a.status === 'failed' ? 'text-error' : 'text-warning');
                         const icon = isSent ? '✓' : (a.status === 'failed' ? '✗' : '⟳');
                         const dateStr = a.sent_at ? new Date(a.sent_at).toLocaleString() : 'Just now';
-                        const errMsg = a.error_message ? `<div class="text-xs text-error/80 mt-1 truncate" title="${a.error_message}">₹{a.error_message}</div>` : '';
+                        const errMsg = a.error_message ? `<div class="text-xs text-error/80 mt-1 truncate" title="${a.error_message}">${a.error_message}</div>` : '';
                         
                         return `
                         <div class="bg-base-300 rounded-lg p-3 border border-white/5 flex items-start gap-3">
-                            <div class="mt-0.5 ${colorClass} font-bold">₹{icon}</div>
+                            <div class="mt-0.5 ${colorClass} font-bold">${icon}</div>
                             <div class="flex-1 min-w-0">
-                                <div class="font-medium text-sm truncate" title="${a.recipient_email}">₹{a.recipient_email}</div>
-                                <div class="text-xs text-gray-500">₹{dateStr}</div>
+                                <div class="font-medium text-sm truncate" title="${a.recipient_email}">${a.recipient_email}</div>
+                                <div class="text-xs text-gray-500">${dateStr}</div>
                                 ${errMsg}
                             </div>
-                            <div class="text-xs font-semibold capitalize ${colorClass}">₹{a.status}</div>
+                            <div class="text-xs font-semibold capitalize ${colorClass}">${a.status}</div>
                         </div>
                         `;
                     }).join('');
@@ -453,11 +462,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 tbody.innerHTML = items.map(q => `
                     <tr>
                         <td class="p-4">
-                            <div class="font-medium">₹{q.recipient_name || 'N/A'}</div>
-                            <div class="text-xs text-gray-500">₹{q.recipient_email}</div>
+                            <div class="font-medium">${q.recipient_name || 'N/A'}</div>
+                            <div class="text-xs text-gray-500">${q.recipient_email}</div>
                         </td>
-                        <td class="p-4">₹{q.campaign_name}</td>
-                        <td class="p-4">₹{q.template_name}</td>
+                        <td class="p-4">${q.campaign_name}</td>
+                        <td class="p-4">${q.template_name}</td>
                         <td class="p-4 text-right">
                             <button class="btn btn-xs btn-success text-white mr-2" onclick="approveQueue('${q.id}')">Approve</button>
                             <button class="btn btn-xs btn-error text-white" onclick="rejectQueue('${q.id}')">Reject</button>
@@ -503,12 +512,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (tbody) {
                 tbody.innerHTML = items.map(m => `
                     <tr>
-                        <td class="p-4 font-medium text-white">₹{m.from.replace(/<.*>/, '')}</td>
+                        <td class="p-4 font-medium text-white">${m.from.replace(/<.*>/, '')}</td>
                         <td class="p-4">
-                            <div class="font-medium text-white">₹{m.subject}</div>
-                            <div class="text-xs text-gray-500 truncate max-w-xs">₹{m.snippet}</div>
+                            <div class="font-medium text-white">${m.subject}</div>
+                            <div class="text-xs text-gray-500 truncate max-w-xs">${m.snippet}</div>
                         </td>
-                        <td class="p-4 text-xs text-gray-400 whitespace-nowrap">₹{new Date(m.date).toLocaleString()}</td>
+                        <td class="p-4 text-xs text-gray-400 whitespace-nowrap">${new Date(m.date).toLocaleString()}</td>
                     </tr>
                 `).join('');
                 if (items.length === 0) {

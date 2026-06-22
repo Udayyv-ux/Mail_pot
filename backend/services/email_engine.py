@@ -35,15 +35,18 @@ def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> str:
     if not categories:
         return "General"
     
-    categories_str = ", ".join([f"'{c}'" for c in categories])
+    # Provide the AI with context about what each template is for
+    categories_context = "\n".join([f"- '{t.project_name}': This template is an email with subject '{t.subject}'" for t in templates if t.is_active])
     
     system_prompt = (
-        "You are an exact categorization bot. "
-        f"You must choose EXACTLY ONE category from this exact list: {categories_str}. "
-        "Do not wrap it in quotes. Do not add any prefix, suffix, or explanation. "
-        "Output ONLY the exact string from the list."
+        "You are an expert email categorization AI. Your job is to read a customer inquiry or notes, "
+        "and select the MOST APPROPRIATE email template category to send them.\n\n"
+        "Here are the available categories:\n"
+        f"{categories_context}\n\n"
+        "You must choose EXACTLY ONE category name from the list above. "
+        "Output ONLY the exact category name. Do not wrap it in quotes. Do not add any explanation."
     )
-    prompt = f"Customer Inquiry: '{lead_info}'\n\nWhich category does this fit best?"
+    prompt = f"Customer Inquiry / Lead Notes: '{lead_info}'\n\nWhich category does this fit best?"
     
     try:
         api_key = groq_key if groq_key else settings.GROQ_API_KEY
