@@ -502,20 +502,10 @@
                 </div>
                 
                 <div class="divider border-white/5 my-2">Throttle Settings</div>
-                <div class="form-control">
-                    <label class="label"><span class="label-text font-medium text-gray-300">Max Emails / Hour</span></label>
-                    <input type="number" id="camp-throttle-rate" class="input input-bordered bg-base-300 border-white/5" value="50" min="1">
+                <div class="form-control mb-6">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Max Emails Per Hour</span></label>
+                    <input type="number" id="camp-throttle-rate" class="input input-bordered bg-base-300 border-white/5" value="50" min="1" max="500">
                     <label class="label"><span class="label-text-alt text-gray-500">Keep low to avoid spam filters.</span></label>
-                </div>
-                <div class="flex gap-4">
-                    <div class="form-control flex-1">
-                        <label class="label"><span class="label-text font-medium text-gray-300">Start Time (24h)</span></label>
-                        <input type="number" id="camp-throttle-start" class="input input-bordered bg-base-300 border-white/5" value="9" min="0" max="23">
-                    </div>
-                    <div class="form-control flex-1">
-                        <label class="label"><span class="label-text font-medium text-gray-300">End Time (24h)</span></label>
-                        <input type="number" id="camp-throttle-end" class="input input-bordered bg-base-300 border-white/5" value="17" min="0" max="23">
-                    </div>
                 </div>
 
                 <div class="modal-action mt-6">

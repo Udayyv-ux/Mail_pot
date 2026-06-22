@@ -417,8 +417,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             follow_up_days: parseInt(document.getElementById('camp-followup-days').value) || 0,
             follow_up_template_id: document.getElementById('camp-followup-template').value || null,
             max_emails_per_hour: parseInt(document.getElementById('camp-throttle-rate').value) || 50,
-            send_hours_start: parseInt(document.getElementById('camp-throttle-start').value) || 9,
-            send_hours_end: parseInt(document.getElementById('camp-throttle-end').value) || 17,
+            send_hours_start: 0,
+            send_hours_end: 24,
             review_mode: document.getElementById('camp-review-mode').checked
         };
 

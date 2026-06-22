@@ -291,10 +291,6 @@ async def run_247_engine():
                     continue
                     
                 from datetime import timedelta
-                current_hour = datetime.now(timezone.utc).hour
-                if current_hour < campaign.send_hours_start or current_hour >= campaign.send_hours_end:
-                    print(f"⏰ Campaign '{campaign.name}' is outside sending hours ({campaign.send_hours_start}:00 - {campaign.send_hours_end}:00). Skipping.")
-                    continue
                 
                 async with SessionLocal() as db:
                     one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
