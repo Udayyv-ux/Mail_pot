@@ -43,11 +43,11 @@ class Settings:
 
     # App
     APP_NAME: str = os.getenv("APP_NAME", "MailPilot")
-    _app_url = os.getenv("APP_URL", "http://localhost:8000")
+    _app_url = os.getenv("APP_URL", "http://localhost:8000").rstrip("/")
     if not _app_url.startswith("http"):
         _app_url = "https://" + _app_url
     APP_URL: str = _app_url
-    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:8000")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:8000").rstrip("/")
     SUPER_ADMIN_EMAIL: str = os.getenv("SUPER_ADMIN_EMAIL", "")
 
     # Engine defaults
