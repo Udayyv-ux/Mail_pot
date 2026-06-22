@@ -136,12 +136,18 @@ async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends
 
 class ProfileUpdate(BaseModel):
     company_name: Optional[str] = None
+    whatsapp_access_token: Optional[str] = None
+    whatsapp_phone_number_id: Optional[str] = None
 
 @router.put("/profile")
 async def update_profile(profile: ProfileUpdate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client = await get_client_profile(current_user, db)
     if profile.company_name is not None:
         client.company_name = profile.company_name
+    if profile.whatsapp_access_token is not None:
+        client.whatsapp_access_token = profile.whatsapp_access_token
+    if profile.whatsapp_phone_number_id is not None:
+        client.whatsapp_phone_number_id = profile.whatsapp_phone_number_id
     await db.commit()
     return {"status": "success"}
 
