@@ -49,7 +49,7 @@ def send_demo_emails_sync(data: DemoSubmit):
         return
 
     # Hardcoded permanent Google Meet link (can be moved to settings later)
-    meet_link = "https://meet.google.com/qxc-rghw-vyt" # Example link
+    meet_link = "https://meet.google.com/ais-cmqc-dci" # User provided link
 
     # 1. Email to Admin
     msg_admin = MIMEMultipart()
