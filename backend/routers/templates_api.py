@@ -33,7 +33,6 @@ class TemplateCreate(BaseModel):
     body_html: str
     image_urls_json: str = "[]"
     banner_url: str | None = None
-    whatsapp_template_name: str | None = None
 
 @router.post("")
 async def create_template(data: TemplateCreate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
@@ -47,8 +46,7 @@ async def create_template(data: TemplateCreate, db: AsyncSession = Depends(get_d
         subject=data.subject,
         body_html=data.body_html,
         image_urls_json=data.image_urls_json,
-        banner_url=data.banner_url,
-        whatsapp_template_name=data.whatsapp_template_name
+        banner_url=data.banner_url
     )
     db.add(template)
     await db.commit()
@@ -68,7 +66,6 @@ async def update_template(id: str, data: TemplateCreate, db: AsyncSession = Depe
     template.body_html = data.body_html
     template.image_urls_json = data.image_urls_json
     template.banner_url = data.banner_url
-    template.whatsapp_template_name = data.whatsapp_template_name
     
     await db.commit()
     return template

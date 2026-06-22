@@ -35,9 +35,6 @@ async def lifespan(app: FastAPI):
         
     migrations = [
         ("campaigns", "default_template_id", "VARCHAR"),
-        ("clients", "whatsapp_access_token", "TEXT"),
-        ("clients", "whatsapp_phone_number_id", "VARCHAR"),
-        ("templates", "whatsapp_template_name", "VARCHAR"),
         ("clients", "target_columns", "VARCHAR DEFAULT 'Name, Email, Inquiry'"),
         ("clients", "status_column", "VARCHAR DEFAULT 'Status'"),
         ("templates", "banner_url", "VARCHAR"),
