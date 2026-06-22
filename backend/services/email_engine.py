@@ -304,6 +304,7 @@ async def run_247_engine():
                 phone_idx = get_col_index(headers, phone_col)
                 inquiry_idx = get_col_index(headers, inquiry_col)
                 status_idx = get_col_index(headers, status_col_name)
+                location_idx = get_col_index(headers, "Location")
                 
                 if (email_idx == -1 and phone_idx == -1) or status_idx == -1:
                     async with SessionLocal() as db:
@@ -409,11 +410,14 @@ async def run_247_engine():
                         # Send WhatsApp
                         if has_valid_phone and getattr(target_template, 'whatsapp_template_name', None) and getattr(db_client, 'whatsapp_access_token', None):
                             print(f"📱 Sending WhatsApp '{target_template.whatsapp_template_name}' to {phone}...")
+                            
+                            location = row[location_idx] if location_idx != -1 and len(row) > location_idx else ""
                             wa_success, wa_err = await send_whatsapp_message(
                                 phone=phone,
                                 template_name=target_template.whatsapp_template_name,
                                 access_token=db_client.whatsapp_access_token,
-                                phone_number_id=db_client.whatsapp_phone_number_id
+                                phone_number_id=db_client.whatsapp_phone_number_id,
+                                variables=[name, getattr(target_template, 'project_name', ''), location]
                             )
                             if wa_success:
                                 print(f"✅ WhatsApp sent to {phone}")
