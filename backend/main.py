@@ -34,6 +34,7 @@ async def lifespan(app: FastAPI):
         print(f"Plan update failed: {e}")
         
     migrations = [
+        ("campaigns", "default_template_id", "VARCHAR"),
         ("clients", "target_columns", "VARCHAR DEFAULT 'Name, Email, Inquiry'"),
         ("clients", "status_column", "VARCHAR DEFAULT 'Status'"),
         ("templates", "banner_url", "VARCHAR"),

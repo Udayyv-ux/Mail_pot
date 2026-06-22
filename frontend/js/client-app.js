@@ -423,6 +423,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         var payload = {
             name: document.getElementById('camp-name').value,
             sheet_url_or_id: document.getElementById('camp-sheet').value,
+            default_template_id: document.getElementById('camp-default-template').value || null,
             follow_up_days: parseInt(document.getElementById('camp-followup-days').value) || 0,
             follow_up_template_id: document.getElementById('camp-followup-template').value || null,
             max_emails_per_hour: parseInt(document.getElementById('camp-throttle-rate').value) || 50,

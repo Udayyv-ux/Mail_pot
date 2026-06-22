@@ -354,7 +354,17 @@ async def run_247_engine():
                     elif status.strip() == "":
                         print(f"📩 Found new lead: {email}")
                         category = categorize_with_ai(inquiry, templates, groq_key)
-                        target_template = next((t for t in templates if t.project_name == category), templates[0])
+                        target_template = next((t for t in templates if t.project_name == category), None)
+                        
+                        if not target_template:
+                            if getattr(campaign, 'default_template_id', None):
+                                target_template = next((t for t in templates if t.id == campaign.default_template_id), None)
+                                if target_template:
+                                    category = "DefaultFallback"
+                            else:
+                                # Legacy fallback
+                                print(f"⚠️ AI returned '{category}' which has no exact match. Falling back to first template.")
+                                target_template = templates[0] if templates else None
                     
                     # 3. Send email if a template was selected
                     if target_template:

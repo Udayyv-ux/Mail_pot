@@ -152,6 +152,7 @@ class CampaignCreate(BaseModel):
     sheet_url_or_id: str
     target_columns: str = "Name, Email, Inquiry"
     status_column: str = "Status"
+    default_template_id: Optional[str] = None
     follow_up_days: int = 0
     follow_up_template_id: Optional[str] = None
     max_emails_per_hour: int = 50
@@ -170,6 +171,7 @@ async def list_campaigns(db: AsyncSession = Depends(get_db), current_user = Depe
         "google_sheet_id": c.google_sheet_id,
         "target_columns": c.target_columns,
         "status_column": c.status_column,
+        "default_template_id": c.default_template_id,
         "follow_up_days": c.follow_up_days,
         "follow_up_template_id": c.follow_up_template_id,
         "max_emails_per_hour": c.max_emails_per_hour,
@@ -203,6 +205,7 @@ async def create_campaign(data: CampaignCreate, db: AsyncSession = Depends(get_d
         google_sheet_id=sheet_id,
         target_columns=data.target_columns,
         status_column=data.status_column,
+        default_template_id=data.default_template_id,
         follow_up_days=data.follow_up_days,
         follow_up_template_id=data.follow_up_template_id,
         max_emails_per_hour=data.max_emails_per_hour,

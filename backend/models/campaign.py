@@ -20,6 +20,9 @@ class Campaign(Base):
     target_columns = Column(String, default="Name, Email, Inquiry")
     status_column = Column(String, default="Status")
     
+    # Template & AI
+    default_template_id = Column(String, ForeignKey("templates.id", ondelete="SET NULL"), nullable=True)
+    
     # Follow-up Logic
     follow_up_days = Column(Integer, default=0) # 0 means no follow up
     follow_up_template_id = Column(String, ForeignKey("templates.id", ondelete="SET NULL"), nullable=True)

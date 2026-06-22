@@ -477,7 +477,16 @@
                     <input type="text" id="camp-sheet" class="input input-bordered bg-base-300 border-white/5" placeholder="https://docs.google.com/..." required>
                 </div>
                 
-                <div class="divider border-white/5 my-2">Follow-ups</div>
+                <div class="divider border-white/5 my-2">Template & AI</div>
+                <div class="form-control mb-4">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Default Template</span></label>
+                    <select id="camp-default-template" class="select select-bordered bg-base-300 border-white/5 w-full">
+                        <option value="">-- Let AI Decide (Blank Inquiry skips) --</option>
+                    </select>
+                    <label class="label"><span class="label-text-alt text-gray-500">Used if the lead's Inquiry column is blank or AI fails to categorize.</span></label>
+                </div>
+                
+                <div class="divider border-white/5 my-2">Follow-up Logic</div>
                 <div class="form-control">
                     <label class="label"><span class="label-text font-medium text-gray-300">Follow-up Days</span></label>
                     <input type="number" id="camp-followup-days" class="input input-bordered bg-base-300 border-white/5" placeholder="0" min="0" value="0">
