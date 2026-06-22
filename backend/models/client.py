@@ -24,8 +24,9 @@ class Client(Base):
     credentials_json = Column(Text, nullable=True)  # service account JSON (encrypted)
     
     # WhatsApp Meta API Configuration
-    whatsapp_access_token = Column(Text, nullable=True)
+    whatsapp_access_token = Column(String, nullable=True)
     whatsapp_phone_number_id = Column(String, nullable=True)
+    whatsapp_business_account_id = Column(String, nullable=True)
 
     # Usage tracking
     daily_email_limit = Column(Integer, default=50)

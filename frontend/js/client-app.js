@@ -703,20 +703,75 @@ document.addEventListener('DOMContentLoaded', async () => {
             var el = (id) => document.getElementById(id);
             if (el('wa-token')) el('wa-token').value = data.whatsapp_access_token || '';
             if (el('wa-phone-id')) el('wa-phone-id').value = data.whatsapp_phone_number_id || '';
+            if (el('wa-business-id')) el('wa-business-id').value = data.whatsapp_business_account_id || '';
+            
+            // Fetch templates automatically if credentials exist
+            if (data.whatsapp_access_token && data.whatsapp_business_account_id) {
+                fetchWhatsappTemplates();
+            } else {
+                var tbody = document.getElementById('wa-templates-tbody');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-8">Save your Meta API credentials to view templates.</td></tr>';
+            }
         } catch (e) {
             console.error('WhatsApp load error:', e);
         }
     }
 
+    async function fetchWhatsappTemplates() {
+        var tbody = document.getElementById('wa-templates-tbody');
+        var refreshBtn = document.getElementById('btn-refresh-templates');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-8"><span class="loading loading-spinner text-primary"></span> Fetching from Meta...</td></tr>';
+        if (refreshBtn) refreshBtn.classList.add('animate-spin');
+
+        try {
+            var response = await api.get('/client/whatsapp/templates');
+            var templates = response.data || [];
+            tbody.innerHTML = '';
+            
+            if (templates.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-8">No templates found in your Meta account.</td></tr>';
+            } else {
+                templates.forEach(t => {
+                    var statusColor = 'text-gray-400';
+                    var badgeColor = 'bg-gray-800';
+                    if (t.status === 'APPROVED') { statusColor = 'text-green-400'; badgeColor = 'bg-green-900/30'; }
+                    else if (t.status === 'PENDING') { statusColor = 'text-yellow-400'; badgeColor = 'bg-yellow-900/30'; }
+                    else if (t.status === 'REJECTED') { statusColor = 'text-red-400'; badgeColor = 'bg-red-900/30'; }
+
+                    var tr = document.createElement('tr');
+                    tr.className = "border-white/5 hover:bg-white/5 transition-colors";
+                    tr.innerHTML = `
+                        <td class="font-medium">${t.name}</td>
+                        <td class="text-sm text-gray-400">${t.category}</td>
+                        <td class="text-sm text-gray-400">${t.language}</td>
+                        <td><span class="px-2 py-1 rounded text-xs border border-white/10 ${badgeColor} ${statusColor}">${t.status}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        } catch (e) {
+            console.error('Template fetch error:', e);
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-red-400 py-8">Failed to load templates: ${e.message}</td></tr>`;
+        } finally {
+            if (refreshBtn) refreshBtn.classList.remove('animate-spin');
+        }
+    }
+
+    document.getElementById('btn-refresh-templates')?.addEventListener('click', fetchWhatsappTemplates);
+
     document.getElementById('form-whatsapp')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         var payload = {
             whatsapp_access_token: document.getElementById('wa-token').value,
-            whatsapp_phone_number_id: document.getElementById('wa-phone-id').value
+            whatsapp_phone_number_id: document.getElementById('wa-phone-id').value,
+            whatsapp_business_account_id: document.getElementById('wa-business-id').value
         };
         try {
             await api.put('/client/profile', payload);
             if (window.showToast) showToast('WhatsApp settings updated', 'success');
+            fetchWhatsappTemplates(); // Reload templates with new creds
         } catch (err) {
             if (window.showToast) showToast(err.message, 'error');
         }

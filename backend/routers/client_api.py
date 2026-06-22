@@ -132,12 +132,16 @@ async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends
         "service_account_email": service_email,
         "plan_name": plan_name,
         "daily_limit": daily_limit,
+        "whatsapp_access_token": client.whatsapp_access_token,
+        "whatsapp_phone_number_id": client.whatsapp_phone_number_id,
+        "whatsapp_business_account_id": client.whatsapp_business_account_id,
     }
 
 class ProfileUpdate(BaseModel):
     company_name: Optional[str] = None
     whatsapp_access_token: Optional[str] = None
     whatsapp_phone_number_id: Optional[str] = None
+    whatsapp_business_account_id: Optional[str] = None
 
 @router.put("/profile")
 async def update_profile(profile: ProfileUpdate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
@@ -148,8 +152,26 @@ async def update_profile(profile: ProfileUpdate, db: AsyncSession = Depends(get_
         client.whatsapp_access_token = profile.whatsapp_access_token
     if profile.whatsapp_phone_number_id is not None:
         client.whatsapp_phone_number_id = profile.whatsapp_phone_number_id
+    if profile.whatsapp_business_account_id is not None:
+        client.whatsapp_business_account_id = profile.whatsapp_business_account_id
     await db.commit()
     return {"status": "success"}
+
+@router.get("/whatsapp/templates")
+async def get_whatsapp_templates(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+    import requests
+    client = await get_client_profile(current_user, db)
+    if not client.whatsapp_business_account_id or not client.whatsapp_access_token:
+        raise HTTPException(status_code=400, detail="WhatsApp Business Account ID and Access Token are required to fetch templates")
+    
+    url = f"https://graph.facebook.com/v23.0/{client.whatsapp_business_account_id}/message_templates?limit=100"
+    headers = {"Authorization": f"Bearer {client.whatsapp_access_token}"}
+    
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        raise HTTPException(status_code=400, detail=response.json().get("error", {}).get("message", "Failed to fetch templates"))
+    
+    return response.json()
 
 # --- CAMPAIGNS ---
 

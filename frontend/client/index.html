@@ -415,26 +415,73 @@
 
             <!-- WhatsApp Page -->
             <section id="page-whatsapp" class="page-section max-w-7xl mx-auto">
-                <h2 class="text-3xl font-bold mb-8">WhatsApp Integration</h2>
-                <div class="card bg-base-200 border border-white/5 shadow-lg max-w-3xl">
-                    <div class="card-body p-8">
-                        <h3 class="card-title text-xl mb-2">Meta API Configuration</h3>
-                        <p class="text-sm text-gray-400 mb-6">
-                            Connect your Meta Developer app to send WhatsApp messages automatically using templates.
-                        </p>
-                        <form id="form-whatsapp" class="space-y-4">
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-gray-400 font-medium">WhatsApp Access Token (Meta API)</span></label>
-                                <input type="password" id="wa-token" class="input input-bordered bg-base-300 border-white/10 focus:border-primary" placeholder="EAAftj06Mtl0BRxy...">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">WhatsApp Integration</h2>
+                    <a href="https://business.facebook.com/wa/manage/message-templates/" target="_blank" class="btn btn-primary text-white">
+                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Create Template (Meta)
+                    </a>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Config Form -->
+                    <div class="lg:col-span-1">
+                        <div class="card bg-base-200 border border-white/5 shadow-lg">
+                            <div class="card-body p-8">
+                                <h3 class="card-title text-xl mb-2">Meta API Configuration</h3>
+                                <p class="text-sm text-gray-400 mb-6">
+                                    Connect your Meta Developer app.
+                                </p>
+                                <form id="form-whatsapp" class="space-y-4">
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text text-gray-400 font-medium">WhatsApp Access Token</span></label>
+                                        <input type="password" id="wa-token" class="input input-bordered bg-base-300 border-white/10 focus:border-primary" placeholder="EAAftj...">
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text text-gray-400 font-medium">Phone Number ID</span></label>
+                                        <input type="text" id="wa-phone-id" class="input input-bordered bg-base-300 border-white/10 focus:border-primary" placeholder="1228259...">
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text text-gray-400 font-medium">Business Account ID</span></label>
+                                        <input type="text" id="wa-business-id" class="input input-bordered bg-base-300 border-white/10 focus:border-primary" placeholder="254600...">
+                                    </div>
+                                    <div class="form-control mt-6">
+                                        <button type="submit" class="btn btn-primary text-white w-full">Save Settings</button>
+                                    </div>
+                                </form>
                             </div>
-                            <div class="form-control">
-                                <label class="label"><span class="label-text text-gray-400 font-medium">WhatsApp Phone Number ID</span></label>
-                                <input type="text" id="wa-phone-id" class="input input-bordered bg-base-300 border-white/10 focus:border-primary" placeholder="1228259570363334">
+                        </div>
+                    </div>
+
+                    <!-- Templates Table -->
+                    <div class="lg:col-span-2">
+                        <div class="card bg-base-200 border border-white/5 shadow-lg h-full">
+                            <div class="card-body p-8">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h3 class="card-title text-xl">Approved Templates</h3>
+                                    <button id="btn-refresh-templates" class="btn btn-sm btn-ghost text-gray-400 hover:text-white">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                    </button>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="table w-full">
+                                        <thead>
+                                            <tr class="text-gray-400 border-white/10">
+                                                <th>Template Name</th>
+                                                <th>Category</th>
+                                                <th>Language</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="wa-templates-tbody">
+                                            <tr>
+                                                <td colspan="4" class="text-center text-gray-500 py-8">Loading templates...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div class="form-control mt-6">
-                                <button type="submit" class="btn btn-primary text-white">Save WhatsApp Settings</button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </section>
