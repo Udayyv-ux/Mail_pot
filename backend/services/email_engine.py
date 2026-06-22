@@ -68,17 +68,24 @@ def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> str:
         if decision in categories:
             return decision
             
-        # Fuzzy fallback match (check both ways)
+        # Fuzzy fallback match
         decision_lower = decision.lower()
+        
+        # 1. Check if the category is contained in the AI's response
         for c in categories:
-            c_lower = c.lower()
-            if c_lower in decision_lower or decision_lower in c_lower:
+            if c.lower() in decision_lower:
                 return c
                 
-        return categories[0]
+        # 2. Check if AI response is contained in category (only if AI response is somewhat substantial)
+        if len(decision_lower) > 3:
+            for c in categories:
+                if decision_lower in c.lower():
+                    return c
+                    
+        return "General"
     except Exception as e:
-        print(f"AI Categorization Error: {e}")
-        return categories[0]
+        print(f"AI Categorization error: {e}")
+        return "General"
 
 import base64
 from email.message import EmailMessage
