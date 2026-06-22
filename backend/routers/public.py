@@ -36,78 +36,71 @@ class DemoSubmit(BaseModel):
     company: str = ""
     phone: str = ""
     message: str = ""
-    inquiry_type: str = "Demo"
-    scheduled_time: str = None
-
-def send_demo_emails_sync(data: DemoSubmit):
-    import smtplib
-    from email.mime.text import MIMEText
-    from email.mime.multipart import MIMEMultipart
+async def send_demo_emails_async_task(data: DemoSubmit, admin_email: str):
+    import base64
+    from email.message import EmailMessage
+    import httpx
+    from sqlalchemy import select
+    from backend.database import SessionLocal
+    from backend.models.user import User
+    from backend.services.email_engine import refresh_google_token
     from backend.config import settings
 
-    if not settings.DEFAULT_SMTP_EMAIL or not settings.DEFAULT_SMTP_PASSWORD:
+    if not admin_email:
         return
 
-    # Hardcoded permanent Google Meet link (can be moved to settings later)
     meet_link = "https://meet.google.com/ais-cmqc-dci" # User provided link
 
-    # 1. Email to Admin
-    msg_admin = MIMEMultipart()
-    msg_admin["From"] = f"MailPilot <{settings.DEFAULT_SMTP_EMAIL}>"
-    msg_admin["To"] = settings.SUPER_ADMIN_EMAIL if settings.SUPER_ADMIN_EMAIL else settings.DEFAULT_SMTP_EMAIL
-    msg_admin["Subject"] = f"New Demo Request: {data.name}"
-    
-    admin_body = f"""
-    New Demo Request:
-    Name: {data.name}
-    Email: {data.email}
-    Company: {data.company}
-    Scheduled Time: {data.scheduled_time}
-    Type: {data.inquiry_type}
-    Message: {data.message}
-    """
-    msg_admin.attach(MIMEText(admin_body, "plain"))
+    async with SessionLocal() as db:
+        # Find Super Admin user to get OAuth tokens
+        res = await db.execute(select(User).where(User.email == admin_email))
+        admin_user = res.scalar_one_or_none()
+        if not admin_user or not admin_user.google_access_token:
+            print("Demo emails failed: Super Admin not found or has no Google tokens.")
+            return
 
-    # 2. Email to User
-    msg_user = MIMEMultipart()
-    msg_user["From"] = f"MailPilot <{settings.DEFAULT_SMTP_EMAIL}>"
-    msg_user["To"] = data.email
-    msg_user["Subject"] = "Your Demo is Confirmed!"
-    
-    user_body = f"""
-    Hi {data.name},
-    
-    Your demo is confirmed for: {data.scheduled_time}.
-    
-    Please join us at that time using this Google Meet link:
-    {meet_link}
-    
-    We look forward to speaking with you!
-    
-    Best,
-    The Team
-    """
-    msg_user.attach(MIMEText(user_body, "plain"))
+        # Ensure token is fresh
+        access_token = await refresh_google_token(admin_user, db)
+        await db.commit()
 
-    try:
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
-            server.starttls()
-            server.login(settings.DEFAULT_SMTP_EMAIL, settings.DEFAULT_SMTP_PASSWORD)
-            server.send_message(msg_admin)
-            server.send_message(msg_user)
-    except Exception as e:
-        print(f"Failed to send demo emails: {e}")
+    async def send_via_gmail(to_email: str, subject: str, text_body: str):
+        msg = EmailMessage()
+        msg['To'] = to_email
+        msg['From'] = admin_email
+        msg['Subject'] = subject
+        msg.set_content(text_body)
+        raw = base64.urlsafe_b64encode(msg.as_bytes()).decode('utf-8')
+        
+        async with httpx.AsyncClient() as http_client:
+            resp = await http_client.post(
+                "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+                headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"},
+                json={"raw": raw},
+                timeout=15.0
+            )
+            if resp.status_code != 200:
+                print(f"Failed to send via Gmail API to {to_email}: {resp.text}")
+
+    # 1. Admin Email
+    admin_body = f"New Demo Request:\nName: {data.name}\nEmail: {data.email}\nCompany: {data.company}\nScheduled: {data.scheduled_time}\nType: {data.inquiry_type}\nMessage: {data.message}"
+    await send_via_gmail(admin_email, f"New Demo Request: {data.name}", admin_body)
+
+    # 2. User Email
+    user_body = f"Hi {data.name},\n\nYour demo is confirmed for: {data.scheduled_time}.\n\nPlease join us at that time using this Google Meet link:\n{meet_link}\n\nWe look forward to speaking with you!\n\nBest,\nThe Team"
+    await send_via_gmail(data.email, "Your Demo is Confirmed!", user_body)
 
 from fastapi import BackgroundTasks
 
 @router.post("/demo-request")
 async def submit_demo(data: DemoSubmit, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
+    from backend.config import settings
     demo = DemoRequest(**data.model_dump())
     db.add(demo)
     await db.commit()
     
     if data.scheduled_time:
-        background_tasks.add_task(send_demo_emails_sync, data)
+        admin_email = settings.SUPER_ADMIN_EMAIL
+        background_tasks.add_task(send_demo_emails_async_task, data, admin_email)
         
     return {"status": "success"}
 
