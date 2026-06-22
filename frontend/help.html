@@ -52,25 +52,32 @@
             </div>
         </div>
 
-        <div class="max-w-4xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-            <a href="#" class="block bg-base-200/50 border border-white/5 rounded-xl p-6 hover:border-primary/50 transition-colors">
-                <h3 class="text-xl font-bold mb-2">Getting Started</h3>
-                <p class="text-sm text-gray-400">Learn how to connect your first Google Sheet and send your first campaign.</p>
-            </a>
-            <a href="#" class="block bg-base-200/50 border border-white/5 rounded-xl p-6 hover:border-primary/50 transition-colors">
-                <h3 class="text-xl font-bold mb-2">AI Templates</h3>
-                <p class="text-sm text-gray-400">Understand how our AI matches leads to the perfect email template automatically.</p>
-            </a>
-            <a href="#" class="block bg-base-200/50 border border-white/5 rounded-xl p-6 hover:border-primary/50 transition-colors">
-                <h3 class="text-xl font-bold mb-2">Billing & Pricing</h3>
-                <p class="text-sm text-gray-400">Manage your subscription, upgrade your plan, and understand daily limits.</p>
-            </a>
-            <a href="#" class="block bg-base-200/50 border border-white/5 rounded-xl p-6 hover:border-primary/50 transition-colors">
-                <h3 class="text-xl font-bold mb-2">Deliverability Tips</h3>
-                <p class="text-sm text-gray-400">Best practices to ensure your automated emails avoid the spam folder.</p>
-            </a>
+        <div class="max-w-4xl mx-auto px-6 mb-16">
+            <h2 class="text-2xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
+            <div class="space-y-4">
+                <div class="collapse collapse-plus bg-base-200/50 border border-white/5">
+                  <input type="radio" name="my-accordion-3" checked="checked" /> 
+                  <div class="collapse-title text-xl font-medium">How does the native Gmail integration work?</div>
+                  <div class="collapse-content text-gray-400">
+                    <p>Instead of relying on clunky third-party SMTP servers, Sheetx.io connects directly to your Google Workspace via OAuth. This ensures your automated emails are sent directly from your actual Gmail outbox, maximizing deliverability and bypassing generic spam filters.</p>
+                  </div>
+                </div>
+                <div class="collapse collapse-plus bg-base-200/50 border border-white/5">
+                  <input type="radio" name="my-accordion-3" /> 
+                  <div class="collapse-title text-xl font-medium">How should I format my Google Sheet?</div>
+                  <div class="collapse-content text-gray-400">
+                    <p>Your Google Sheet must contain a column named exactly <b>"Email"</b> (case-insensitive). Optional columns like "Name", "Company", or "Notes" can be used as variables in your email templates (e.g., Hi {Name}).</p>
+                  </div>
+                </div>
+                <div class="collapse collapse-plus bg-base-200/50 border border-white/5">
+                  <input type="radio" name="my-accordion-3" /> 
+                  <div class="collapse-title text-xl font-medium">What happens if I hit my daily email limit?</div>
+                  <div class="collapse-content text-gray-400">
+                    <p>Google Workspace limits accounts to 2,000 outgoing emails per day. To protect your domain reputation, Sheetx.io will automatically pause sending when you reach your plan limit or the Google API limit, and resume the next day.</p>
+                  </div>
+                </div>
+            </div>
         </div>
-
         <div class="max-w-2xl mx-auto px-6 text-center">
             <h2 class="text-2xl font-bold mb-4">Still need help?</h2>
             <p class="text-gray-400 mb-8">Our support team is available 24/7 to assist you with any technical issues.</p>
@@ -80,7 +87,7 @@
 
     <footer class="bg-base-300/50 border-t border-white/5 py-8 mt-auto text-center">
         <div class="flex flex-col md:flex-row justify-between items-center px-6 max-w-4xl mx-auto text-sm text-gray-500 w-full">
-            <p>© 2026 Sheetx.io. All rights reserved.</p>
+            <p>&copy; 2026 Sheetx.io. All rights reserved.</p>
             <div class="mt-4 md:mt-0 flex gap-4">
                 <a href="/legal.html" class="hover:text-white transition-colors">Regulations & Policies</a>
             </div>

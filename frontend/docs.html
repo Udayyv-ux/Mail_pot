@@ -47,13 +47,22 @@
         <div class="max-w-4xl mx-auto px-6">
             <h1 class="text-4xl font-bold mb-6">Developer Documentation & API</h1>
             <p class="text-gray-400 mb-12 text-lg">Integrate Sheetx.io seamlessly into your workflows.</p>
-
             <div class="bg-base-200/50 border border-white/5 rounded-xl p-8 mb-8">
-                <h2 class="text-2xl font-semibold mb-4 text-primary">Authentication</h2>
-                <p class="text-gray-300 mb-4">All API requests require a Bearer token passed in the Authorization header. You can generate a new API key from your dashboard under Settings.</p>
-                <div class="mockup-code bg-base-300/80 mt-4">
-                    <pre><code>Authorization: Bearer sk_test_1234567890abcdef</code></pre>
+                <h3 class="text-2xl font-bold mb-4">1. Setting up your Google Sheet</h3>
+                <p class="text-gray-400 mb-4">Sheetx reads directly from your Google Sheets. To get started, create a new sheet and ensure the first row contains your headers. <b>"Email"</b> is the only strictly required header. Make sure your sharing settings are set to "Anyone with the link can view".</p>
+                <div class="mockup-code bg-dark/80 mb-6">
+                    <pre data-prefix="1"><code>Email, Name, Company, Notes</code></pre>
+                    <pre data-prefix="2"><code>john@example.com, John Doe, Acme Corp, Mentioned they need automation</code></pre>
                 </div>
+            </div>
+            <div class="bg-base-200/50 border border-white/5 rounded-xl p-8">
+                <h3 class="text-2xl font-bold mb-4">2. Spintax & AI Variables</h3>
+                <p class="text-gray-400 mb-4">Our engine supports deep personalization. Enclose variables in curly braces to map them directly from your sheet headers. You can also use Spintax to randomize greetings.</p>
+                <div class="mockup-code bg-dark/80 text-sm">
+                    <pre data-prefix=">"><code>{Hi|Hello|Hey} {Name},</code></pre>
+                    <pre data-prefix=">"><code>I saw that {Company} is scaling rapidly.</code></pre>
+                </div>
+            </div>
             </div>
 
             <div class="bg-base-200/50 border border-white/5 rounded-xl p-8 mb-8">
@@ -98,7 +107,7 @@
 
     <footer class="bg-base-300/50 border-t border-white/5 py-8 mt-auto text-center">
         <div class="flex flex-col md:flex-row justify-between items-center px-6 max-w-4xl mx-auto text-sm text-gray-500 w-full">
-            <p>© 2026 Sheetx.io. All rights reserved.</p>
+            <p>&copy; 2026 Sheetx.io. All rights reserved.</p>
             <div class="mt-4 md:mt-0 flex gap-4">
                 <a href="/legal.html" class="hover:text-white transition-colors">Regulations & Policies</a>
             </div>

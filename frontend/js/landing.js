@@ -321,7 +321,7 @@ if (formDemo) {
 }
 
 
-// --- Handle Unauthorized Signup Error ---
+// --- Handle Unauthorized Signup Error & Newsletter ---
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('error') === 'unauthorized_signup') {
@@ -332,6 +332,29 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    const newsletterForm = document.getElementById('form-newsletter');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = newsletterForm.querySelector('button');
+            const successMsg = document.getElementById('newsletter-success');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span>';
+            
+            // Simulate API call
+            await new Promise(r => setTimeout(r, 800));
+            
+            newsletterForm.reset();
+            btn.disabled = false;
+            btn.innerHTML = 'Subscribe';
+            successMsg.classList.remove('hidden');
+            setTimeout(() => {
+                successMsg.classList.add('hidden');
+            }, 5000);
+        });
     }
 });
 
