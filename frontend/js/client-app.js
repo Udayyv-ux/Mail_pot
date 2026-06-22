@@ -677,8 +677,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             var data = await api.get('/client/profile');
             var el = (id) => document.getElementById(id);
             if (el('set-company')) el('set-company').value = data.company_name || '';
-            if (el('set-whatsapp-token')) el('set-whatsapp-token').value = data.whatsapp_access_token || '';
-            if (el('set-whatsapp-phone-id')) el('set-whatsapp-phone-id').value = data.whatsapp_phone_number_id || '';
             if (el('service-account-email')) el('service-account-email').textContent = data.service_account_email || 'Not configured by admin';
         } catch (e) {
             console.error('Settings load error:', e);
@@ -688,13 +686,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('form-profile')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         var payload = {
-            company_name: document.getElementById('set-company').value,
-            whatsapp_access_token: document.getElementById('set-whatsapp-token').value || null,
-            whatsapp_phone_number_id: document.getElementById('set-whatsapp-phone-id').value || null
+            company_name: document.getElementById('set-company').value
         };
         try {
             await api.put('/client/profile', payload);
             if (window.showToast) showToast('Profile updated', 'success');
+        } catch (err) {
+            if (window.showToast) showToast(err.message, 'error');
+        }
+    });
+
+    // --- WhatsApp ---
+    async function loadWhatsapp() {
+        try {
+            var data = await api.get('/client/profile');
+            var el = (id) => document.getElementById(id);
+            if (el('wa-token')) el('wa-token').value = data.whatsapp_access_token || '';
+            if (el('wa-phone-id')) el('wa-phone-id').value = data.whatsapp_phone_number_id || '';
+        } catch (e) {
+            console.error('WhatsApp load error:', e);
+        }
+    }
+
+    document.getElementById('form-whatsapp')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        var payload = {
+            whatsapp_access_token: document.getElementById('wa-token').value,
+            whatsapp_phone_number_id: document.getElementById('wa-phone-id').value
+        };
+        try {
+            await api.put('/client/profile', payload);
+            if (window.showToast) showToast('WhatsApp settings updated', 'success');
         } catch (err) {
             if (window.showToast) showToast(err.message, 'error');
         }
@@ -743,6 +765,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     router.on('queue', loadQueue);
     router.on('inbox', loadInbox);
     router.on('billing', loadBilling);
+    router.on('whatsapp', loadWhatsapp);
     router.on('settings', loadSettings);
     router.on('instructions', () => {}); // No data loading required
 

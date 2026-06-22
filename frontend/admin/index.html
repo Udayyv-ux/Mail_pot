@@ -291,12 +291,224 @@
                                     <img id="admin-current-logo" src="/api/logo" class="h-12 object-contain bg-base-200 rounded p-1 hidden" onerror="this.classList.add('hidden')">
                                 </div>
                                 <div class="flex items-center gap-4">
+<div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Emails (24h)</div>
+                        <div class="stat-value text-primary mt-1" id="stat-emails">0</div>
+                    </div>
+                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Demos</div>
+                        <div class="stat-value text-accent mt-1" id="stat-demos">0</div>
+                    </div>
+                </div>
+
+                  <div class="grid grid-cols-1 gap-8">
+                      <div class="card bg-base-200 border border-white/5 shadow-lg">
+                        <div class="card-body p-6">
+                            <h3 class="card-title text-lg mb-4">Global Volume (Last 7 Days)</h3>
+                            <div class="relative h-64 w-full">
+                                <canvas id="admin-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                      <div class="card bg-base-200 border border-white/5 shadow-lg">
+                          <div class="card-body p-6">
+                              <h3 class="card-title text-lg mb-4">Demo Requests</h3>
+                              <div id="demo-requests-list" class="space-y-4 max-h-80 overflow-y-auto pr-2"></div>
+                          </div>
+                      </div>
+                      <div class="card bg-base-200 border border-white/5 shadow-lg">
+                          <div class="card-body p-6">
+                              <h3 class="card-title text-lg mb-4">User Feedback</h3>
+                              <div id="feedback-list" class="space-y-4 max-h-80 overflow-y-auto pr-2"></div>
+                          </div>
+                      </div>
+                  </div>
+              </section>
+
+            <!-- Users Page -->
+            <section id="page-users" class="page-section max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">Client Management</h2>
+                </div>
+                
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-white">Active Clients</h3>
+                    <button id="btn-email-selected-active" class="btn btn-sm btn-primary hidden" onclick="openBulkAdminEmailModal(false)">Email Selected</button>
+                </div>
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto mb-8">
+                    <table class="table table-zebra w-full text-left">
+                        <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
+                            <tr>
+                                <th class="p-4 w-12"><input type="checkbox" id="selectAllActive" class="checkbox checkbox-sm checkbox-primary" onchange="toggleSelectAll(this, 'active')" /></th>
+                                <th class="p-4 font-semibold">Email</th>
+                                <th class="p-4 font-semibold">Company</th>
+                                <th class="p-4 font-semibold">Active Plan</th>
+                                <th class="p-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="client-list" class="border-t border-white/5">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-white">Demo Users</h3>
+                    <button id="btn-email-selected-demo" class="btn btn-sm btn-primary hidden" onclick="openBulkAdminEmailModal(true)">Email Selected</button>
+                </div>
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                    <table class="table table-zebra w-full text-left">
+                        <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
+                            <tr>
+                                <th class="p-4 w-12"><input type="checkbox" id="selectAllDemo" class="checkbox checkbox-sm checkbox-primary" onchange="toggleSelectAll(this, 'demo')" /></th>
+                                <th class="p-4 font-semibold">Email</th>
+                                <th class="p-4 font-semibold">Company</th>
+                                <th class="p-4 font-semibold">Active Plan</th>
+                                <th class="p-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="demo-user-list" class="border-t border-white/5">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Plans Page -->
+            <section id="page-plans" class="page-section max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">Pricing Plans</h2>
+                    <button class="btn bg-white hover:bg-gray-200 text-dark border-none" onclick="openPlanModal()">+ Create Plan</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="admin-plan-list"></div>
+            </section>
+
+            <!-- Promo Codes Page -->
+            <section id="page-promo" class="page-section max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">Promo Codes</h2>
+                    <button class="btn bg-white hover:bg-gray-200 text-dark border-none" onclick="document.getElementById('modal-promo').showModal()">+ Generate Promo Code</button>
+                </div>
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                    <table class="table table-zebra w-full text-left">
+                        <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
+                            <tr>
+                                <th class="p-4 font-semibold">Code</th>
+                                <th class="p-4 font-semibold">Discount (%)</th>
+                                <th class="p-4 font-semibold">Uses</th>
+                                <th class="p-4 font-semibold">Max Uses</th>
+                                <th class="p-4 font-semibold">Status</th>
+                                <th class="p-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="promo-list" class="border-t border-white/5">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Global Monitor Page -->
+            <section id="page-monitor" class="page-section max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">Global Monitor</h2>
+                    <button class="btn btn-sm btn-outline border-white/20 text-white hover:bg-white hover:text-black" onclick="loadGlobalLogs()">Refresh Logs</button>
+                </div>
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                    <table class="table table-zebra w-full text-left">
+                        <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
+                            <tr>
+                                <th class="p-4 font-semibold">Client</th>
+                                <th class="p-4 font-semibold">Recipient</th>
+                                <th class="p-4 font-semibold">Status</th>
+                                <th class="p-4 font-semibold">Timestamp</th>
+                                <th class="p-4 font-semibold">Error</th>
+                            </tr>
+                        </thead>
+                        <tbody id="global-log-list" class="border-t border-white/5">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Settings Page -->
+            <section id="page-settings" class="page-section max-w-7xl mx-auto">
+                <h2 class="text-3xl font-bold mb-8">Global Settings</h2>
+                <div class="card bg-base-200 border border-white/5 shadow-lg max-w-3xl">
+                    <div class="card-body p-8">
+                        <form id="form-admin-settings" class="space-y-6">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Global Default Groq Key</span></label>
+                                <input type="password" id="admin-groq" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="Enter API Key">
+                                <label class="label"><span class="label-text-alt text-gray-500">Used for categorizing leads.</span></label>
+                            </div>
+                            <div class="divider border-white/5">Landing Page Settings</div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">"How It Works" Section Title</span></label>
+                                <input type="text" id="admin-how-it-works-title" class="input input-bordered bg-base-300 border-white/10" placeholder="e.g. How it works">
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">"How It Works" Section Subtitle</span></label>
+                                <input type="text" id="admin-how-it-works-subtitle" class="input input-bordered bg-base-300 border-white/10" placeholder="e.g. Set up your entire automation engine in less than 5 minutes.">
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Google Service Account Email</span></label>
+                                <input type="email" id="admin-gcp-email" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="service-account@project.iam.gserviceaccount.com">
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Google Service Account JSON</span></label>
+                                <textarea id="admin-gcp-json" class="textarea textarea-bordered bg-base-300 border-white/10 focus:border-secondary font-mono text-xs h-32" placeholder="{...}"></textarea>
+                            </div>
+                            <hr class="border-white/10 my-4">
+                            <h3 class="text-xl font-bold mb-4 text-error">Platform Controls</h3>
+                            <div class="form-control mb-4">
+                                <label class="cursor-pointer label justify-start gap-4">
+                                    <input type="checkbox" id="admin-maintenance" class="toggle toggle-error" />
+                                    <span class="label-text text-gray-300"><b>Maintenance Mode</b> (Blocks all clients from accessing the portal)</span>
+                                </label>
+                            </div>
+                            <hr class="border-white/10 my-4">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Razorpay Key ID</span></label>
+                                <input type="text" id="admin-rzp-key" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="rzp_live_...">
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Razorpay Secret</span></label>
+                                <input type="password" id="admin-rzp-secret" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="Secret Key">
+                            </div>
+                            <hr class="border-white/10 my-4">
+                            <h3 class="text-xl font-bold mb-4">Branding</h3>
+                            <div class="form-control mb-4">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">Site Logo</span></label>
+                                <div class="flex items-center gap-4 mb-4">
+                                    <img id="admin-current-logo" src="/api/logo" class="h-12 object-contain bg-base-200 rounded p-1 hidden" onerror="this.classList.add('hidden')">
+                                </div>
+                                <div class="flex items-center gap-4">
                                     <input type="file" id="admin-logo-upload" accept="image/*" class="file-input file-input-bordered bg-base-300 border-white/10 w-full max-w-xs" />
                                     <button type="button" class="btn btn-primary" onclick="uploadLogo()">Upload Logo</button>
                                 </div>
                                 <p class="text-xs text-gray-500 mt-2">Recommended: PNG with transparent background.</p>
                             </div>
                             <button type="submit" class="btn btn-secondary text-white w-full mt-8">Save Global Settings</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WhatsApp Page -->
+            <section id="page-whatsapp" class="page-section max-w-7xl mx-auto">
+                <h2 class="text-3xl font-bold mb-8">WhatsApp Meta Integration</h2>
+                <div class="card bg-base-200 border border-white/5 shadow-lg max-w-3xl">
+                    <div class="card-body p-8">
+                        <form id="form-admin-whatsapp" class="space-y-6">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text text-gray-400 font-medium">WhatsApp Business Account ID</span></label>
+                                <input type="text" id="admin-wa-business-id" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="e.g. 2546005839203791">
+                                <label class="label"><span class="label-text-alt text-gray-500">Global identifier for your Meta Business app.</span></label>
+                            </div>
+                            <button type="submit" class="btn btn-secondary text-white w-full mt-8">Save WhatsApp Settings</button>
                         </form>
                     </div>
                 </div>
@@ -435,6 +647,7 @@
                 <li><a class="nav-item" data-route="plans">Pricing Plans</a></li>
                 <li><a class="nav-item" data-route="promo">Promo Codes</a></li>
                 <li><a class="nav-item" data-route="monitor">Global Monitor</a></li>
+                <li><a class="nav-item" data-route="whatsapp">WhatsApp Engine</a></li>
                 <li><a class="nav-item" data-route="settings">App Settings</a></li>
                 <li><a class="nav-item" data-route="landing">Landing Page</a></li>
                 <li><a class="nav-item" data-route="policies">Policies (CMS)</a></li>
