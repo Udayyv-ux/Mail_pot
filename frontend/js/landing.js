@@ -120,8 +120,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             ${step.step_num}
                         </div>
                         <div>
-                            <h3 class="text-xl font-bold mb-2">₹{step.title}</h3>
-                            <p class="text-gray-400 text-sm">₹{step.description}</p>
+                            <h3 class="text-xl font-bold mb-2">${step.title}</h3>
+                            <p class="text-gray-400 text-sm">${step.description}</p>
                         </div>
                     </div>
                 `;
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             ${faq.question}
                         </div>
                         <div class="collapse-content px-6 text-gray-400"> 
-                            <p>₹{faq.answer}</p>
+                            <p>${faq.answer}</p>
                         </div>
                     </div>
                 `;
@@ -167,8 +167,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 ${review.initials || review.name.charAt(0)}
                             </div>
                             <div>
-                                <h4 class="font-bold text-white">₹{review.name}</h4>
-                                <p class="text-xs text-gray-500">₹{review.role}</p>
+                                <h4 class="font-bold text-white">${review.name}</h4>
+                                <p class="text-xs text-gray-500">${review.role}</p>
                             </div>
                         </div>
                     </div>
@@ -186,11 +186,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     let url = l.url;
                     if (url === "#" && l.name.toLowerCase().includes("policy")) url = "/legal.html?policy=" + l.name.toLowerCase().replace(/\s+/g, '-');
                     if (url === "#" && l.name.toLowerCase().includes("terms")) url = "/legal.html?policy=" + l.name.toLowerCase().replace(/\s+/g, '-');
-                    return `<li><a href="${url}" class="text-gray-400 hover:text-white text-sm transition-colors">₹{l.name}</a></li>`;
+                    return `<li><a href="${url}" class="text-gray-400 hover:text-white text-sm transition-colors">${l.name}</a></li>`;
                 }).join('');
                 footerGrid.innerHTML += `
                     <div>
-                        <h4 class="text-xs font-bold text-gray-500 tracking-wider uppercase mb-4">₹{colName}</h4>
+                        <h4 class="text-xs font-bold text-gray-500 tracking-wider uppercase mb-4">${colName}</h4>
                         <ul class="space-y-3">
                             ${linksHtml}
                         </ul>
@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const policies = await api.get('/public/policies');
             const policiesContainer = document.getElementById('footer-policies');
             if(policiesContainer && policies.length > 0) {
-                const links = policies.map(p => `<a href="/legal.html?policy=${p.slug}" class="hover:text-white transition-colors ml-4">₹{p.title}</a>`);
+                const links = policies.map(p => `<a href="/legal.html?policy=${p.slug}" class="hover:text-white transition-colors ml-4">${p.title}</a>`);
                 policiesContainer.innerHTML = links.join('');
             }
         } catch(e) {
@@ -248,11 +248,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="card bg-base-200 border border-white/5 hover:border-white/20 transition-all ${plan.is_featured ? 'shadow-primary/20 shadow-2xl scale-105' : ''}">
                         <div class="card-body">
                             ${plan.is_featured ? '<div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold px-3 py-1 rounded-full">Most Popular</div>' : ''}
-                            <h3 class="text-xl font-bold">₹{plan.name}</h3>
+                            <h3 class="text-xl font-bold">${plan.name}</h3>
                             <div><span class="text-4xl font-extrabold">₹${displayPrice}</span><span class="text-gray-400 text-sm">/mo</span></div>
                             ${totalBilled}
                             <ul class="text-sm text-gray-300 space-y-3 mb-8 flex-1 mt-4">
-                                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg> <b>₹{plan.email_limit_daily}</b> Emails per day</li>
+                                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg> <b>${plan.email_limit_daily}</b> Emails per day</li>
                                 ${featureHtml}
                             </ul>
                             <button class="btn btn-primary w-full text-white" onclick="document.getElementById('register-modal').showModal()">Get Started</button>
