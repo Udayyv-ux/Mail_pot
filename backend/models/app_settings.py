@@ -53,6 +53,7 @@ class DemoRequest(Base):
     inquiry_type = Column(String, default="Demo")
     status = Column(String, default="pending")  # pending, approved, rejected
     user_id = Column(String, ForeignKey("users.id"), nullable=True)  # linked after approval
+    scheduled_time = Column(String, nullable=True)  # e.g., 2026-06-25T14:30
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):
