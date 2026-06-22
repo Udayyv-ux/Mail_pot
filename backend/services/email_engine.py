@@ -15,6 +15,7 @@ from backend.models.email_log import EmailLog
 from backend.models.email_queue import EmailQueue
 from backend.models.app_settings import AppSetting
 from backend.services.sheets_service import get_sheet_data, update_sheet_cell, update_sheet_cells_batch
+from backend.services.whatsapp_service import send_whatsapp_message
 
 def get_col_index(headers: list, target_name: str) -> int:
     for i, h in enumerate(headers):
@@ -287,16 +288,29 @@ async def run_247_engine():
                 target_cols = [c.strip() for c in (campaign.target_columns or "Name, Email, Inquiry").split(',')]
                 status_col_name = campaign.status_column or "Status"
                 
-                name_idx = get_col_index(headers, target_cols[0] if len(target_cols)>0 else "Name")
-                email_idx = get_col_index(headers, target_cols[1] if len(target_cols)>1 else "Email")
-                inquiry_idx = get_col_index(headers, target_cols[2] if len(target_cols)>2 else "Inquiry")
-                status_idx = get_col_index(headers, status_col_name)
+                name_col = target_cols[0] if len(target_cols) > 0 else "Name"
+                email_col = target_cols[1] if len(target_cols) > 1 else "Email"
                 
-                if email_idx == -1 or status_idx == -1:
+                phone_col = "Phone"
+                inquiry_col = "Inquiry"
+                if len(target_cols) == 4:
+                    phone_col = target_cols[2]
+                    inquiry_col = target_cols[3]
+                elif len(target_cols) == 3:
+                    inquiry_col = target_cols[2]
+                
+                name_idx = get_col_index(headers, name_col)
+                email_idx = get_col_index(headers, email_col)
+                phone_idx = get_col_index(headers, phone_col)
+                inquiry_idx = get_col_index(headers, inquiry_col)
+                status_idx = get_col_index(headers, status_col_name)
+                location_idx = get_col_index(headers, "Location")
+                
+                if (email_idx == -1 and phone_idx == -1) or status_idx == -1:
                     async with SessionLocal() as db:
                         db_camp = await db.get(Campaign, campaign.id)
                         if db_camp:
-                            db_camp.last_error = f"Missing Email or {status_col_name} column."
+                            db_camp.last_error = f"Missing Email/Phone or {status_col_name} column."
                         await db.commit()
                     continue
                     
@@ -316,13 +330,17 @@ async def run_247_engine():
 
                 batch_updates = []
                 for i, row in enumerate(rows[1:], start=1):
-                    while len(row) <= max(name_idx, email_idx, inquiry_idx, status_idx):
+                    while len(row) <= max(name_idx, email_idx, phone_idx, inquiry_idx, status_idx):
                         row.append("")
                         
-                    email = row[email_idx]
+                    email = row[email_idx] if email_idx != -1 else ""
+                    phone = row[phone_idx] if phone_idx != -1 else ""
                     status = row[status_idx]
                     
-                    if not email or "@" not in email:
+                    has_valid_email = bool(email and "@" in email)
+                    has_valid_phone = bool(phone and any(c.isdigit() for c in str(phone)))
+                    
+                    if not has_valid_email and not has_valid_phone:
                         continue
                         
                     name = row[name_idx] if name_idx != -1 else ""
@@ -366,10 +384,10 @@ async def run_247_engine():
                                 print(f"⚠️ AI returned '{category}' which has no exact match. Falling back to first template.")
                                 target_template = templates[0] if templates else None
                     
-                    # 3. Send email if a template was selected
+                    # 3. Send email and/or WhatsApp if a template was selected
                     if target_template:
                         if getattr(campaign, 'review_mode', False):
-                            print(f"⏸️ Campaign '{campaign.name}' in Review Mode. Queuing {email}...")
+                            print(f"⏸️ Campaign '{campaign.name}' in Review Mode. Queuing {email or phone}...")
                             async with SessionLocal() as db:
                                 queue_item = EmailQueue(
                                     client_id=campaign.client_id,
@@ -386,20 +404,44 @@ async def run_247_engine():
                             batch_updates.append({'row': i+1, 'col': status_idx + 1, 'value': 'Queued'})
                             continue
                             
-                        print(f"📤 Sending '{target_template.project_name}' email to {email}...")
-                        success, err = await send_email_via_gmail_api(email, name, target_template, access_token)
+                        email_success, wa_success = False, False
+                        email_err, wa_err = "", ""
                         
-                        if success:
-                            print(f"✅ Successfully sent to {email}")
-                        else:
-                            print(f"❌ Failed to send to {email}: {err}")
+                        # Send WhatsApp
+                        if has_valid_phone and getattr(target_template, 'whatsapp_template_name', None) and getattr(db_client, 'whatsapp_access_token', None):
+                            print(f"📱 Sending WhatsApp '{target_template.whatsapp_template_name}' to {phone}...")
+                            
+                            location = row[location_idx] if location_idx != -1 and len(row) > location_idx else ""
+                            wa_success, wa_err = await send_whatsapp_message(
+                                phone=phone,
+                                template_name=target_template.whatsapp_template_name,
+                                access_token=db_client.whatsapp_access_token,
+                                phone_number_id=db_client.whatsapp_phone_number_id,
+                                variables=[name, getattr(target_template, 'project_name', ''), location]
+                            )
+                            if wa_success:
+                                print(f"✅ WhatsApp sent to {phone}")
+                            else:
+                                print(f"❌ WhatsApp failed for {phone}: {wa_err}")
+                        
+                        # Send Email
+                        if has_valid_email:
+                            print(f"📤 Sending '{target_template.project_name}' email to {email}...")
+                            email_success, email_err = await send_email_via_gmail_api(email, name, target_template, access_token)
+                            if email_success:
+                                print(f"✅ Email sent to {email}")
+                            else:
+                                print(f"❌ Email failed for {email}: {email_err}")
+                                
+                        success = email_success or wa_success
+                        err = f"Email: {email_err} | WA: {wa_err}" if not success else ""
                         
                         # Log to DB
                         async with SessionLocal() as db:
                             log = EmailLog(
                                 client_id=campaign.client_id,
                                 campaign_id=campaign.id,
-                                recipient_email=email,
+                                recipient_email=email or phone,
                                 recipient_name=name,
                                 template_used=target_template.project_name,
                                 category_assigned=category,
@@ -409,14 +451,21 @@ async def run_247_engine():
                                 is_follow_up=is_follow_up_run
                             )
                             db.add(log)
-                            if success:
-                                db_client = await db.get(Client, campaign.client_id)
-                                db_client.emails_sent_today += 1
+                            if email_success:
+                                db_client_inner = await db.get(Client, campaign.client_id)
+                                db_client_inner.emails_sent_today += 1
                             await db.commit()
                             
                         # Queue Sheet Update
-                        new_status = "Followed Up" if is_follow_up_run else "Sent"
-                        if not success: new_status = "Failed"
+                        if not success:
+                            new_status = "Failed"
+                        elif email_success and wa_success:
+                            new_status = "Followed Up (Email & WA)" if is_follow_up_run else "Sent (Email & WA)"
+                        elif wa_success:
+                            new_status = "Followed Up (WA)" if is_follow_up_run else "Sent (WA)"
+                        else:
+                            new_status = "Followed Up" if is_follow_up_run else "Sent"
+                            
                         batch_updates.append({'row': i+1, 'col': status_idx + 1, 'value': new_status})
                         
                         if success:

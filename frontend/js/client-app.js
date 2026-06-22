@@ -242,6 +242,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('tmpl-id').value = '';
         document.getElementById('tmpl-project').value = '';
         document.getElementById('tmpl-subject').value = '';
+        document.getElementById('tmpl-whatsapp-name').value = '';
         document.getElementById('tmpl-body').value = '<p>Hi {first_name},</p>\n\n<p>Your message here</p>';
         document.getElementById('tmpl-banner-url').value = '';
         document.getElementById('tmpl-banner-preview').classList.add('hidden');
@@ -302,10 +303,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         var id = document.getElementById('tmpl-id').value;
         var project = document.getElementById('tmpl-project').value;
         var subject = document.getElementById('tmpl-subject').value;
+        var whatsapp_name = document.getElementById('tmpl-whatsapp-name').value;
         var body = document.getElementById('tmpl-body').value;
         var banner_url = document.getElementById('tmpl-banner-url').value;
 
-        var payload = { project_name: project, subject: subject, body_html: body, banner_url: banner_url };
+        var payload = { project_name: project, subject: subject, body_html: body, banner_url: banner_url, whatsapp_template_name: whatsapp_name || null };
 
         try {
             if (id) {
@@ -330,6 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('tmpl-id').value = t.id;
             document.getElementById('tmpl-project').value = t.project_name;
             document.getElementById('tmpl-subject').value = t.subject;
+            document.getElementById('tmpl-whatsapp-name').value = t.whatsapp_template_name || '';
             document.getElementById('tmpl-body').value = t.body_html;
             document.getElementById('tmpl-banner-url').value = t.banner_url || '';
 
@@ -674,6 +677,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             var data = await api.get('/client/profile');
             var el = (id) => document.getElementById(id);
             if (el('set-company')) el('set-company').value = data.company_name || '';
+            if (el('set-whatsapp-token')) el('set-whatsapp-token').value = data.whatsapp_access_token || '';
+            if (el('set-whatsapp-phone-id')) el('set-whatsapp-phone-id').value = data.whatsapp_phone_number_id || '';
             if (el('service-account-email')) el('service-account-email').textContent = data.service_account_email || 'Not configured by admin';
         } catch (e) {
             console.error('Settings load error:', e);
@@ -683,7 +688,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('form-profile')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         var payload = {
-            company_name: document.getElementById('set-company').value
+            company_name: document.getElementById('set-company').value,
+            whatsapp_access_token: document.getElementById('set-whatsapp-token').value || null,
+            whatsapp_phone_number_id: document.getElementById('set-whatsapp-phone-id').value || null
         };
         try {
             await api.put('/client/profile', payload);
