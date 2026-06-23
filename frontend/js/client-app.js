@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Auto-refresh the current active route every 10 seconds to keep data live
             setInterval(() => {
                 if (this.currentRoute === 'dashboard') {
-                    loadDashboard(true);
+                    loadDashboard();
                 } else if (this.currentRoute === 'campaigns') {
                     // loadCampaigns(); // uncomment if you want campaigns table to auto refresh
                 }
@@ -104,16 +104,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     let emailChart = null;
     let whatsappChart = null;
 
-    async function loadDashboard(isBackground = false) {
+    async function loadDashboard() {
         try {
-            let data;
-            if (isBackground) {
-                const res = await fetch('/api/client/dashboard', { headers: { 'Authorization': 'Bearer ' + token }});
-                if (!res.ok) return;
-                data = await res.json();
-            } else {
-                data = await api.get('/client/dashboard');
-            }
+            const data = await api.get('/client/dashboard');
             const el = (id) => document.getElementById(id);
 
             if (el('dash-emails-sent')) el('dash-emails-sent').textContent = data.emails_sent_today || 0;
