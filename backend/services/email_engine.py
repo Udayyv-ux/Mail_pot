@@ -404,10 +404,15 @@ async def run_247_engine():
                                 if target_template:
                                     category = "DefaultFallback"
                             else:
-                                # Legacy fallback
-                                print(f"⚠️ AI returned '{category}' which has no exact match. Falling back to first template.")
-                                target_template = templates[0] if templates else None
-                    
+                                # Legacy fallback removed: Do not blast random templates
+                                print(f"⚠️ AI returned '{category}' which has no exact match and no default template is set. Skipping.")
+                                target_template = None
+                                
+                        if not target_template:
+                            # Mark as Unmatched on the sheet so we don't keep polling them
+                            if status_idx >= 0:
+                                batch_updates.append({'row': i+1, 'col': status_idx + 1, 'value': 'Unmatched'})
+                            continue
                     # 3. Send email and/or WhatsApp if a template was selected
                     if target_template:
                         if getattr(campaign, 'review_mode', False):
