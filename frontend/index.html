@@ -127,7 +127,7 @@
                         <span class="gradient-text">AI-Driven Personalization</span>
                     </h1>
                     <p class="py-6 text-xl text-gray-400 max-w-2xl mx-auto">
-                        Connect your Google Sheets, define your templates, and let our AI match the perfect message to every lead automatically.
+                        Connect your Google Sheets, define your templates, and let our AI dispatch the perfect, personalized Email & WhatsApp message to every lead automatically.
                     </p>
                     <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mt-4">
                         <button onclick="document.getElementById('demo-modal').showModal()" class="btn bg-primary hover:bg-violet-600 text-white border-none btn-lg px-8 rounded-full shadow-lg shadow-primary/30">
@@ -168,9 +168,10 @@
                                 <td class="py-3 px-4 border-r border-white/5 text-center text-gray-600 bg-[#1e293b]/30">1</td>
                                 <td class="py-3 px-4 border-r border-white/5 text-blue-300">Ravi Kumar</td>
                                 <td class="py-3 px-4 border-r border-white/5 text-gray-400">Inquiry about 3BHK houses in Kukatpally.</td>
-                                <td class="py-3 px-4 relative overflow-hidden text-green-300 flex items-center gap-2">
+                                <td class="py-3 px-4 relative overflow-hidden flex items-center gap-2">
                                     <span class="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-[10px] uppercase font-bold tracking-wider whitespace-nowrap">Real Estate Template</span>
-                                    <div><span id="typewriter-1"></span><span class="animate-pulse font-bold text-primary ml-1" id="cursor-1">|</span></div>
+                                    <span class="px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-[10px] uppercase font-bold tracking-wider whitespace-nowrap hidden sm:inline">WhatsApp Queued</span>
+                                    <div class="text-green-300"><span id="typewriter-1"></span><span class="animate-pulse font-bold text-primary ml-1" id="cursor-1">|</span></div>
                                 </td>
                             </tr>
                             <tr class="border-b border-white/5 hover:bg-white/5">
@@ -276,6 +277,8 @@
                                 
                                 <div class="space-y-4 relative z-10">
                                     <div>
+                                        <div class="flex items-center gap-2 text-green-400 font-bold text-sm mb-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Email + WhatsApp Combined</div>
+                                        <p class="text-xs text-gray-400 pl-6 mb-3">Bulk mailers only do email. We hit your leads on multiple channels to triple your response rate.</p>
                                         <div class="flex items-center gap-2 text-green-400 font-bold text-sm mb-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 99% Primary Inbox Placement</div>
                                         <p class="text-xs text-gray-400 pl-6">We use your personal Gmail API. Bulk mailers use shared IPs that get dumped into Promotions.</p>
                                     </div>
@@ -425,6 +428,12 @@
                             </div>
                         </div>
                     </div>
+                    <div class="card bg-base-100 border border-white/5 hover:border-green-400/50 transition-colors">
+                        <div class="card-body">
+                            <h2 class="card-title text-green-400">Native WhatsApp API</h2>
+                            <p class="text-gray-400 text-sm mt-2">Go beyond email. Trigger official Meta WhatsApp templates directly from your Sheet to guarantee 98% open rates.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -450,7 +459,7 @@
                     <p class="text-gray-400 text-lg">Stop sending generic blasts. Start building relationships at scale.</p>
                 </div>
                 
-                <div class="grid md:grid-cols-3 gap-8">
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                     <div class="card bg-base-100 border border-white/5 hover:border-primary/50 transition-colors">
                         <div class="card-body">
                             <h2 class="card-title text-primary">AI Matching</h2>
@@ -467,6 +476,12 @@
                         <div class="card-body">
                             <h2 class="card-title text-green-400">Email & WhatsApp</h2>
                             <p class="text-gray-400 text-sm mt-2">Connect seamlessly via Gmail API & Meta Cloud API. We throttle sending speeds and handle API limits to protect your domain and number reputation automatically.</p>
+                        </div>
+                    </div>
+                    <div class="card bg-base-100 border border-white/5 hover:border-green-400/50 transition-colors">
+                        <div class="card-body">
+                            <h2 class="card-title text-green-400">Native WhatsApp API</h2>
+                            <p class="text-gray-400 text-sm mt-2">Go beyond email. Trigger official Meta WhatsApp templates directly from your Sheet to guarantee 98% open rates.</p>
                         </div>
                     </div>
                 </div>
@@ -581,6 +596,12 @@
                                 Our mission is simple: eliminate the friction between your data and your outreach. No more CSV exports. No more syncing errors. Just your Google Sheet and your prospects, perfectly aligned.
                                 <span class="absolute -bottom-10 right-0 text-6xl text-primary/20 font-serif leading-none">"</span>
                             </blockquote>
+                        </div>
+                    </div>
+                    <div class="card bg-base-100 border border-white/5 hover:border-green-400/50 transition-colors">
+                        <div class="card-body">
+                            <h2 class="card-title text-green-400">Native WhatsApp API</h2>
+                            <p class="text-gray-400 text-sm mt-2">Go beyond email. Trigger official Meta WhatsApp templates directly from your Sheet to guarantee 98% open rates.</p>
                         </div>
                     </div>
                 </div>
