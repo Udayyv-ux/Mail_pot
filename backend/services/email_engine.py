@@ -342,7 +342,30 @@ async def run_247_engine():
                         continue
                         
                     name = row[name_idx] if name_idx != -1 else ""
-                    inquiry = row[inquiry_idx] if inquiry_idx != -1 else ""
+                    
+                    # Gather context for AI categorization
+                    ai_context_parts = []
+                    
+                    # 1. Add explicitly named Inquiry column
+                    inquiry = row[inquiry_idx] if inquiry_idx != -1 and inquiry_idx < len(row) else ""
+                    if inquiry.strip():
+                        ai_context_parts.append(f"{inquiry_col}: {inquiry.strip()}")
+                        
+                    # 2. Add other target columns requested by the user
+                    for tc in target_cols:
+                        if tc.lower() in [inquiry_col.lower(), email_col.lower(), phone_col.lower(), name_col.lower()]:
+                            continue # Irrelevant or already handled
+                        idx = get_col_index(headers, tc)
+                        if idx != -1 and idx < len(row) and row[idx].strip():
+                            ai_context_parts.append(f"{tc}: {row[idx].strip()}")
+                            
+                    # 3. Fallback: If still empty (headers mismatched in UI), grab any extra columns
+                    if not ai_context_parts:
+                        for idx, header in enumerate(headers):
+                            if idx < len(row) and row[idx].strip() and idx not in (email_idx, phone_idx, status_idx, name_idx):
+                                ai_context_parts.append(f"{header.strip()}: {row[idx].strip()}")
+                                
+                    lead_info = " | ".join(ai_context_parts)
                     
                     target_template = None
                     category = "General"
@@ -369,7 +392,7 @@ async def run_247_engine():
                     # 2. Check if it's a new lead
                     elif status.strip() == "":
                         print(f"📩 Found new lead: {email}")
-                        category = categorize_with_ai(inquiry, templates, groq_key)
+                        category = categorize_with_ai(lead_info, templates, groq_key)
                         target_template = next((t for t in templates if t.project_name == category), None)
                         
                         if not target_template:
