@@ -49,8 +49,11 @@ async def get_sheet_data(sheet_url_or_id: str) -> tuple[str, list]:
     
     try:
         gc = await get_gspread_client()
-        sheet = gc.open_by_key(sheet_id).sheet1
-        records = sheet.get_all_values()
+        import asyncio
+        def _get():
+            sheet = gc.open_by_key(sheet_id).sheet1
+            return sheet.get_all_values()
+        records = await asyncio.to_thread(_get)
         return sheet_id, records
     except Exception as e:
         raise ValueError(f"Google Sheets connection failed: {str(e)}")
@@ -59,8 +62,11 @@ async def update_sheet_cell(sheet_id: str, row: int, col: int, value: str):
     """Update a specific cell in the sheet."""
     try:
         gc = await get_gspread_client()
-        sheet = gc.open_by_key(sheet_id).sheet1
-        sheet.update_cell(row, col, value)
+        import asyncio
+        def _update():
+            sheet = gc.open_by_key(sheet_id).sheet1
+            sheet.update_cell(row, col, value)
+        await asyncio.to_thread(_update)
     except Exception as e:
         print(f"Failed to update sheet cell: {e}")
 
@@ -73,10 +79,13 @@ async def update_sheet_cells_batch(sheet_id: str, updates: list):
         return
     try:
         gc = await get_gspread_client()
-        sheet = gc.open_by_key(sheet_id).sheet1
-        cells = []
-        for u in updates:
-            cells.append(gspread.Cell(u['row'], u['col'], u['value']))
-        sheet.update_cells(cells)
+        import asyncio
+        def _batch_update():
+            sheet = gc.open_by_key(sheet_id).sheet1
+            cells = []
+            for u in updates:
+                cells.append(gspread.Cell(u['row'], u['col'], u['value']))
+            sheet.update_cells(cells)
+        await asyncio.to_thread(_batch_update)
     except Exception as e:
         print(f"Failed to batch update sheet cells: {e}")

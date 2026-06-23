@@ -28,14 +28,16 @@ async def get_global_settings(db) -> dict:
     settings_db = res.scalars().all()
     return {s.key: s.value for s in settings_db}
 
-def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> str:
+async def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> str:
     """Use Groq AI to categorize a lead into one of the available templates."""
     if not lead_info or not templates:
         return "General"
     categories = [t.project_name for t in templates if t.is_active]
-    if not categories:
-        return "General"
     
+    # If there's only one template, just use it
+    if len(categories) == 1:
+        return categories[0]
+        
     # Provide the AI with context about what each template is for
     categories_context = "\n".join([f"- '{t.project_name}': This template is an email with subject '{t.subject}'" for t in templates if t.is_active])
     
@@ -51,8 +53,8 @@ def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> str:
     
     try:
         api_key = groq_key if groq_key else settings.GROQ_API_KEY
-        client = Groq(api_key=api_key)
-        response = client.chat.completions.create(
+        client = AsyncGroq(api_key=api_key)
+        response = await client.chat.completions.create(
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
@@ -393,7 +395,7 @@ async def run_247_engine():
                     # 2. Check if it's a new lead
                     elif status.strip() == "":
                         print(f"📩 Found new lead: {email}")
-                        category = categorize_with_ai(lead_info, templates, groq_key)
+                        category = await categorize_with_ai(lead_info, templates, groq_key)
                         target_template = next((t for t in templates if t.project_name == category), None)
                         
                         if not target_template:
