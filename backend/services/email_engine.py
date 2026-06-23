@@ -4,7 +4,7 @@ Autonomous 24/7 Engine — Handles Google Sheets polling, AI categorization, and
 import asyncio
 from datetime import datetime, timezone
 import httpx
-from groq import Groq
+from groq import Groq, AsyncGroq
 from sqlalchemy import select, func
 
 from backend.config import settings
