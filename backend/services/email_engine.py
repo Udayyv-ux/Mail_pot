@@ -47,6 +47,7 @@ async def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> 
         "Here are the available categories:\n"
         f"{categories_context}\n\n"
         "You must choose EXACTLY ONE category name from the list above. "
+        "If the inquiry does not clearly match any of the categories, output EXACTLY the word 'General'. "
         "Output ONLY the exact category name. Do not wrap it in quotes. Do not add any explanation."
     )
     prompt = f"Customer Inquiry / Lead Notes: '{lead_info}'\n\nWhich category does this fit best?"
@@ -195,7 +196,6 @@ async def run_247_engine():
                         
                     await db.refresh(db_client, ['user'])
                     access_token = await refresh_google_token(db_client.user, db) if db_client.user else None
-                    
                     print(f"📤 Sending QUEUED '{target_template.project_name}' email to {q.recipient_email}...")
                     success, thread_id_or_err = await send_email_via_gmail_api(q.recipient_email, q.recipient_name or "", target_template, access_token)
                     
@@ -425,7 +425,8 @@ async def run_247_engine():
                                 await db.commit()
                             
                             # Mark as Queued on the sheet
-                            batch_updates.append({'row': i+1, 'col': status_idx + 1, 'value': 'Queued'})
+                            if status_idx >= 0:
+                                batch_updates.append({'row': i+1, 'col': status_idx + 1, 'value': 'Queued'})
                             continue
                             
                         email_success, wa_success = False, False
@@ -461,7 +462,10 @@ async def run_247_engine():
                                 print(f"❌ Email failed for {email}: {email_err}")
                                 
                         success = email_success or wa_success
-                        err = f"Email: {email_err} | WA: {wa_err}" if not success else ""
+                        err_msgs = []
+                        if email_err: err_msgs.append(f"Email: {email_err}")
+                        if wa_err: err_msgs.append(f"WA: {wa_err}")
+                        err = " | ".join(err_msgs)
                         
                         # Log to DB
                         async with SessionLocal() as db:
@@ -495,7 +499,8 @@ async def run_247_engine():
                         else:
                             new_status = "Followed Up" if is_follow_up_run else "Sent"
                             
-                        batch_updates.append({'row': i+1, 'col': status_idx + 1, 'value': new_status})
+                        if status_idx >= 0:
+                            batch_updates.append({'row': i+1, 'col': status_idx + 1, 'value': new_status})
                         
                         if success:
                             await asyncio.sleep(1) # Delay between sends
