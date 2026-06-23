@@ -705,6 +705,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (el('wa-phone-id')) el('wa-phone-id').value = data.whatsapp_phone_number_id || '';
             if (el('wa-business-id')) el('wa-business-id').value = data.whatsapp_business_account_id || '';
             
+            // Update the Meta Template Creation Link if we have a WABA ID
+            var metaLink = document.getElementById('link-meta-templates');
+            if (metaLink && data.whatsapp_business_account_id) {
+                metaLink.href = `https://business.facebook.com/wa/manage/message-templates/?waba_id=${data.whatsapp_business_account_id}`;
+            }
+            
             // Fetch templates automatically if credentials exist
             if (data.whatsapp_access_token && data.whatsapp_business_account_id) {
                 fetchWhatsappTemplates();
