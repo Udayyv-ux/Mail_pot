@@ -273,7 +273,7 @@ async def get_client_notifications(db: AsyncSession = Depends(get_db), current_u
 async def get_client_chart(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client = await get_client_profile(current_user, db)
     seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
-    result = await db.execute(select(EmailLog.sent_at, EmailLog.whatsapp_sent).where(
+    result = await db.execute(select(EmailLog.sent_at, EmailLog.whatsapp_sent, EmailLog.thread_id).where(
         EmailLog.client_id == client.id, 
         EmailLog.sent_at >= seven_days_ago
     ))
@@ -296,7 +296,9 @@ async def get_client_chart(db: AsyncSession = Depends(get_db), current_user = De
             idx = labels.index(date_str)
             if wa_sent:
                 whatsapp_data[idx] += 1
-            else:
+            
+            email_was_sent = bool(getattr(row, 'thread_id', None)) or not wa_sent
+            if email_was_sent:
                 email_data[idx] += 1
             
     return {"labels": labels, "email_data": email_data, "whatsapp_data": whatsapp_data}

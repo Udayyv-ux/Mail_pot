@@ -58,6 +58,7 @@ def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> str:
                 {"role": "user", "content": prompt}
             ],
             model="llama-3.1-8b-instant",
+            temperature=0.0
         )
         decision = response.choices[0].message.content.strip()
         # Clean quotes if AI added them
