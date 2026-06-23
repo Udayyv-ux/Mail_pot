@@ -132,17 +132,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const icon = isSent ? '✓' : (a.status === 'failed' ? '✗' : '⟳');
                         const dateStr = a.sent_at ? new Date(a.sent_at).toLocaleString() : 'Just now';
                         const errMsg = a.error_message ? `<div class="text-xs text-error/80 mt-1 truncate" title="${a.error_message}">${a.error_message}</div>` : '';
-                        let replyBadge = '';
-                        if (a.reply_status && a.reply_status !== 'no_reply') {
-                            const rs = a.reply_status;
-                            let badgeColor = 'badge-neutral';
-                            if (rs === 'Interested' || rs === 'Meeting Requested') badgeColor = 'badge-success bg-green-500/20 text-green-400 border-green-500/30';
-                            else if (rs === 'Not Interested') badgeColor = 'badge-error bg-red-500/20 text-red-400 border-red-500/30';
-                            else badgeColor = 'badge-warning bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-                            
-                            const replySnippet = a.reply_text ? `title="${a.reply_text}"` : '';
-                            replyBadge = `<div class="badge badge-sm ${badgeColor} mt-2 text-[10px] cursor-help" ${replySnippet}>${rs}</div>`;
-                        }
 
                         return `
                         <div class="bg-base-300 rounded-lg p-3 border border-white/5 flex items-start gap-3">
@@ -151,7 +140,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <div class="font-medium text-sm truncate" title="${a.recipient_email}">${a.recipient_email}</div>
                                 <div class="text-xs text-gray-500">${dateStr}</div>
                                 ${errMsg}
-                                ${replyBadge}
                             </div>
                             <div class="text-xs font-semibold capitalize ${colorClass}">${a.status}</div>
                         </div>
@@ -888,55 +876,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     router.on('instructions', () => {}); // No data loading required
 
     // Global Functions
-    window.downloadPDF = function() {
-        const btn = document.getElementById('btn-export-pdf');
-        if(btn) btn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Exporting...';
-        
-        const element = document.getElementById('page-dashboard');
-        const opt = {
-            margin:       0.5,
-            filename:     'Sheetx_Campaign_Report.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, logging: false },
-            jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-        };
-        
-        // Hide elements we don't want in the PDF
-        const btnExport = document.getElementById('btn-export-pdf');
-        const btnSync = document.getElementById('btn-sync-replies');
-        if(btnExport) btnExport.style.display = 'none';
-        if(btnSync) btnSync.style.display = 'none';
-        
-        html2pdf().set(opt).from(element).save().then(() => {
-            if(btnExport) btnExport.style.display = '';
-            if(btnSync) btnSync.style.display = '';
-            if(btn) btn.innerHTML = '<svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> Export PDF';
-        });
-    };
-
-    window.syncReplies = async function() {
-        const btn = document.getElementById('btn-sync-replies');
-        if(btn) btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Syncing...';
-        
-        try {
-            const response = await fetch('/api/client/sync-replies', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const data = await response.json();
-            
-            if (response.ok) {
-                showToast(`Synced ${data.synced} new AI replies!`, 'success');
-                loadDashboard(); // Refresh table
-            } else {
-                showToast(data.detail || 'Failed to sync replies', 'error');
-            }
-        } catch (err) {
-            showToast('Error syncing replies', 'error');
-        } finally {
-            if(btn) btn.innerHTML = '<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Sync AI Replies 🤖';
-        }
-    };
 
     // Display user email
     var emailDisplay = document.getElementById('client-email-display');
