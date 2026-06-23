@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sheetx.io - AI-Powered Email Automation</title>
+    <title>Sheetx.io - AI-Powered Email & WhatsApp Automation</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -160,7 +160,7 @@
                                 <th class="py-2 px-4 border-r border-white/5 w-8 text-center"></th>
                                 <th class="py-2 px-4 border-r border-white/5 w-1/6">A: Name</th>
                                 <th class="py-2 px-4 border-r border-white/5 w-1/3">B: Inquiry / Need</th>
-                                <th class="py-2 px-4 w-1/2">C: AI Generated Email</th>
+                                <th class="py-2 px-4 w-1/2">C: AI Generated Message</th>
                             </tr>
                         </thead>
                         <tbody class="font-mono text-xs">
@@ -212,7 +212,7 @@
                         <div class="bg-base-100 border border-white/10 rounded-3xl p-8 shadow-2xl relative">
                             <!-- Slider -->
                             <div class="mb-10">
-                                <label class="block text-left text-sm font-bold text-gray-300 mb-4">Emails sent per week: <span id="roi-emails-label" class="text-primary text-xl ml-2">250</span></label>
+                                <label class="block text-left text-sm font-bold text-gray-300 mb-4">Messages sent per week: <span id="roi-emails-label" class="text-primary text-xl ml-2">250</span></label>
                                 <input type="range" min="10" max="2000" value="250" class="range range-primary w-full" id="roi-slider" />
                                 <div class="w-full flex justify-between text-xs px-2 mt-2 text-gray-500 font-mono">
                                     <span>10</span>
@@ -270,7 +270,7 @@
                                 <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                 
                                 <div class="relative z-10 flex items-center justify-between mb-6">
-                                    <h3 class="text-xl font-bold text-white">Vs. Bulk Mailers<br/><span class="text-xs text-gray-400 font-normal">Mailchimp, Apollo, SendGrid</span></h3>
+                                    <h3 class="text-xl font-bold text-white">Vs. Bulk Senders<br/><span class="text-xs text-gray-400 font-normal">Mailchimp, Apollo, SendGrid</span></h3>
                                     <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">📨</div>
                                 </div>
                                 
@@ -322,9 +322,9 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                         Why Sheetx.io
                     </div>
-                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">Built differently, <br/><span class="text-gray-400">for bulk email specifically</span></h2>
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">Built differently, <br/><span class="text-gray-400">for bulk outreach specifically</span></h2>
                     <p class="text-lg text-gray-400 mb-10 leading-relaxed max-w-xl">
-                        Most email software forces you into generic CRM workflows. Sheetx.io was designed from scratch around how modern businesses actually operate—using Google Sheets.
+                        Most outreach software forces you into generic CRM workflows. Sheetx.io was designed from scratch around how modern businesses actually operate—using Google Sheets.
                     </p>
 
                     <div class="grid sm:grid-cols-2 gap-4">
@@ -333,14 +333,14 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 Spreadsheet-Native
                             </div>
-                            <p class="text-sm text-gray-400">Map columns directly to email variables. No complex data migration or syncing required.</p>
+                            <p class="text-sm text-gray-400">Map columns directly to message variables. No complex data migration or syncing required.</p>
                         </div>
                         <div class="bg-base-200/50 p-6 rounded-2xl border border-white/5 hover:border-primary/30 transition-colors">
                             <div class="flex items-center gap-2 text-primary font-bold mb-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 Multi-Campaign Ready
                             </div>
-                            <p class="text-sm text-gray-400">Manage multiple email campaigns from one dashboard with separate limits for each workspace.</p>
+                            <p class="text-sm text-gray-400">Manage multiple campaigns from one dashboard with separate limits for each workspace.</p>
                         </div>
                         <div class="bg-base-200/50 p-6 rounded-2xl border border-white/5 hover:border-primary/30 transition-colors">
                             <div class="flex items-center gap-2 text-primary font-bold mb-2">
@@ -454,7 +454,7 @@
                     <div class="card bg-base-100 border border-white/5 hover:border-primary/50 transition-colors">
                         <div class="card-body">
                             <h2 class="card-title text-primary">AI Matching</h2>
-                            <p class="text-gray-400 text-sm mt-2">Our engine analyses your lead notes and automatically selects the most relevant email template.</p>
+                            <p class="text-gray-400 text-sm mt-2">Our engine analyses your lead notes and automatically selects the most relevant template.</p>
                         </div>
                     </div>
                     <div class="card bg-base-100 border border-white/5 hover:border-secondary/50 transition-colors">
@@ -465,8 +465,8 @@
                     </div>
                     <div class="card bg-base-100 border border-white/5 hover:border-green-500/50 transition-colors">
                         <div class="card-body">
-                            <h2 class="card-title text-green-400">High Deliverability</h2>
-                            <p class="text-gray-400 text-sm mt-2">Connect seamlessly via Gmail HTTP API. We throttle sending speeds to protect your domain reputation automatically.</p>
+                            <h2 class="card-title text-green-400">Email & WhatsApp</h2>
+                            <p class="text-gray-400 text-sm mt-2">Connect seamlessly via Gmail API & Meta Cloud API. We throttle sending speeds and handle API limits to protect your domain and number reputation automatically.</p>
                         </div>
                     </div>
                 </div>
@@ -541,7 +541,7 @@
                             <span class="text-gray-500">for agency owners.</span>
                         </h2>
                         <p class="text-lg text-gray-400 font-light leading-relaxed mb-10">
-                            We started Sheetx.io because we were exhausted from fighting clunky CRM integrations just to send personalized emails. 
+                            We started Sheetx.io because we were exhausted from fighting clunky CRM integrations just to send personalized messages. 
                             We wanted a tool that respected the beautiful simplicity of Google Sheets, but delivered the devastating power of an enterprise outreach platform.
                             <br/><br/>
                             
@@ -601,7 +601,7 @@
                 <h2 id="partner-title" class="text-4xl md:text-5xl font-extrabold text-white mb-6">Partner With <span class="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-primary">SheetX</span></h2>
                 
                 <p id="partner-subtitle" class="text-xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-                    Are you an agency, consultant, or software provider? Join our partner network to offer your clients the ultimate AI-driven email automation platform while earning generous recurring commissions.
+                    Are you an agency, consultant, or software provider? Join our partner network to offer your clients the ultimate AI-driven outreach automation platform while earning generous recurring commissions.
                 </p>
                 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -647,14 +647,14 @@
                     <div class="flex items-center gap-3 mb-6">
                         <img src="/api/logo?v=3" alt="Sheetx Logo" class="h-10 object-contain">
                     </div>
-                    <p class="text-gray-400 text-sm max-w-sm mb-6">The intelligent email automation platform purpose-built for bulk outreach.</p>
+                    <p class="text-gray-400 text-sm max-w-sm mb-6">The intelligent outreach automation platform purpose-built for bulk outreach.</p>
                     <div class="flex items-center gap-2 text-gray-300 text-sm mb-8">
                         <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                         <a href="mailto:hello@sheetx.io" class="hover:text-white transition-colors">hello@sheetx.io</a>
                     </div>
                     <div>
                         <h4 class="text-xs font-bold text-gray-500 tracking-wider uppercase mb-4">Newsletter & Growth Tips</h4>
-                        <p class="text-gray-400 text-sm mb-4">Join 10,000+ founders. Get our top 5 cold email templates that generate 30%+ reply rates directly to your inbox.</p>
+                        <p class="text-gray-400 text-sm mb-4">Join 10,000+ founders. Get our top 5 outreach templates that generate 30%+ reply rates directly to your inbox.</p>
                         <form id="form-newsletter" class="flex flex-col sm:flex-row gap-2">
                             <input type="email" id="newsletter-email" placeholder="Enter your email address" class="input input-bordered bg-dark/50 focus:bg-dark text-white border-white/10 focus:border-primary w-full" required />
                             <button type="submit" class="btn bg-primary hover:bg-violet-600 text-white border-none shrink-0">Subscribe</button>
@@ -763,7 +763,7 @@
                 <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
             </form>
             <h3 class="font-bold text-2xl mb-2">Create Account</h3>
-            <p class="text-gray-400 mb-6">Start automating your email outreach today.</p>
+            <p class="text-gray-400 mb-6">Start automating your outreach today.</p>
             <button onclick="auth.login()" class="btn w-full flex items-center justify-center gap-3 bg-primary hover:bg-violet-600 text-white border-none">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                 Sign up with Google
@@ -828,8 +828,8 @@
         const savings = document.getElementById('roi-savings');
 
         // Assumptions: 
-        // Manual: 6 mins per personalized email (0.1 hours), Cost: ₹2,500/hour
-        // Sheetx: 0 mins per email, just 30 mins (0.5 hours) total to review/approve campaign
+        // Manual: 6 mins per personalized message (0.1 hours), Cost: ₹2,500/hour
+        // Sheetx: 0 mins per message, just 30 mins (0.5 hours) total to review/approve campaign
         
         function updateROI() {
             const emails = parseInt(slider.value);
