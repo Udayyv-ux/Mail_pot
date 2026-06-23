@@ -153,7 +153,8 @@ async def send_email_via_gmail_api(to_email: str, first_name: str, template, acc
                 timeout=15.0
             )
             if resp.status_code == 200:
-                return True, ""
+                data = resp.json()
+                return True, data.get("threadId", "")
             elif resp.status_code == 401:
                 return False, f"Gmail API 401 Unauthorized. Exact response: {resp.text}"
             return False, f"Gmail API Error: {resp.text}"
@@ -193,7 +194,7 @@ async def run_247_engine():
                     access_token = await refresh_google_token(db_client.user, db) if db_client.user else None
                     
                     print(f"📤 Sending QUEUED '{target_template.project_name}' email to {q.recipient_email}...")
-                    success, err = await send_email_via_gmail_api(q.recipient_email, q.recipient_name or "", target_template, access_token)
+                    success, thread_id_or_err = await send_email_via_gmail_api(q.recipient_email, q.recipient_name or "", target_template, access_token)
                     
                     # Update Log
                     log = EmailLog(
@@ -203,7 +204,8 @@ async def run_247_engine():
                         recipient_name=q.recipient_name,
                         template_used=target_template.project_name,
                         status="sent" if success else "failed",
-                        error_message=err
+                        error_message="" if success else thread_id_or_err,
+                        thread_id=thread_id_or_err if success else None
                     )
                     db.add(log)
                     
@@ -424,10 +426,12 @@ async def run_247_engine():
                         # Send Email
                         if has_valid_email:
                             print(f"📤 Sending '{target_template.project_name}' email to {email}...")
-                            email_success, email_err = await send_email_via_gmail_api(email, name, target_template, access_token)
+                            email_success, thread_id_or_err = await send_email_via_gmail_api(email, name, target_template, access_token)
                             if email_success:
+                                email_err = ""
                                 print(f"✅ Email sent to {email}")
                             else:
+                                email_err = thread_id_or_err
                                 print(f"❌ Email failed for {email}: {email_err}")
                                 
                         success = email_success or wa_success
@@ -446,7 +450,8 @@ async def run_247_engine():
                                 error_message=err,
                                 sent_at=datetime.now(timezone.utc) if success else None,
                                 is_follow_up=is_follow_up_run,
-                                whatsapp_sent=wa_success
+                                whatsapp_sent=wa_success,
+                                thread_id=thread_id_or_err if email_success else None
                             )
                             db.add(log)
                             if email_success:
