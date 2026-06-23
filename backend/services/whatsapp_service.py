@@ -1,4 +1,4 @@
-import aiohttp
+import httpx
 import re
 
 async def send_whatsapp_message(phone: str, template_name: str, access_token: str, phone_number_id: str, variables: list[str] = None) -> tuple[bool, str]:
@@ -49,12 +49,11 @@ async def send_whatsapp_message(phone: str, template_name: str, access_token: st
     }
     
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, headers=headers, json=payload) as response:
-                if response.status in (200, 201):
-                    return True, "Success"
-                else:
-                    error_data = await response.text()
-                    return False, f"Meta API Error ({response.status}): {error_data}"
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, headers=headers, json=payload)
+            if response.status_code in (200, 201):
+                return True, "Success"
+            else:
+                return False, f"Meta API Error ({response.status_code}): {response.text}"
     except Exception as e:
         return False, f"Request failed: {str(e)}"
