@@ -21,6 +21,7 @@ class EmailLog(Base):
     error_message = Column(Text, nullable=True)
     sent_at = Column(DateTime(timezone=True), nullable=True)
     is_follow_up = Column(Boolean, default=False)
+    whatsapp_sent = Column(Boolean, default=False)
 
     # Relationships
     client = relationship("Client", back_populates="email_logs")

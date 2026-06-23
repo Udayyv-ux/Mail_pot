@@ -19,9 +19,11 @@ class Campaign(Base):
     google_sheet_id = Column(String, nullable=False)
     target_columns = Column(String, default="Name, Email, Inquiry")
     status_column = Column(String, default="Status")
+    inquiry_column = Column(String, default="Inquiry")
     
     # Template & AI
     default_template_id = Column(String, ForeignKey("templates.id", ondelete="SET NULL"), nullable=True)
+    use_whatsapp = Column(Boolean, default=False)
     
     # Follow-up Logic
     follow_up_days = Column(Integer, default=0) # 0 means no follow up

@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     //  DASHBOARD
     // ─────────────────────────────────────────────────────────────────────────
     let emailChart = null;
+    let whatsappChart = null;
 
     async function loadDashboard() {
         try {
@@ -164,6 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const stats = await api.get('/client/analytics/chart');
             const canvas = document.getElementById('email-chart');
+            const waCanvas = document.getElementById('whatsapp-chart');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
 
@@ -175,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     labels: stats.labels || [],
                     datasets: [{
                         label: 'Emails Sent',
-                        data: stats.data || [],
+                        data: stats.email_data || [],
                         borderColor: '#4f46e5',
                         backgroundColor: 'rgba(79, 70, 229, 0.1)',
                         borderWidth: 3,
@@ -183,6 +185,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                         fill: true,
                         pointBackgroundColor: '#ec4899',
                         pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', stepSize: 1 } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+            
+            if (!waCanvas) return;
+            const waCtx = waCanvas.getContext('2d');
+            if (whatsappChart) whatsappChart.destroy();
+            whatsappChart = new Chart(waCtx, {
+                type: 'line',
+                data: {
+                    labels: stats.labels || [],
+                    datasets: [{
+                        label: 'WhatsApp Sent',
+                        data: stats.whatsapp_data || [],
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#22c55e',
                         pointBorderWidth: 2,
                         pointRadius: 5
                     }]
@@ -426,6 +460,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         var payload = {
             name: document.getElementById('camp-name').value,
             sheet_url_or_id: document.getElementById('camp-sheet').value,
+            target_columns: document.getElementById('camp-target-cols').value || "Name, Email, Phone",
+            inquiry_column: document.getElementById('camp-inquiry-col').value || "Inquiry",
+            status_column: document.getElementById('camp-status-col').value || "Status",
+            use_whatsapp: document.getElementById('camp-use-whatsapp').checked,
             default_template_id: document.getElementById('camp-default-template').value || null,
             follow_up_days: parseInt(document.getElementById('camp-followup-days').value) || 0,
             follow_up_template_id: document.getElementById('camp-followup-template').value || null,

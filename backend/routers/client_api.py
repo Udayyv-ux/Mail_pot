@@ -181,7 +181,9 @@ class CampaignCreate(BaseModel):
     sheet_url_or_id: str
     target_columns: str = "Name, Email, Inquiry"
     status_column: str = "Status"
+    inquiry_column: str = "Inquiry"
     default_template_id: Optional[str] = None
+    use_whatsapp: bool = False
     follow_up_days: int = 0
     follow_up_template_id: Optional[str] = None
     max_emails_per_hour: int = 50
@@ -200,7 +202,9 @@ async def list_campaigns(db: AsyncSession = Depends(get_db), current_user = Depe
         "google_sheet_id": c.google_sheet_id,
         "target_columns": c.target_columns,
         "status_column": c.status_column,
+        "inquiry_column": getattr(c, 'inquiry_column', 'Inquiry'),
         "default_template_id": c.default_template_id,
+        "use_whatsapp": getattr(c, 'use_whatsapp', False),
         "follow_up_days": c.follow_up_days,
         "follow_up_template_id": c.follow_up_template_id,
         "max_emails_per_hour": c.max_emails_per_hour,
@@ -234,7 +238,9 @@ async def create_campaign(data: CampaignCreate, db: AsyncSession = Depends(get_d
         google_sheet_id=sheet_id,
         target_columns=data.target_columns,
         status_column=data.status_column,
+        inquiry_column=data.inquiry_column,
         default_template_id=data.default_template_id,
+        use_whatsapp=data.use_whatsapp,
         follow_up_days=data.follow_up_days,
         follow_up_template_id=data.follow_up_template_id,
         max_emails_per_hour=data.max_emails_per_hour,
@@ -267,25 +273,33 @@ async def get_client_notifications(db: AsyncSession = Depends(get_db), current_u
 async def get_client_chart(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
     client = await get_client_profile(current_user, db)
     seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
-    result = await db.execute(select(EmailLog.sent_at).where(
+    result = await db.execute(select(EmailLog.sent_at, EmailLog.whatsapp_sent).where(
         EmailLog.client_id == client.id, 
         EmailLog.sent_at >= seven_days_ago
     ))
-    logs = result.scalars().all()
+    logs = result.all()
     labels = []
-    data = []
+    email_data = []
+    whatsapp_data = []
     for i in range(6, -1, -1):
         d = datetime.now(timezone.utc) - timedelta(days=i)
         labels.append(d.strftime("%Y-%m-%d"))
-        data.append(0)
+        email_data.append(0)
+        whatsapp_data.append(0)
     
-    for sent_at in logs:
+    for row in logs:
+        sent_at = row.sent_at
+        wa_sent = getattr(row, 'whatsapp_sent', False)
         if not sent_at: continue
         date_str = sent_at.strftime("%Y-%m-%d")
         if date_str in labels:
-            data[labels.index(date_str)] += 1
+            idx = labels.index(date_str)
+            if wa_sent:
+                whatsapp_data[idx] += 1
+            else:
+                email_data[idx] += 1
             
-    return {"labels": labels, "data": data}
+    return {"labels": labels, "email_data": email_data, "whatsapp_data": whatsapp_data}
 
 @router.post("/upload")
 async def upload_image(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):

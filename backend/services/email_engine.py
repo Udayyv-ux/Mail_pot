@@ -126,7 +126,9 @@ async def send_email_via_gmail_api(to_email: str, first_name: str, template, acc
         return False, "Client user has not authenticated with Google or access token is missing."
     
     subject = template.subject
-    html_body = template.body_html.replace("{first_name}", first_name or "There")
+    greeting_name = first_name.strip() if first_name and str(first_name).strip() else "Customer"
+    html_body = f"<p>Dear {greeting_name},</p><br>" + template.body_html.replace("{first_name}", first_name or "There")
+    
     if getattr(template, 'banner_url', None):
         banner_url = template.banner_url
         if banner_url.startswith("/"):
@@ -290,14 +292,8 @@ async def run_247_engine():
                 
                 name_col = target_cols[0] if len(target_cols) > 0 else "Name"
                 email_col = target_cols[1] if len(target_cols) > 1 else "Email"
-                
-                phone_col = "Phone"
-                inquiry_col = "Inquiry"
-                if len(target_cols) == 4:
-                    phone_col = target_cols[2]
-                    inquiry_col = target_cols[3]
-                elif len(target_cols) == 3:
-                    inquiry_col = target_cols[2]
+                phone_col = target_cols[2] if len(target_cols) > 2 else "Phone"
+                inquiry_col = getattr(campaign, 'inquiry_column', 'Inquiry')
                 
                 name_idx = get_col_index(headers, name_col)
                 email_idx = get_col_index(headers, email_col)
@@ -408,7 +404,8 @@ async def run_247_engine():
                         email_err, wa_err = "", ""
                         
                         # Send WhatsApp
-                        if has_valid_phone and getattr(target_template, 'whatsapp_template_name', None) and getattr(db_client, 'whatsapp_access_token', None):
+                        use_wa = getattr(campaign, 'use_whatsapp', False)
+                        if use_wa and has_valid_phone and getattr(target_template, 'whatsapp_template_name', None) and getattr(db_client, 'whatsapp_access_token', None):
                             print(f"📱 Sending WhatsApp '{target_template.whatsapp_template_name}' to {phone}...")
                             
                             location = row[location_idx] if location_idx != -1 and len(row) > location_idx else ""
@@ -448,7 +445,8 @@ async def run_247_engine():
                                 status="sent" if success else "failed",
                                 error_message=err,
                                 sent_at=datetime.now(timezone.utc) if success else None,
-                                is_follow_up=is_follow_up_run
+                                is_follow_up=is_follow_up_run,
+                                whatsapp_sent=wa_success
                             )
                             db.add(log)
                             if email_success:
