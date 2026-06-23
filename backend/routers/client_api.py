@@ -159,7 +159,7 @@ async def update_profile(profile: ProfileUpdate, db: AsyncSession = Depends(get_
 
 @router.get("/whatsapp/templates")
 async def get_whatsapp_templates(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
-    import requests
+    import httpx
     client = await get_client_profile(current_user, db)
     if not client.whatsapp_business_account_id or not client.whatsapp_access_token:
         raise HTTPException(status_code=400, detail="WhatsApp Business Account ID and Access Token are required to fetch templates")
@@ -167,11 +167,12 @@ async def get_whatsapp_templates(db: AsyncSession = Depends(get_db), current_use
     url = f"https://graph.facebook.com/v23.0/{client.whatsapp_business_account_id}/message_templates?limit=100"
     headers = {"Authorization": f"Bearer {client.whatsapp_access_token}"}
     
-    response = requests.get(url, headers=headers)
-    if response.status_code != 200:
-        raise HTTPException(status_code=400, detail=response.json().get("error", {}).get("message", "Failed to fetch templates"))
-    
-    return response.json()
+    async with httpx.AsyncClient() as http_client:
+        response = await http_client.get(url, headers=headers)
+        if response.status_code != 200:
+            raise HTTPException(status_code=400, detail=response.json().get("error", {}).get("message", "Failed to fetch templates"))
+        
+        return response.json()
 
 # --- CAMPAIGNS ---
 
