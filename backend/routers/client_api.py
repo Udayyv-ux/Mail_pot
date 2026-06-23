@@ -394,69 +394,75 @@ async def get_inbox(db: AsyncSession = Depends(get_db), current_user = Depends(r
 
 @router.post("/sync-replies")
 async def sync_all_replies(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
-    client = await get_client_profile(current_user, db)
-    
-    # 1. Fetch sent emails with thread_id that are not yet replied to
-    result = await db.execute(select(EmailLog).where(
-        EmailLog.client_id == client.id,
-        EmailLog.status == "sent",
-        EmailLog.thread_id.isnot(None),
-        EmailLog.reply_status == "no_reply"
-    ))
-    logs = result.scalars().all()
-    if not logs:
-        return {"synced": 0, "message": "No new threads to check."}
+    try:
+        client = await get_client_profile(current_user, db)
+        
+        # 1. Fetch sent emails with thread_id that are not yet replied to
+        result = await db.execute(select(EmailLog).where(
+            EmailLog.client_id == client.id,
+            EmailLog.status == "sent",
+            EmailLog.thread_id.isnot(None),
+            EmailLog.reply_status == "no_reply"
+        ))
+        logs = result.scalars().all()
+        if not logs:
+            return {"synced": 0, "message": "No new threads to check."}
 
-    await db.refresh(current_user)
-    from backend.services.email_engine import refresh_google_token
-    access_token = await refresh_google_token(current_user, db)
-    if not access_token:
-        raise HTTPException(status_code=400, detail="Google authentication required.")
+        await db.refresh(current_user)
+        from backend.services.email_engine import refresh_google_token
+        access_token = await refresh_google_token(current_user, db)
+        if not access_token:
+            raise HTTPException(status_code=400, detail="Google authentication required.")
 
-    # 2. Check each thread via Gmail API
-    import httpx
-    synced_count = 0
-    async with httpx.AsyncClient() as http_client:
-        for log in logs:
-            resp = await http_client.get(
-                f"https://gmail.googleapis.com/gmail/v1/users/me/threads/{log.thread_id}",
-                headers={"Authorization": f"Bearer {access_token}"}
-            )
-            if resp.status_code == 200:
-                thread_data = resp.json()
-                messages = thread_data.get("messages", [])
-                
-                # A thread usually has >1 message if there is a reply
-                if len(messages) > 1:
-                    # The last message is the reply
-                    last_msg = messages[-1]
-                    snippet = last_msg.get("snippet", "")
+        # 2. Check each thread via Gmail API
+        import httpx
+        synced_count = 0
+        async with httpx.AsyncClient() as http_client:
+            for log in logs:
+                resp = await http_client.get(
+                    f"https://gmail.googleapis.com/gmail/v1/users/me/threads/{log.thread_id}",
+                    headers={"Authorization": f"Bearer {access_token}"}
+                )
+                if resp.status_code == 200:
+                    thread_data = resp.json()
+                    messages = thread_data.get("messages", [])
                     
-                    # 3. Classify with AI (Groq)
-                    from groq import AsyncGroq
-                    from backend.config import settings
-                    try:
-                        ai_client = AsyncGroq(api_key=settings.GROQ_API_KEY)
-                        ai_resp = await ai_client.chat.completions.create(
-                            model="llama3-8b-8192",
-                            messages=[
-                                {"role": "system", "content": "You are an AI assistant categorizing email replies. Categorize the reply exactly into one of these: 'Interested', 'Not Interested', 'Meeting Requested', 'Out of Office', or 'Other'. Reply with ONLY the exact category name."},
-                                {"role": "user", "content": f"Reply snippet: {snippet}"}
-                            ],
-                            temperature=0.0
-                        )
-                        category = ai_resp.choices[0].message.content.strip()
-                        # normalize
-                        valid_cats = ["Interested", "Not Interested", "Meeting Requested", "Out of Office", "Other"]
-                        if category not in valid_cats:
-                            category = "Other"
+                    # A thread usually has >1 message if there is a reply
+                    if len(messages) > 1:
+                        # The last message is the reply
+                        last_msg = messages[-1]
+                        snippet = last_msg.get("snippet", "")
+                        
+                        # 3. Classify with AI (Groq)
+                        from groq import AsyncGroq
+                        from backend.config import settings
+                        try:
+                            ai_client = AsyncGroq(api_key=settings.GROQ_API_KEY)
+                            ai_resp = await ai_client.chat.completions.create(
+                                model="llama3-8b-8192",
+                                messages=[
+                                    {"role": "system", "content": "You are an AI assistant categorizing email replies. Categorize the reply exactly into one of these: 'Interested', 'Not Interested', 'Meeting Requested', 'Out of Office', or 'Other'. Reply with ONLY the exact category name."},
+                                    {"role": "user", "content": f"Reply snippet: {snippet}"}
+                                ],
+                                temperature=0.0
+                            )
+                            category = ai_resp.choices[0].message.content.strip()
+                            # normalize
+                            valid_cats = ["Interested", "Not Interested", "Meeting Requested", "Out of Office", "Other"]
+                            if category not in valid_cats:
+                                category = "Other"
+                                
+                            log.reply_status = category
+                            log.reply_text = snippet
+                        except Exception:
+                            pass
+                        else:
+                            synced_count += 1
                             
-                        log.reply_status = category
-                        log.reply_text = snippet
-                        synced_count += 1
-                    except Exception as e:
-                        print(f"Groq API error: {e}")
-                        pass
-
-    await db.commit()
-    return {"synced": synced_count, "message": f"Successfully synced {synced_count} new replies."}
+        await db.commit()
+        return {"synced": synced_count}
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        raise HTTPException(status_code=400, detail=f"Server Error: {str(e)}")
