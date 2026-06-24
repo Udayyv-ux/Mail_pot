@@ -599,44 +599,63 @@
                     
                     <!-- Tabs -->
                     <div class="tabs tabs-boxed bg-base-200 mb-6 border border-white/5 p-1 flex">
-                        <a class="tab flex-1 tab-active" id="tab-manual" onclick="toggleTemplateMode('manual')">✍️ Write Manually</a>
-                        <a class="tab flex-1" id="tab-ai" onclick="toggleTemplateMode('ai')">✨ Generate with AI <span class="badge badge-sm badge-primary ml-2">PRO</span></a>
+                        <a class="tab flex-1 tab-active transition-all duration-300" id="tab-manual" onclick="toggleTemplateMode('manual')">✍️ Write Manually</a>
+                        <a class="tab flex-1 transition-all duration-300" id="tab-ai" onclick="toggleTemplateMode('ai')">✨ Generate with AI <span class="badge badge-sm badge-primary ml-2">PRO</span></a>
                     </div>
                     
                     <!-- AI Generator Panel -->
-                    <div id="panel-ai" class="hidden mb-6 p-4 rounded-xl bg-base-300 border border-primary/30 relative overflow-hidden">
-                        <div class="absolute -right-4 -top-4 opacity-10 blur-xl w-32 h-32 bg-primary rounded-full"></div>
-                        <h4 class="font-bold text-white mb-2 relative z-10">AI Template Generator</h4>
-                        <p class="text-xs text-gray-400 mb-4 relative z-10">Describe the goal of this email. Our AI will craft a high-converting subject and body instantly.</p>
-                        <textarea id="ai-prompt" class="textarea textarea-bordered bg-base-200 border-white/10 focus:border-primary w-full relative z-10" placeholder="e.g. A cold outreach email for my real estate agency offering a free home valuation..."></textarea>
-                        <button id="btn-generate-ai" class="btn btn-primary btn-sm mt-3 w-full text-white relative z-10" onclick="generateTemplateAI()">✨ Generate Template</button>
-                    </div>
-
-                    <div class="form-control mb-4">
-                        <label class="label"><span class="label-text text-gray-400 font-medium">Project Name / Category</span></label>
-                        <input type="text" id="tmpl-project" class="input input-bordered bg-base-200 border-white/10 focus:border-primary w-full" placeholder="e.g. Kondapur Apartments">
-                    </div>
-                    <div class="form-control mb-4">
-                        <label class="label"><span class="label-text text-gray-400 font-medium">Subject Line</span></label>
-                        <input type="text" id="tmpl-subject" class="input input-bordered bg-base-200 border-white/10 focus:border-primary w-full" placeholder="Exclusive offer for {first_name}...">
-                    </div>
-                    <div class="form-control mb-4">
-                        <label class="label"><span class="label-text text-gray-400 font-medium">WhatsApp Template Name (Meta)</span></label>
-                        <input type="text" id="tmpl-whatsapp-name" class="input input-bordered bg-base-200 border-white/10 focus:border-primary w-full" placeholder="e.g. hello_world (leave blank to skip WA)">
-                    </div>
-                    <div class="form-control mb-4">
-                        <label class="label"><span class="label-text text-gray-400 font-medium">Banner Image (Optional)</span></label>
-                        <input type="file" id="tmpl-banner" accept="image/*" class="file-input file-input-bordered file-input-primary bg-base-200 border-white/10 w-full text-sm">
-                        <input type="hidden" id="tmpl-banner-url">
-                        <div id="tmpl-banner-preview" class="mt-3 hidden">
-                            <img src="" class="h-20 rounded border border-white/10 object-cover">
+                    <div id="panel-ai" class="hidden flex-1 flex flex-col justify-center items-center p-8 rounded-2xl bg-gradient-to-br from-base-300 to-base-200 border border-primary/20 relative overflow-hidden group shadow-2xl">
+                        <!-- Decorative animated blobs -->
+                        <div class="absolute -right-10 -top-10 w-48 h-48 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-all duration-700"></div>
+                        <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-secondary/10 rounded-full blur-3xl group-hover:bg-secondary/20 transition-all duration-700"></div>
+                        
+                        <div class="relative z-10 text-center w-full max-w-md">
+                            <div class="w-16 h-16 bg-gradient-to-tr from-primary to-secondary rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg shadow-primary/20 animate-bounce" style="animation-duration: 3s;">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            </div>
+                            <h4 class="font-bold text-2xl text-white mb-2">AI Template Architect</h4>
+                            <p class="text-sm text-gray-400 mb-8 leading-relaxed">Describe the goal of your email campaign. Our AI will instantly craft a high-converting, personalized subject line and HTML body designed to maximize replies.</p>
+                            
+                            <div class="form-control mb-6 text-left">
+                                <label class="label"><span class="label-text text-gray-300 font-medium">Campaign Prompt</span></label>
+                                <textarea id="ai-prompt" class="textarea textarea-bordered bg-base-100 border-white/10 focus:border-primary w-full h-32 resize-none shadow-inner" placeholder="e.g. A friendly cold outreach email for my real estate agency offering a free automated home valuation to recent homebuyers..."></textarea>
+                            </div>
+                            
+                            <button id="btn-generate-ai" class="btn btn-primary w-full text-white shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform duration-200" onclick="generateTemplateAI()">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                                Generate High-Converting Template
+                            </button>
                         </div>
                     </div>
-                    <div class="form-control flex-1 flex flex-col min-h-[250px] mb-4">
-                        <label class="label"><span class="label-text text-gray-400 font-medium">HTML Body</span></label>
-                        <textarea id="tmpl-body" class="textarea textarea-bordered bg-base-200 border-white/10 focus:border-primary font-mono w-full flex-1" placeholder="<p>Hi {first_name},</p>"></textarea>
+
+                    <!-- Manual Input Panel -->
+                    <div id="panel-manual" class="flex flex-col flex-1 relative">
+                        <div class="form-control mb-4">
+                            <label class="label"><span class="label-text text-gray-400 font-medium">Project Name / Category</span></label>
+                            <input type="text" id="tmpl-project" class="input input-bordered bg-base-200 border-white/10 focus:border-primary w-full transition-colors" placeholder="e.g. Kondapur Apartments">
+                        </div>
+                        <div class="form-control mb-4">
+                            <label class="label"><span class="label-text text-gray-400 font-medium">Subject Line</span></label>
+                            <input type="text" id="tmpl-subject" class="input input-bordered bg-base-200 border-white/10 focus:border-primary w-full transition-colors" placeholder="Exclusive offer for {first_name}...">
+                        </div>
+                        <div class="form-control mb-4">
+                            <label class="label"><span class="label-text text-gray-400 font-medium">WhatsApp Template Name (Meta)</span></label>
+                            <input type="text" id="tmpl-whatsapp-name" class="input input-bordered bg-base-200 border-white/10 focus:border-primary w-full transition-colors" placeholder="e.g. hello_world (leave blank to skip WA)">
+                        </div>
+                        <div class="form-control mb-4">
+                            <label class="label"><span class="label-text text-gray-400 font-medium">Banner Image (Optional)</span></label>
+                            <input type="file" id="tmpl-banner" accept="image/*" class="file-input file-input-bordered file-input-primary bg-base-200 border-white/10 w-full text-sm">
+                            <input type="hidden" id="tmpl-banner-url">
+                            <div id="tmpl-banner-preview" class="mt-3 hidden">
+                                <img src="" class="h-20 rounded border border-white/10 object-cover shadow-md">
+                            </div>
+                        </div>
+                        <div class="form-control flex-1 flex flex-col min-h-[250px] mb-4">
+                            <label class="label"><span class="label-text text-gray-400 font-medium">HTML Body</span></label>
+                            <textarea id="tmpl-body" class="textarea textarea-bordered bg-base-200 border-white/10 focus:border-primary font-mono w-full flex-1 transition-colors" placeholder="<p>Hi {first_name},</p>"></textarea>
+                        </div>
+                        <button class="btn btn-primary text-white w-full shadow-lg hover:shadow-primary/30 transition-all" id="btn-save-template">Save Template</button>
                     </div>
-                    <button class="btn btn-primary text-white w-full" id="btn-save-template">Save Template</button>
                 </div>
                 
                 <!-- Preview Side -->

@@ -997,15 +997,18 @@ window.toggleTemplateMode = function(mode) {
         alert("Your current plan does not support AI Generated Templates. Please upgrade to unlock this feature.");
         return;
     }
-    
+    const panelManual = document.getElementById('panel-manual');
+
     if (mode === 'manual') {
         tabManual.classList.add('tab-active');
         tabAI.classList.remove('tab-active');
         panelAI.classList.add('hidden');
+        if (panelManual) panelManual.classList.remove('hidden');
     } else {
         tabAI.classList.add('tab-active');
         tabManual.classList.remove('tab-active');
         panelAI.classList.remove('hidden');
+        if (panelManual) panelManual.classList.add('hidden');
     }
 };
 

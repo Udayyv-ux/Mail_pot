@@ -128,7 +128,8 @@ async def generate_template(req: AIGenerateRequest, db: AsyncSession = Depends(g
                 {"role": "user", "content": req.prompt}
             ],
             model="llama-3.1-8b-instant",
-            temperature=0.7
+            temperature=0.7,
+            response_format={"type": "json_object"}
         )
         content = response.choices[0].message.content.strip()
         if content.startswith("```json"):
