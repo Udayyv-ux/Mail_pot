@@ -24,6 +24,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    // Global Trial & Lockout Check
+    try {
+        const profileData = await api.get('/client/profile');
+        if (profileData && profileData.trial_ends_at) {
+            const trialEnd = new Date(profileData.trial_ends_at);
+            const subEnd = profileData.subscription_ends_at ? new Date(profileData.subscription_ends_at) : null;
+            const now = new Date();
+            
+            if (trialEnd < now && (!subEnd || subEnd < now)) {
+                const banner = document.getElementById('trial-lockout-banner');
+                if (banner) banner.classList.remove('hidden');
+            }
+        }
+    } catch (e) {
+        console.error("Failed to check trial status", e);
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     //  ROUTER — handles sidebar tab navigation
     // ─────────────────────────────────────────────────────────────────────────

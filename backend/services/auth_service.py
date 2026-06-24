@@ -11,8 +11,10 @@ import uuid
 from backend.config import settings
 from backend.models.user import User, UserRole
 from backend.models.client import Client
-from backend.models.app_settings import DemoRequest
+from backend.models.plan import Plan
+from backend.models.app_settings import DemoRequest, AppSetting
 from backend.middleware.auth_middleware import create_access_token, create_refresh_token
+from datetime import datetime, timezone, timedelta
 
 oauth = OAuth()
 
@@ -96,12 +98,23 @@ async def google_callback(request: Request, db: AsyncSession):
             demo_req = demo_req_result.scalars().first()
             
             if demo_req:
+                # Fetch trial duration setting
+                setting = await db.execute(select(AppSetting).where(AppSetting.key == "trial_days"))
+                setting_obj = setting.scalar_one_or_none()
+                trial_days = int(setting_obj.value) if setting_obj and setting_obj.value.isdigit() else 5
+                
+                # Fetch Ultra Plan
+                plan_result = await db.execute(select(Plan).where(Plan.name.ilike('%Ultra%')))
+                ultra_plan = plan_result.scalar_one_or_none()
+                
                 client = Client(
                     id=str(uuid.uuid4()),
                     user_id=user.id,
                     company_name=demo_req.company or (name + " Company"),
                     is_demo=True,
-                    daily_email_limit=10
+                    daily_email_limit=ultra_plan.email_limit_daily if ultra_plan else 1000,
+                    plan_id=ultra_plan.id if ultra_plan else None,
+                    trial_ends_at=datetime.now(timezone.utc) + timedelta(days=trial_days)
                 )
                 demo_req.status = "approved"
                 demo_req.user_id = user.id

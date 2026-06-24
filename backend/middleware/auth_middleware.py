@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.config import settings
 from backend.database import get_db
 from backend.models.user import User, UserRole
+from backend.models.client import Client
 
 security = HTTPBearer(auto_error=False)
 
@@ -104,3 +105,30 @@ async def get_optional_user(
         return await get_current_user(credentials, db)
     except HTTPException:
         return None
+
+async def require_active_subscription(
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db)
+) -> User:
+    """Restrict endpoint to users with an active trial or paid subscription."""
+    # Admins bypass
+    if user.role == UserRole.ADMIN:
+        return user
+        
+    result = await db.execute(select(Client).where(Client.user_id == user.id))
+    client = result.scalar_one_or_none()
+    
+    if not client:
+        raise HTTPException(status_code=403, detail="Client profile not found")
+        
+    now = datetime.now(timezone.utc)
+    
+    # Check subscription first
+    if client.subscription_ends_at and client.subscription_ends_at > now:
+        return user
+        
+    # Check trial
+    if client.trial_ends_at and client.trial_ends_at > now:
+        return user
+        
+    raise HTTPException(status_code=402, detail="Trial or Subscription Expired")

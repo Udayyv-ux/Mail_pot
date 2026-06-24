@@ -8,7 +8,7 @@ from pydantic import BaseModel
 import json
 
 from backend.database import get_db
-from backend.middleware.auth_middleware import require_client
+from backend.middleware.auth_middleware import require_client, require_active_subscription
 from backend.models.client import Client
 from backend.models.template import Template
 
@@ -36,7 +36,7 @@ class TemplateCreate(BaseModel):
     whatsapp_template_name: str | None = None
 
 @router.post("")
-async def create_template(data: TemplateCreate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+async def create_template(data: TemplateCreate, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
     client_id = await get_client_id(current_user, db)
     
     # Check plan limits (simplified for now)
@@ -55,7 +55,7 @@ async def create_template(data: TemplateCreate, db: AsyncSession = Depends(get_d
     return template
 
 @router.put("/{id}")
-async def update_template(id: str, data: TemplateCreate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+async def update_template(id: str, data: TemplateCreate, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
     client_id = await get_client_id(current_user, db)
     
     result = await db.execute(select(Template).where(Template.id == id, Template.client_id == client_id))
@@ -74,7 +74,7 @@ async def update_template(id: str, data: TemplateCreate, db: AsyncSession = Depe
     return template
 
 @router.delete("/{id}")
-async def delete_template(id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+async def delete_template(id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
     client_id = await get_client_id(current_user, db)
     
     result = await db.execute(select(Template).where(Template.id == id, Template.client_id == client_id))

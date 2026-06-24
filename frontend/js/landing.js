@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if(!faqData) faqData = [
             {question: "What is Sheetx.io?", answer: "Sheetx.io is an intelligent outreach platform that syncs with Google Sheets and uses AI to match the perfect email template to your leads."},
-            {question: "Is there a free trial?", answer: "Yes, we offer a 14-day free trial on all paid plans so you can test our AI matching engine."},
+            {question: "Is there a free trial?", answer: "Yes, we offer a 5-day free trial on all paid plans so you can test our AI matching engine."},
             {question: "Do I need to import my leads?", answer: "No importing required! Just paste your Google Sheet URL, and we sync directly with your live data."},
             {question: "Will this affect my domain reputation?", answer: "We use smart sending features like built-in delays and throttling to ensure your domain reputation stays protected while scaling."},
             {question: "Can I bring my own email account?", answer: "Yes! You can connect your existing Google accounts securely via the Gmail API to send directly from your own domain."}

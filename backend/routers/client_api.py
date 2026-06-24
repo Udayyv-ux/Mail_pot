@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 from backend.database import get_db
-from backend.middleware.auth_middleware import require_client
+from backend.middleware.auth_middleware import require_client, require_active_subscription
 from backend.models.client import Client
 from backend.models.plan import Plan
 from backend.models.template import Template
@@ -135,6 +135,8 @@ async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends
         "whatsapp_access_token": client.whatsapp_access_token,
         "whatsapp_phone_number_id": client.whatsapp_phone_number_id,
         "whatsapp_business_account_id": client.whatsapp_business_account_id,
+        "trial_ends_at": client.trial_ends_at.isoformat() if client.trial_ends_at else None,
+        "subscription_ends_at": client.subscription_ends_at.isoformat() if client.subscription_ends_at else None
     }
 
 class ProfileUpdate(BaseModel):
@@ -144,7 +146,7 @@ class ProfileUpdate(BaseModel):
     whatsapp_business_account_id: Optional[str] = None
 
 @router.put("/profile")
-async def update_profile(profile: ProfileUpdate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+async def update_profile(profile: ProfileUpdate, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
     client = await get_client_profile(current_user, db)
     if profile.company_name is not None:
         client.company_name = profile.company_name
@@ -218,7 +220,7 @@ async def list_campaigns(db: AsyncSession = Depends(get_db), current_user = Depe
     } for c in campaigns]
 
 @router.post("/campaigns")
-async def create_campaign(data: CampaignCreate, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+async def create_campaign(data: CampaignCreate, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
     client = await get_client_profile(current_user, db)
     await db.refresh(client, ['plan'])
     
@@ -253,7 +255,7 @@ async def create_campaign(data: CampaignCreate, db: AsyncSession = Depends(get_d
     return {"status": "success", "campaign": new_campaign}
 
 @router.delete("/campaigns/{campaign_id}")
-async def delete_campaign(campaign_id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+async def delete_campaign(campaign_id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
     client = await get_client_profile(current_user, db)
     result = await db.execute(select(Campaign).where(Campaign.id == campaign_id, Campaign.client_id == client.id))
     campaign = result.scalar_one_or_none()
@@ -304,7 +306,7 @@ async def get_client_chart(db: AsyncSession = Depends(get_db), current_user = De
     return {"labels": labels, "email_data": email_data, "whatsapp_data": whatsapp_data}
 
 @router.post("/upload")
-async def upload_image(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+async def upload_image(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
     client = await get_client_profile(current_user, db)
     
     contents = await file.read()
@@ -334,7 +336,7 @@ async def list_email_queue(db: AsyncSession = Depends(get_db), current_user = De
     } for q in queue]
 
 @router.post("/queue/{id}/approve")
-async def approve_queue_item(id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+async def approve_queue_item(id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
     client = await get_client_profile(current_user, db)
     item = await db.get(EmailQueue, id)
     if not item or item.client_id != client.id: raise HTTPException(404, "Item not found")
@@ -343,7 +345,7 @@ async def approve_queue_item(id: str, db: AsyncSession = Depends(get_db), curren
     return {"status": "success"}
 
 @router.post("/queue/{id}/reject")
-async def reject_queue_item(id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
+async def reject_queue_item(id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
     client = await get_client_profile(current_user, db)
     item = await db.get(EmailQueue, id)
     if not item or item.client_id != client.id: raise HTTPException(404, "Item not found")
