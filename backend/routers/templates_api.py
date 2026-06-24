@@ -105,7 +105,7 @@ async def generate_template(req: AIGenerateRequest, db: AsyncSession = Depends(g
         raise HTTPException(403, "Your plan does not support AI Generated Templates. Please upgrade to unlock this feature.")
         
     # 2. Get AI API Key
-    groq_key = client.groq_api_key if client.groq_api_key else settings.GROQ_API_KEY
+    groq_key = getattr(client, 'groq_api_key', None) or settings.GROQ_API_KEY
     if not groq_key:
         raise HTTPException(500, "AI Service is not configured")
         
