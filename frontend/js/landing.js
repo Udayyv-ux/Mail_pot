@@ -100,6 +100,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 {name: "API Docs", url: "/docs.html"},
                 {name: "Report a Problem / Feedback", url: "/feedback.html"},
                 {name: "System Status", url: "/status.html"}
+            ],
+            "Legal": [
+                {name: "Data & Privacy Policy", url: "/legal.html?policy=data-policy"},
+                {name: "Terms of Service", url: "/legal.html?policy=terms-of-service"},
+                {name: "Acceptable Use", url: "/legal.html?policy=acceptable-use"},
+                {name: "Refund Policy", url: "/legal.html?policy=refund-policy"}
             ]
         };
 
