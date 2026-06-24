@@ -592,9 +592,26 @@
             </div>
             
             <div class="flex-1 flex flex-col lg:flex-row overflow-hidden bg-base-300">
+
                 <!-- Editor Side -->
-                <div class="flex-1 flex flex-col p-6 overflow-y-auto border-r border-white/5">
+                <div class="flex-1 flex flex-col p-6 overflow-y-auto border-r border-white/5 relative">
                     <input type="hidden" id="tmpl-id">
+                    
+                    <!-- Tabs -->
+                    <div class="tabs tabs-boxed bg-base-200 mb-6 border border-white/5 p-1 flex">
+                        <a class="tab flex-1 tab-active" id="tab-manual" onclick="toggleTemplateMode('manual')">✍️ Write Manually</a>
+                        <a class="tab flex-1" id="tab-ai" onclick="toggleTemplateMode('ai')">✨ Generate with AI <span class="badge badge-sm badge-primary ml-2">PRO</span></a>
+                    </div>
+                    
+                    <!-- AI Generator Panel -->
+                    <div id="panel-ai" class="hidden mb-6 p-4 rounded-xl bg-base-300 border border-primary/30 relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 opacity-10 blur-xl w-32 h-32 bg-primary rounded-full"></div>
+                        <h4 class="font-bold text-white mb-2 relative z-10">AI Template Generator</h4>
+                        <p class="text-xs text-gray-400 mb-4 relative z-10">Describe the goal of this email. Our AI will craft a high-converting subject and body instantly.</p>
+                        <textarea id="ai-prompt" class="textarea textarea-bordered bg-base-200 border-white/10 focus:border-primary w-full relative z-10" placeholder="e.g. A cold outreach email for my real estate agency offering a free home valuation..."></textarea>
+                        <button id="btn-generate-ai" class="btn btn-primary btn-sm mt-3 w-full text-white relative z-10" onclick="generateTemplateAI()">✨ Generate Template</button>
+                    </div>
+
                     <div class="form-control mb-4">
                         <label class="label"><span class="label-text text-gray-400 font-medium">Project Name / Category</span></label>
                         <input type="text" id="tmpl-project" class="input input-bordered bg-base-200 border-white/10 focus:border-primary w-full" placeholder="e.g. Kondapur Apartments">

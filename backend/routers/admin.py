@@ -185,6 +185,7 @@ class PlanCreate(BaseModel):
     email_limit_daily: int
     campaign_limit: int
     features_json: str
+    has_ai_templates: bool = False
 
 @router.get("/plans")
 async def list_plans(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):

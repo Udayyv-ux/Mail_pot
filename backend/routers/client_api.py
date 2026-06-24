@@ -123,15 +123,18 @@ async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends
     
     plan_name = "Free"
     daily_limit = client.daily_email_limit
+    has_ai = False
     if client.plan:
         plan_name = client.plan.name
         daily_limit = client.plan.email_limit_daily
+        has_ai = getattr(client.plan, 'has_ai_templates', False)
             
     return {
         "company_name": client.company_name,
         "service_account_email": service_email,
         "plan_name": plan_name,
         "daily_limit": daily_limit,
+        "has_ai_templates": has_ai,
         "whatsapp_access_token": client.whatsapp_access_token,
         "whatsapp_phone_number_id": client.whatsapp_phone_number_id,
         "whatsapp_business_account_id": client.whatsapp_business_account_id,

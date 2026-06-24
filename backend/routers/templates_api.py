@@ -11,6 +11,9 @@ from backend.database import get_db
 from backend.middleware.auth_middleware import require_client, require_active_subscription
 from backend.models.client import Client
 from backend.models.template import Template
+from backend.models.plan import Plan
+from backend.config import settings
+from groq import AsyncGroq
 
 router = APIRouter(prefix="/api/client/templates", tags=["templates"])
 
@@ -85,3 +88,56 @@ async def delete_template(id: str, db: AsyncSession = Depends(get_db), current_u
     await db.delete(template)
     await db.commit()
     return {"status": "success"}
+
+
+class AIGenerateRequest(BaseModel):
+    prompt: str
+
+@router.post("/generate")
+async def generate_template(req: AIGenerateRequest, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
+    client_id = await get_client_id(current_user, db)
+    
+    # 1. Verify Plan Access
+    client = await db.get(Client, client_id)
+    plan = await db.get(Plan, client.plan_id) if client.plan_id else None
+    
+    if not plan or not getattr(plan, 'has_ai_templates', False):
+        raise HTTPException(403, "Your plan does not support AI Generated Templates. Please upgrade to unlock this feature.")
+        
+    # 2. Get AI API Key
+    groq_key = client.groq_api_key if client.groq_api_key else settings.GROQ_API_KEY
+    if not groq_key:
+        raise HTTPException(500, "AI Service is not configured")
+        
+    # 3. Call AI
+    ai_client = AsyncGroq(api_key=groq_key)
+    
+    system_prompt = (
+        "You are an expert cold email copywriter. The user will give you a goal for their campaign. "
+        "Generate a highly converting email template. "
+        "Return the output in STRICT JSON format with exactly two keys: 'subject' and 'html_body'. "
+        "The 'html_body' MUST be formatted using HTML tags (e.g. <p>, <br>, <strong>). "
+        "Use {first_name} or {Company} as placeholders for personalization. "
+        "Do not output markdown code blocks like ```json, JUST output the raw JSON."
+    )
+    
+    try:
+        response = await ai_client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": req.prompt}
+            ],
+            model="llama-3.1-8b-instant",
+            temperature=0.7
+        )
+        content = response.choices[0].message.content.strip()
+        if content.startswith("```json"):
+            content = content.split("```json")[1].split("```")[0].strip()
+        elif content.startswith("```"):
+            content = content.split("```")[1].split("```")[0].strip()
+            
+        import json
+        return json.loads(content)
+    except Exception as e:
+        print(f"Groq API Error: {e}")
+        raise HTTPException(500, f"AI Generation failed: {str(e)}")

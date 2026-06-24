@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Global Trial & Lockout Check
     try {
         const profileData = await api.get('/client/profile');
+        window.hasAITemplates = profileData.plan ? profileData.plan.has_ai_templates : false;
         if (profileData && profileData.trial_ends_at) {
             const trialEnd = new Date(profileData.trial_ends_at);
             const subEnd = profileData.subscription_ends_at ? new Date(profileData.subscription_ends_at) : null;
@@ -167,14 +168,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const recentList = el('recent-activity-list');
             if (recentList && data.recent_activity) {
                 if (data.recent_activity.length === 0) {
-                    recentList.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-center p-6">
+                    recentList.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center p-6">
                             <div class="w-16 h-16 bg-base-300 rounded-full flex items-center justify-center mb-4 border border-white/5 shadow-inner">
                                 <span class="text-3xl opacity-50">😴</span>
                             </div>
                             <h4 class="font-bold text-gray-300 mb-1">It's quiet here...</h4>
                             <p class="text-xs text-gray-500 max-w-xs">You don't have any recent activity. Launch a campaign to wake up the engine!</p>
                             <button class="btn btn-sm btn-primary mt-4 text-white hover:scale-105 transition-transform" onclick="document.querySelector('[data-route=campaigns]').click(); return false;">Go to Campaigns</button>
-                        </div>';
+                        </div>`;;
                 } else {
                     recentList.innerHTML = data.recent_activity.map(a => {
                         const isSent = a.status === 'sent';
@@ -975,3 +976,69 @@ window.copyServiceEmail = function() {
         }
     });
 };
+
+
+// --- AI Templates Logic ---
+window.toggleTemplateMode = function(mode) {
+    const tabManual = document.getElementById('tab-manual');
+    const tabAI = document.getElementById('tab-ai');
+    const panelAI = document.getElementById('panel-ai');
+    
+    // Check access
+    if (mode === 'ai' && !window.hasAITemplates) {
+        alert("Your current plan does not support AI Generated Templates. Please upgrade to unlock this feature.");
+        return;
+    }
+    
+    if (mode === 'manual') {
+        tabManual.classList.add('tab-active');
+        tabAI.classList.remove('tab-active');
+        panelAI.classList.add('hidden');
+    } else {
+        tabAI.classList.add('tab-active');
+        tabManual.classList.remove('tab-active');
+        panelAI.classList.remove('hidden');
+    }
+};
+
+window.generateTemplateAI = async function() {
+    const prompt = document.getElementById('ai-prompt').value;
+    if (!prompt) return;
+    
+    const btn = document.getElementById('btn-generate-ai');
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Generating...';
+    btn.disabled = true;
+    
+    try {
+        const res = await api.post('/client/templates/generate', { prompt });
+        document.getElementById('tmpl-subject').value = res.subject || '';
+        document.getElementById('tmpl-body').value = res.html_body || '';
+        updateLivePreview(); // Force live preview update
+        
+        // Switch back to manual mode so they can edit the generated text
+        toggleTemplateMode('manual');
+        document.getElementById('ai-prompt').value = '';
+    } catch (e) {
+        alert("AI Generation failed: " + e.message);
+    } finally {
+        btn.innerHTML = oldText;
+        btn.disabled = false;
+    }
+};
+
+window.updateLivePreview = function() {
+    const htmlBody = document.getElementById('tmpl-body').value;
+    const iframe = document.getElementById('tmpl-preview');
+    if (iframe) {
+        iframe.srcdoc = htmlBody || '<div style="font-family:sans-serif;color:#888;padding:20px;text-align:center;">Live Preview...</div>';
+    }
+};
+
+// Bind live preview
+document.addEventListener('DOMContentLoaded', () => {
+    const tmplBody = document.getElementById('tmpl-body');
+    if (tmplBody) {
+        tmplBody.addEventListener('input', updateLivePreview);
+    }
+});

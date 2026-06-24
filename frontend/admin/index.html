@@ -716,6 +716,16 @@
                     <label class="label"><span class="label-text text-gray-400">Features (One per line)</span></label>
                     <textarea id="plan-features" class="textarea textarea-bordered bg-base-200 border-white/10 focus:border-secondary font-mono text-xs h-24" placeholder="Unlimited sends&#10;AI Match&#10;Premium Support"></textarea>
                 </div>
+                
+                <div class="form-control mb-4 bg-base-300/50 p-4 rounded-xl border border-white/5">
+                    <label class="label cursor-pointer justify-start gap-4">
+                        <input type="checkbox" id="plan-has-ai" class="toggle toggle-secondary">
+                        <div>
+                            <span class="label-text font-medium text-white block">Enable AI Templates</span>
+                            <span class="label-text-alt text-gray-400">Allows users on this plan to auto-generate templates using Groq AI.</span>
+                        </div>
+                    </label>
+                </div>
                 <button type="submit" class="btn btn-secondary text-white w-full mt-4">Save Plan</button>
             </form>
         </div>
