@@ -135,10 +135,46 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (el('dash-total')) el('dash-total').textContent = data.total_emails_sent || 0;
             if (el('dash-failed')) el('dash-failed').textContent = data.total_emails_failed || 0;
             
+            
+            // Gamified Onboarding
+            try {
+                const templatesReq = await api.get('/client/templates');
+                const hasGoogle = document.getElementById('service-account-email') && !document.getElementById('service-account-email').innerText.includes('Not configured');
+                const hasTemplates = templatesReq && templatesReq.length > 0;
+                const hasCampaigns = data.total_campaigns > 0;
+                
+                let progress = 0;
+                if (hasGoogle) progress += 33;
+                if (hasTemplates) progress += 33;
+                if (hasCampaigns) progress += 34;
+                
+                const container = el('onboarding-progress-container');
+                if (container) {
+                    if (progress < 100) {
+                        container.classList.remove('hidden');
+                        el('onboarding-percent').textContent = progress + '%';
+                        el('onboarding-bar').value = progress;
+                        
+                        if (hasGoogle) el('step-google').classList.add('opacity-50', 'grayscale');
+                        if (hasTemplates) el('step-template').classList.add('opacity-50', 'grayscale');
+                        if (hasCampaigns) el('step-campaign').classList.add('opacity-50', 'grayscale');
+                    } else {
+                        container.classList.add('hidden');
+                    }
+                }
+            } catch(e) {}
+
             const recentList = el('recent-activity-list');
             if (recentList && data.recent_activity) {
                 if (data.recent_activity.length === 0) {
-                    recentList.innerHTML = '<div class="text-center text-gray-500 mt-10">No recent activity</div>';
+                    recentList.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-center p-6">
+                            <div class="w-16 h-16 bg-base-300 rounded-full flex items-center justify-center mb-4 border border-white/5 shadow-inner">
+                                <span class="text-3xl opacity-50">😴</span>
+                            </div>
+                            <h4 class="font-bold text-gray-300 mb-1">It's quiet here...</h4>
+                            <p class="text-xs text-gray-500 max-w-xs">You don't have any recent activity. Launch a campaign to wake up the engine!</p>
+                            <button class="btn btn-sm btn-primary mt-4 text-white hover:scale-105 transition-transform" onclick="document.querySelector('[data-route=campaigns]').click(); return false;">Go to Campaigns</button>
+                        </div>';
                 } else {
                     recentList.innerHTML = data.recent_activity.map(a => {
                         const isSent = a.status === 'sent';
@@ -214,6 +250,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
+                    
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#8b5cf6',
+                            bodyColor: '#f8fafc',
+                            padding: 12,
+                            cornerRadius: 8,
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            displayColors: false
+                        }
+                    },
                     scales: {
                         y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', stepSize: 1 } },
                         x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
@@ -246,6 +295,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
+                    
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#8b5cf6',
+                            bodyColor: '#f8fafc',
+                            padding: 12,
+                            cornerRadius: 8,
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            displayColors: false
+                        }
+                    },
                     scales: {
                         y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', stepSize: 1 } },
                         x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
@@ -899,3 +961,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     router.init();
     fetchNotifications();
 });
+
+
+window.copyServiceEmail = function() {
+    const emailTxt = document.getElementById('service-account-email').innerText;
+    navigator.clipboard.writeText(emailTxt).then(() => {
+        const btn = document.querySelector('button[onclick="copyServiceEmail()"]');
+        if (btn) {
+            btn.innerHTML = '<span class="text-xs text-green-400 font-bold px-1">Copied!</span>';
+            setTimeout(() => {
+                btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>';
+            }, 2000);
+        }
+    });
+};

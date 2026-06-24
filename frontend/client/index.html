@@ -90,24 +90,63 @@
                     </div>
                 </div>
                 
+                
+                <!-- Onboarding Progress -->
+                <div id="onboarding-progress-container" class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg mb-8 transition-all duration-500 hidden">
+                    <div class="card-body p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="card-title text-lg font-bold">Setup Progress <span id="onboarding-percent" class="text-primary ml-2">0%</span></h3>
+                                <p class="text-sm text-gray-400">Complete these steps to launch your automated outreach.</p>
+                            </div>
+                            <button class="btn btn-sm btn-ghost text-gray-500 hover:text-white" onclick="document.getElementById('onboarding-progress-container').style.display='none'">Dismiss</button>
+                        </div>
+                        <progress id="onboarding-bar" class="progress progress-primary w-full bg-base-300 h-3 mb-6" value="0" max="100"></progress>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div class="flex items-center gap-3 p-3 rounded-lg bg-base-300/50 border border-white/5" id="step-google">
+                                <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center shrink-0 border border-white/10 step-icon">1</div>
+                                <div>
+                                    <div class="font-bold text-gray-300 step-title">Connect Google</div>
+                                    <a href="#settings" onclick="document.querySelector('[data-route=settings]').click(); return false;" class="text-primary hover:underline text-xs">Go to Settings ?</a>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 rounded-lg bg-base-300/50 border border-white/5" id="step-template">
+                                <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center shrink-0 border border-white/10 step-icon">2</div>
+                                <div>
+                                    <div class="font-bold text-gray-300 step-title">Create Template</div>
+                                    <a href="#templates" onclick="document.querySelector('[data-route=templates]').click(); return false;" class="text-primary hover:underline text-xs">Go to Templates ?</a>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 rounded-lg bg-base-300/50 border border-white/5" id="step-campaign">
+                                <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center shrink-0 border border-white/10 step-icon">3</div>
+                                <div>
+                                    <div class="font-bold text-gray-300 step-title">Launch Campaign</div>
+                                    <a href="#campaigns" onclick="document.querySelector('[data-route=campaigns]').click(); return false;" class="text-primary hover:underline text-xs">Go to Campaigns ?</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Emails Sent Today</div>
                         <div class="stat-value text-primary mt-1" id="dash-emails-sent">0</div>
                         <div class="stat-desc mt-1">Daily Limit: <span id="dash-emails-limit">0</span></div>
                         <progress id="dash-meter" class="progress progress-primary w-full mt-4" value="0" max="100"></progress>
                     </div>
-                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Active Templates</div>
                         <div class="stat-value text-secondary mt-1" id="dash-templates">0</div>
                         <div class="stat-desc mt-1 text-success">↗︎ Connected to AI</div>
                     </div>
-                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Total Sent All Time</div>
                         <div class="stat-value mt-1" id="dash-total">0</div>
                         <div class="stat-desc mt-1">Across all campaigns</div>
                     </div>
-                    <div class="stat bg-base-200 border border-error/20 rounded-2xl shadow-lg">
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-error/30 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-error/10 transition-all duration-300">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Failed Emails</div>
                         <div class="stat-value text-error mt-1" id="dash-failed">0</div>
                         <div class="stat-desc mt-1 text-error/80">Requires attention</div>
@@ -116,7 +155,7 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2 space-y-6">
-                        <div class="card bg-base-200 border border-white/5 shadow-lg">
+                        <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg hover:shadow-xl transition-all duration-300">
                             <div class="card-body p-6">
                                 <h3 class="card-title text-lg mb-4">Email Volume (Last 7 Days)</h3>
                                 <div class="relative h-64 w-full">
@@ -124,7 +163,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="card bg-base-200 border border-white/5 shadow-lg">
+                        <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg hover:shadow-xl transition-all duration-300">
                             <div class="card-body p-6">
                                 <h3 class="card-title text-lg mb-4">WhatsApp Activity (Last 7 Days)</h3>
                                 <div class="relative h-64 w-full">
@@ -133,7 +172,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card bg-base-200 border border-white/5 shadow-lg">
+                    <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg hover:shadow-xl transition-all duration-300">
                         <div class="card-body p-6 flex flex-col h-[340px]">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="card-title text-lg">Recent Activity</h3>
@@ -155,7 +194,7 @@
                 
                 <div class="space-y-6">
                     <!-- Step 1 -->
-                    <div class="card bg-base-200 border border-white/5 shadow-lg">
+                    <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg hover:shadow-xl transition-all duration-300">
                         <div class="card-body p-6">
                             <h3 class="text-xl font-bold flex items-center gap-3"><span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">1</span> Connect Your Google Account</h3>
                             <p class="text-gray-400 mt-2">To send emails on your behalf, we need permission to connect to your Gmail account. We only request the minimum permissions required to send emails and read the Google Sheets you explicitly share with us.</p>
@@ -168,7 +207,7 @@
                     </div>
 
                     <!-- Step 2 -->
-                    <div class="card bg-base-200 border border-white/5 shadow-lg">
+                    <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg hover:shadow-xl transition-all duration-300">
                         <div class="card-body p-6">
                             <h3 class="text-xl font-bold flex items-center gap-3"><span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">2</span> Create a Template</h3>
                             <p class="text-gray-400 mt-2">Define the core message you want to send. Our AI will automatically personalize it for each lead based on their data.</p>
@@ -182,7 +221,7 @@
                     </div>
 
                     <!-- Step 3 -->
-                    <div class="card bg-base-200 border border-white/5 shadow-lg">
+                    <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg hover:shadow-xl transition-all duration-300">
                         <div class="card-body p-6">
                             <h3 class="text-xl font-bold flex items-center gap-3"><span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">3</span> Launch a Campaign</h3>
                             <p class="text-gray-400 mt-2">Link a Google Sheet containing your leads to a Template, and start sending.</p>
@@ -204,7 +243,7 @@
                     <h2 class="text-3xl font-bold">Email Templates</h2>
                     <button class="btn bg-white hover:bg-gray-200 text-dark border-none" id="btn-new-template">+ Create Template</button>
                 </div>
-                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg overflow-x-auto hover:shadow-xl transition-all duration-300">
                     <table class="table table-zebra w-full text-left">
                         <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
                             <tr><th class="p-4 font-semibold">Project Name</th><th class="p-4 font-semibold">Subject</th><th class="p-4 font-semibold">Status</th><th class="p-4 font-semibold text-right">Actions</th></tr>
@@ -225,7 +264,7 @@
                     </div>
                     <button class="btn btn-primary text-white" id="btn-new-campaign">+ New Campaign</button>
                 </div>
-                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg overflow-x-auto hover:shadow-xl transition-all duration-300">
                     <table class="table table-zebra w-full text-left">
                         <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
                             <tr>
@@ -251,7 +290,7 @@
                     </div>
                     <button class="btn btn-outline" onclick="loadQueue()"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Refresh</button>
                 </div>
-                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg overflow-x-auto hover:shadow-xl transition-all duration-300">
                     <table class="table table-zebra w-full text-left">
                         <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
                             <tr>
@@ -277,7 +316,7 @@
                     </div>
                     <button class="btn btn-outline" onclick="loadInbox()"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Refresh</button>
                 </div>
-                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg overflow-x-auto hover:shadow-xl transition-all duration-300">
                     <table class="table table-zebra w-full text-left">
                         <thead class="text-gray-400 text-sm uppercase tracking-wider border-b border-white/10">
                             <tr>
@@ -297,7 +336,7 @@
             <section id="page-billing" class="page-section max-w-7xl mx-auto">
                 <h2 class="text-3xl font-bold mb-8">Billing & Plan</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Current Plan</div>
                         <div class="stat-value text-primary mt-1 mb-2" id="billing-current-plan">Free Plan</div>
                         <div class="stat-desc text-sm">Daily limit: <span id="billing-current-limit" class="text-white font-bold">0 / day</span></div>
@@ -328,7 +367,7 @@
                 <h2 class="text-3xl font-bold mb-8">Account Settings</h2>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Profile & SMTP -->
-                    <div class="card bg-base-200 border border-white/5 shadow-lg">
+                    <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg hover:shadow-xl transition-all duration-300">
                         <div class="card-body p-8">
                             <h3 class="card-title text-xl mb-2">Profile Setup</h3>
                             <p class="text-sm text-gray-400 mb-6 flex items-center gap-2">
@@ -347,13 +386,18 @@
                         </div>
                     </div>
 
-                    <div class="card bg-base-200 border border-white/5 shadow-lg h-fit">
+                    <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg h-fit hover:shadow-xl transition-all duration-300">
                         <div class="card-body p-8">
                             <h3 class="card-title text-xl mb-6">Service Account Setup</h3>
                             <p class="text-gray-400 text-sm mb-4">Share all your Campaign Google Sheets with this Service Account email so our system can read them:</p>
-                            <div class="bg-base-300 border border-white/10 p-3 rounded-lg font-mono text-sm text-secondary mb-6 break-all shadow-inner" id="service-account-email">
-                                Not configured by admin
-                            </div>
+                            
+                                <div class="flex items-center justify-between gap-4 bg-base-300 border border-white/10 p-3 rounded-lg shadow-inner mb-6">
+                                    <div class="font-mono text-sm text-secondary truncate" id="service-account-email">Not configured by admin</div>
+                                    <button class="btn btn-sm btn-ghost btn-square text-gray-400 hover:text-white" onclick="copyServiceEmail()" title="Copy Email">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                    </button>
+                                </div>
+
                         </div>
                     </div>
                 </div>
@@ -372,7 +416,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Config Form -->
                     <div class="lg:col-span-1">
-                        <div class="card bg-base-200 border border-white/5 shadow-lg">
+                        <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg hover:shadow-xl transition-all duration-300">
                             <div class="card-body p-8">
                                 <h3 class="card-title text-xl mb-2">Meta API Configuration</h3>
                                 <p class="text-sm text-gray-400 mb-6">
@@ -401,7 +445,7 @@
 
                     <!-- Templates Table -->
                     <div class="lg:col-span-2">
-                        <div class="card bg-base-200 border border-white/5 shadow-lg h-full">
+                        <div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg h-full hover:shadow-xl transition-all duration-300">
                             <div class="card-body p-8">
                                 <div class="flex justify-between items-center mb-6">
                                     <h3 class="card-title text-xl">Approved Templates</h3>
