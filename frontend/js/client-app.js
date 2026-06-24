@@ -376,8 +376,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updatePreview();
     });
 
-    document.getElementById('tmpl-body')?.addEventListener('input', updatePreview);
-    function updatePreview() {
+    window.updatePreview = function() {
         var bodyEl = document.getElementById('tmpl-body');
         var bannerUrlEl = document.getElementById('tmpl-banner-url');
         var previewEl = document.getElementById('tmpl-preview');
@@ -394,7 +393,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         doc.write(finalHtml);
         doc.close();
-    }
+    };
+    document.getElementById('tmpl-body')?.addEventListener('input', window.updatePreview);
 
     // Banner Upload Handler
     document.getElementById('tmpl-banner')?.addEventListener('change', async (e) => {
@@ -1033,7 +1033,7 @@ window.generateTemplateAI = async function() {
         const res = await api.post('/client/templates/generate', { prompt });
         document.getElementById('tmpl-subject').value = res.subject || '';
         document.getElementById('tmpl-body').value = res.html_body || '';
-        updateLivePreview(); // Force live preview update
+        window.updatePreview(); // Force live preview update
         
         // Switch back to manual mode so they can edit the generated text
         toggleTemplateMode('manual');
@@ -1046,18 +1046,3 @@ window.generateTemplateAI = async function() {
     }
 };
 
-window.updateLivePreview = function() {
-    const htmlBody = document.getElementById('tmpl-body').value;
-    const iframe = document.getElementById('tmpl-preview');
-    if (iframe) {
-        iframe.srcdoc = htmlBody || '<div style="font-family:sans-serif;color:#888;padding:20px;text-align:center;">Live Preview...</div>';
-    }
-};
-
-// Bind live preview
-document.addEventListener('DOMContentLoaded', () => {
-    const tmplBody = document.getElementById('tmpl-body');
-    if (tmplBody) {
-        tmplBody.addEventListener('input', updateLivePreview);
-    }
-});
