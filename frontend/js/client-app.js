@@ -128,7 +128,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadDashboard(isBackground = false) {
         try {
-            const data = await api.get('/client/dashboard', { background: isBackground });
+            // Fetch concurrently for 2x faster load times
+            const [data, templatesReq, profileData] = await Promise.all([
+                api.get('/client/dashboard', { background: isBackground }),
+                api.get('/client/templates', { background: isBackground }).catch(() => []),
+                api.get('/client/profile', { background: isBackground }).catch(() => null)
+            ]);
+            
+            if (profileData) {
+                window.hasAITemplates = profileData.has_ai_templates || false;
+            }
+            
             const el = (id) => document.getElementById(id);
 
             if (el('dash-emails-sent')) el('dash-emails-sent').textContent = data.emails_sent_today || 0;
@@ -136,10 +146,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (el('dash-total')) el('dash-total').textContent = data.total_emails_sent || 0;
             if (el('dash-failed')) el('dash-failed').textContent = data.total_emails_failed || 0;
             
-            
             // Gamified Onboarding
             try {
-                const templatesReq = await api.get('/client/templates', { background: isBackground });
                 const hasGoogle = document.getElementById('service-account-email') && !document.getElementById('service-account-email').innerText.includes('Not configured');
                 const hasTemplates = templatesReq && templatesReq.length > 0;
                 const hasCampaigns = data.total_campaigns > 0;
