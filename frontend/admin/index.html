@@ -44,7 +44,7 @@
         }
     </style>
 </head>
-<body class="antialiased h-screen overflow-hidden selection:bg-secondary selection:text-white bg-base-300">
+<body class="antialiased h-screen overflow-hidden selection:bg-secondary selection:text-white bg-base-300 text-gray-200">
 
     <!-- Auth Guard -->
     <div id="admin-login-screen" class="fixed inset-0 z-50 bg-base-300 flex items-center justify-center">
@@ -56,7 +56,7 @@
                 Sign in with Google
             </button>
             <div class="mt-6">
-                <a href="/" class="link text-sm text-gray-500 hover:text-white">Back to site</a>
+                <a href="/" class="link text-sm text-gray-400 hover:text-white">Back to site</a>
             </div>
         </div>
     </div>
@@ -247,13 +247,13 @@
                             <div class="form-control">
                                 <label class="label"><span class="label-text text-gray-400 font-medium">Global Default Groq Key</span></label>
                                 <input type="password" id="admin-groq" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="Enter API Key">
-                                <label class="label"><span class="label-text-alt text-gray-500">Used for categorizing leads.</span></label>
+                                <label class="label"><span class="label-text-alt text-gray-400">Used for categorizing leads.</span></label>
                             </div>
                             
                             <div class="form-control">
                                 <label class="label"><span class="label-text text-gray-400 font-medium">Default Trial Duration (Days)</span></label>
                                 <input type="number" id="admin-trial-days" class="input input-bordered bg-base-300 border-white/10" placeholder="5" value="5">
-                                <label class="label"><span class="label-text-alt text-gray-500">Number of days before trial users are locked out.</span></label>
+                                <label class="label"><span class="label-text-alt text-gray-400">Number of days before trial users are locked out.</span></label>
                             </div>
                             <div class="divider border-white/5">Landing Page Settings</div>
                             <div class="form-control">
@@ -448,13 +448,13 @@
                             <div class="form-control">
                                 <label class="label"><span class="label-text text-gray-400 font-medium">Global Default Groq Key</span></label>
                                 <input type="password" id="admin-groq" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="Enter API Key">
-                                <label class="label"><span class="label-text-alt text-gray-500">Used for categorizing leads.</span></label>
+                                <label class="label"><span class="label-text-alt text-gray-400">Used for categorizing leads.</span></label>
                             </div>
                             
                             <div class="form-control">
                                 <label class="label"><span class="label-text text-gray-400 font-medium">Default Trial Duration (Days)</span></label>
                                 <input type="number" id="admin-trial-days" class="input input-bordered bg-base-300 border-white/10" placeholder="5" value="5">
-                                <label class="label"><span class="label-text-alt text-gray-500">Number of days before trial users are locked out.</span></label>
+                                <label class="label"><span class="label-text-alt text-gray-400">Number of days before trial users are locked out.</span></label>
                             </div>
                             <div class="divider border-white/5">Landing Page Settings</div>
                             <div class="form-control">
@@ -501,7 +501,7 @@
                                     <input type="file" id="admin-logo-upload" accept="image/*" class="file-input file-input-bordered bg-base-300 border-white/10 w-full max-w-xs" />
                                     <button type="button" class="btn btn-primary" onclick="uploadLogo()">Upload Logo</button>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-2">Recommended: PNG with transparent background.</p>
+                                <p class="text-xs text-gray-400 mt-2">Recommended: PNG with transparent background.</p>
                             </div>
                             <button type="submit" class="btn btn-secondary text-white w-full mt-8">Save Global Settings</button>
                         </form>
@@ -518,7 +518,7 @@
                             <div class="form-control">
                                 <label class="label"><span class="label-text text-gray-400 font-medium">WhatsApp Business Account ID</span></label>
                                 <input type="text" id="admin-wa-business-id" class="input input-bordered bg-base-300 border-white/10 focus:border-secondary" placeholder="e.g. 2546005839203791">
-                                <label class="label"><span class="label-text-alt text-gray-500">Global identifier for your Meta Business app.</span></label>
+                                <label class="label"><span class="label-text-alt text-gray-400">Global identifier for your Meta Business app.</span></label>
                             </div>
                             <button type="submit" class="btn btn-secondary text-white w-full mt-8">Save WhatsApp Settings</button>
                         </form>
@@ -710,7 +710,7 @@
                 <div class="form-control">
                     <label class="label"><span class="label-text text-gray-400">Campaign Limit (Sheets)</span></label>
                     <input type="number" id="plan-campaign-limit" class="input input-bordered bg-base-200 border-white/10 focus:border-secondary" value="3" min="1" required>
-                    <label class="label"><span class="label-text-alt text-gray-500">Max number of Google Sheets a user on this plan can connect.</span></label>
+                    <label class="label"><span class="label-text-alt text-gray-400">Max number of Google Sheets a user on this plan can connect.</span></label>
                 </div>
                 <div class="form-control">
                     <label class="label"><span class="label-text text-gray-400">Features (One per line)</span></label>

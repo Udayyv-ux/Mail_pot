@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!allPolicies || allPolicies.length === 0) {
             gridLoader.classList.add('hidden');
             gridContainer.classList.remove('hidden');
-            gridContainer.innerHTML = '<div class="col-span-3 text-center text-gray-500 py-12">No policies have been published yet.</div>';
+            gridContainer.innerHTML = '<div class="col-span-3 text-center text-gray-400 py-12">No policies have been published yet.</div>';
             return;
         }
 

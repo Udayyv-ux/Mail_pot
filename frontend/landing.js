@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                             <div>
                                 <h4 class="font-bold text-white">?{review.name}</h4>
-                                <p class="text-xs text-gray-500">?{review.role}</p>
+                                <p class="text-xs text-gray-400">?{review.role}</p>
                             </div>
                         </div>
                     </div>
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }).join('');
                 footerGrid.innerHTML += `
                     <div>
-                        <h4 class="text-xs font-bold text-gray-500 tracking-wider uppercase mb-4">?{colName}</h4>
+                        <h4 class="text-xs font-bold text-gray-400 tracking-wider uppercase mb-4">?{colName}</h4>
                         <ul class="space-y-3">
                             ${linksHtml}
                         </ul>
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 let featureHtml = features.map(f => `<li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> ${f}</li>`).join('');
                 
                 let displayPrice = plan.price_monthly;
-                let totalBilled = '<div class="text-xs text-gray-500 font-medium mb-4">Billed monthly</div>';
+                let totalBilled = '<div class="text-xs text-gray-400 font-medium mb-4">Billed monthly</div>';
                 
                 if (currentCycle === 'half_yearly') {
                     let totalAmount = Math.round((plan.price_monthly * 6) * 0.85);

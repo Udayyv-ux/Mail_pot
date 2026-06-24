@@ -107,7 +107,7 @@
             const recentList = el('recent-activity-list');
             if (recentList && data.recent_activity) {
                 if (data.recent_activity.length === 0) {
-                    recentList.innerHTML = '<div class="text-center text-gray-500 mt-10">No recent activity</div>';
+                    recentList.innerHTML = '<div class="text-center text-gray-400 mt-10">No recent activity</div>';
                 } else {
                     recentList.innerHTML = data.recent_activity.map(a => {
                         const isSent = a.status === 'sent';
@@ -121,7 +121,7 @@
                             <div class="mt-0.5 ${colorClass} font-bold">₹{icon}</div>
                             <div class="flex-1 min-w-0">
                                 <div class="font-medium text-sm truncate" title="${a.recipient_email}">₹{a.recipient_email}</div>
-                                <div class="text-xs text-gray-500">₹{dateStr}</div>
+                                <div class="text-xs text-gray-400">₹{dateStr}</div>
                                 ${errMsg}
                             </div>
                             <div class="text-xs font-semibold capitalize ${colorClass}">₹{a.status}</div>
@@ -204,7 +204,7 @@
             tbody.innerHTML = '';
 
             if (templates.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No templates found. Create your first one!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">No templates found. Create your first one!</td></tr>';
                 return;
             }
 
@@ -353,7 +353,7 @@
             tbody.innerHTML = '';
 
             if (campaigns.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No campaigns yet. Click "+ New Campaign" to get started!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">No campaigns yet. Click "+ New Campaign" to get started!</td></tr>';
                 return;
             }
 
@@ -370,7 +370,7 @@
                     statusHtml = '<span class="badge badge-success badge-sm">Running</span>';
                 }
                 
-                let runText = c.last_run_at ? `<div class="text-xs text-gray-500 mt-1">Last run: ${new Date(c.last_run_at).toLocaleString()}</div>` : '';
+                let runText = c.last_run_at ? `<div class="text-xs text-gray-400 mt-1">Last run: ${new Date(c.last_run_at).toLocaleString()}</div>` : '';
 
                 tr.innerHTML =
                     '<td class="p-4 font-bold text-white">' + c.name + '</td>' +
@@ -454,7 +454,7 @@
                     <tr>
                         <td class="p-4">
                             <div class="font-medium">₹{q.recipient_name || 'N/A'}</div>
-                            <div class="text-xs text-gray-500">₹{q.recipient_email}</div>
+                            <div class="text-xs text-gray-400">₹{q.recipient_email}</div>
                         </td>
                         <td class="p-4">₹{q.campaign_name}</td>
                         <td class="p-4">₹{q.template_name}</td>
@@ -465,7 +465,7 @@
                     </tr>
                 `).join('');
                 if (items.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No emails pending review.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">No emails pending review.</td></tr>';
                 }
                 
                 var badge = document.getElementById('queue-badge');
@@ -506,13 +506,13 @@
                         <td class="p-4 font-medium text-white">₹{m.from.replace(/<.*>/, '')}</td>
                         <td class="p-4">
                             <div class="font-medium text-white">₹{m.subject}</div>
-                            <div class="text-xs text-gray-500 truncate max-w-xs">₹{m.snippet}</div>
+                            <div class="text-xs text-gray-400 truncate max-w-xs">₹{m.snippet}</div>
                         </td>
                         <td class="p-4 text-xs text-gray-400 whitespace-nowrap">₹{new Date(m.date).toLocaleString()}</td>
                     </tr>
                 `).join('');
                 if (items.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-500">No recent messages in Inbox.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-400">No recent messages in Inbox.</td></tr>';
                 }
             }
         } catch (e) {
@@ -565,7 +565,7 @@
             }).join('');
 
             let displayPrice = plan.price_monthly;
-            let totalBilled = '<div class="text-xs text-gray-500 font-medium mb-4">Billed monthly</div>';
+            let totalBilled = '<div class="text-xs text-gray-400 font-medium mb-4">Billed monthly</div>';
             
             if (currentBillingCycle === 'half_yearly') {
                 let totalAmount = Math.round((plan.price_monthly * 6) * 0.85);
@@ -705,7 +705,7 @@
                 });
             } else {
                 badge.classList.add('hidden');
-                list.innerHTML = '<div class="p-4 text-center text-gray-500">No new announcements.</div>';
+                list.innerHTML = '<div class="p-4 text-center text-gray-400">No new announcements.</div>';
             }
         } catch (e) {}
     }

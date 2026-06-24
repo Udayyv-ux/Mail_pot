@@ -126,8 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackList.innerHTML = '';
             
             if(!demos || demos.length === 0) {
-                list.innerHTML = '<div class="p-4 text-center text-gray-500">No demo requests yet.</div>';
-                feedbackList.innerHTML = '<div class="p-4 text-center text-gray-500">No feedback yet.</div>';
+                list.innerHTML = '<div class="p-4 text-center text-gray-400">No demo requests yet.</div>';
+                feedbackList.innerHTML = '<div class="p-4 text-center text-gray-400">No feedback yet.</div>';
                 return;
             }
             
@@ -143,11 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="flex justify-between items-start mb-2">
                         <strong class="text-white">${d.name} <span class="text-gray-400 text-sm font-normal">(${d.company || 'N/A'})</span></strong>
                         <div class="flex flex-col items-end">
-                            <span class="text-xs text-gray-500 mb-1">${new Date(d.created_at).toLocaleDateString()}</span>
+                            <span class="text-xs text-gray-400 mb-1">${new Date(d.created_at).toLocaleDateString()}</span>
                             <button class="btn btn-xs btn-primary btn-outline" onclick="openAdminEmailModal('${d.email}', true)">Email</button>
                         </div>
                     </div>
-                    <div class="text-sm text-secondary mb-1">${d.email} <span class="text-gray-500 ml-2">${d.phone || ''}</span></div>
+                    <div class="text-sm text-secondary mb-1">${d.email} <span class="text-gray-400 ml-2">${d.phone || ''}</span></div>
                     <div class="mb-2">
                         <span class="badge badge-sm badge-outline text-gray-300">${d.inquiry_type || 'Demo'}</span>
                         <span class="badge badge-sm ${d.status === 'contacted' ? 'badge-success' : 'badge-warning'} ml-2">${d.status}</span>
@@ -164,8 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             
-            if (demoCount === 0) list.innerHTML = '<div class="p-4 text-center text-gray-500">No demo requests yet.</div>';
-            if (feedbackCount === 0) feedbackList.innerHTML = '<div class="p-4 text-center text-gray-500">No feedback yet.</div>';
+            if (demoCount === 0) list.innerHTML = '<div class="p-4 text-center text-gray-400">No demo requests yet.</div>';
+            if (feedbackCount === 0) feedbackList.innerHTML = '<div class="p-4 text-center text-gray-400">No feedback yet.</div>';
         } catch(e) {
             console.log("Demo requests error:", e);
         }
@@ -246,10 +246,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 tbody.appendChild(tr);
             };
 
-            if(activeClients.length === 0) tbodyActive.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">No active clients.</td></tr>';
+            if(activeClients.length === 0) tbodyActive.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-400">No active clients.</td></tr>';
             else activeClients.forEach(c => renderRow(c, tbodyActive, false));
 
-            if(demoClients.length === 0) tbodyDemo.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">No demo users.</td></tr>';
+            if(demoClients.length === 0) tbodyDemo.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-400">No demo users.</td></tr>';
             else demoClients.forEach(c => renderRow(c, tbodyDemo, true));
 
         } catch(e) {
@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="col-span-2 mt-4">
                         <div class="text-gray-400 mb-2">Daily Utilization</div>
                         <progress class="progress ${client.emails_sent_today >= client.daily_email_limit ? 'progress-error' : 'progress-primary'} w-full" value="${client.emails_sent_today}" max="${client.daily_email_limit}"></progress>
-                        <div class="text-xs text-right mt-1 text-gray-500">${Math.round((client.emails_sent_today / client.daily_email_limit) * 100) || 0}% used</div>
+                        <div class="text-xs text-right mt-1 text-gray-400">${Math.round((client.emails_sent_today / client.daily_email_limit) * 100) || 0}% used</div>
                     </div>
                 </div>
             `;
@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.innerHTML = '';
 
             if(!logs || logs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">No emails sent yet.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-400">No emails sent yet.</td></tr>';
                 return;
             }
 
@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML = '';
             
             if(!plans || plans.length === 0) {
-                container.innerHTML = '<div class="col-span-3 text-center text-gray-500 p-8">No plans created yet. Click "Add Plan" to create one.</div>';
+                container.innerHTML = '<div class="col-span-3 text-center text-gray-400 p-8">No plans created yet. Click "Add Plan" to create one.</div>';
                 return;
             }
             
@@ -738,7 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
             list.innerHTML = '';
             
             if(!policies || policies.length === 0) {
-                list.innerHTML = '<div class="p-4 text-center text-gray-500">No policies created yet.</div>';
+                list.innerHTML = '<div class="p-4 text-center text-gray-400">No policies created yet.</div>';
                 return;
             }
             
@@ -746,7 +746,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const div = document.createElement('div');
                 div.className = 'flex justify-between items-center p-4 bg-dark/50 rounded-lg';
                 div.innerHTML = `
-                    <div><h4 class="font-bold text-white">${p.title}</h4><p class="text-xs text-gray-500">/${p.slug}</p></div>
+                    <div><h4 class="font-bold text-white">${p.title}</h4><p class="text-xs text-gray-400">/${p.slug}</p></div>
                     <div class="space-x-2">
                         <button class="text-primary hover:text-indigo-400 text-sm font-semibold" onclick="editPolicy('${p.slug}')">Edit</button>
                         <button class="text-red-400 hover:text-red-300 text-sm font-semibold" onclick="deletePolicy('${p.slug}')">Delete</button>
@@ -938,7 +938,7 @@ document.addEventListener('DOMContentLoaded', () => {
             list.innerHTML = '';
             
             if(!codes || codes.length === 0) {
-                list.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">No promo codes found.</td></tr>';
+                list.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-400">No promo codes found.</td></tr>';
                 return;
             }
             

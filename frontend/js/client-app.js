@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <span class="text-3xl opacity-50">😴</span>
                             </div>
                             <h4 class="font-bold text-gray-300 mb-1">It's quiet here...</h4>
-                            <p class="text-xs text-gray-500 max-w-xs">You don't have any recent activity. Launch a campaign to wake up the engine!</p>
+                            <p class="text-xs text-gray-400 max-w-xs">You don't have any recent activity. Launch a campaign to wake up the engine!</p>
                             <button class="btn btn-sm btn-primary mt-4 text-white hover:scale-105 transition-transform" onclick="document.querySelector('[data-route=campaigns]').click(); return false;">Go to Campaigns</button>
                         </div>`;;
                 } else {
@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <div class="mt-0.5 ${colorClass} font-bold">${icon}</div>
                             <div class="flex-1 min-w-0">
                                 <div class="font-medium text-sm truncate" title="${a.recipient_email}">${a.recipient_email}</div>
-                                <div class="text-xs text-gray-500">${dateStr}</div>
+                                <div class="text-xs text-gray-400">${dateStr}</div>
                                 ${errMsg}
                             </div>
                             <div class="text-xs font-semibold capitalize ${colorClass}">${a.status}</div>
@@ -339,7 +339,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tbody.innerHTML = '';
 
             if (templates.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No templates found. Create your first one!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">No templates found. Create your first one!</td></tr>';
                 return;
             }
 
@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tbody.innerHTML = '';
 
             if (campaigns.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No campaigns yet. Click "+ New Campaign" to get started!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">No campaigns yet. Click "+ New Campaign" to get started!</td></tr>';
                 return;
             }
 
@@ -508,7 +508,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     statusHtml = '<span class="badge badge-success badge-sm">Running</span>';
                 }
                 
-                let runText = c.last_run_at ? `<div class="text-xs text-gray-500 mt-1">Last run: ${new Date(c.last_run_at).toLocaleString()}</div>` : '';
+                let runText = c.last_run_at ? `<div class="text-xs text-gray-400 mt-1">Last run: ${new Date(c.last_run_at).toLocaleString()}</div>` : '';
 
                 tr.innerHTML =
                     '<td class="p-4 font-bold text-white">' + c.name + '</td>' +
@@ -597,7 +597,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <tr>
                         <td class="p-4">
                             <div class="font-medium">${q.recipient_name || 'N/A'}</div>
-                            <div class="text-xs text-gray-500">${q.recipient_email}</div>
+                            <div class="text-xs text-gray-400">${q.recipient_email}</div>
                         </td>
                         <td class="p-4">${q.campaign_name}</td>
                         <td class="p-4">${q.template_name}</td>
@@ -608,7 +608,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </tr>
                 `).join('');
                 if (items.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No emails pending review.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">No emails pending review.</td></tr>';
                 }
                 
                 var badge = document.getElementById('queue-badge');
@@ -649,13 +649,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <td class="p-4 font-medium text-white">${m.from.replace(/<.*>/, '')}</td>
                         <td class="p-4">
                             <div class="font-medium text-white">${m.subject}</div>
-                            <div class="text-xs text-gray-500 truncate max-w-xs">${m.snippet}</div>
+                            <div class="text-xs text-gray-400 truncate max-w-xs">${m.snippet}</div>
                         </td>
                         <td class="p-4 text-xs text-gray-400 whitespace-nowrap">${new Date(m.date).toLocaleString()}</td>
                     </tr>
                 `).join('');
                 if (items.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-500">No recent messages in Inbox.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-400">No recent messages in Inbox.</td></tr>';
                 }
             }
         } catch (e) {
@@ -708,7 +708,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }).join('');
 
             let displayPrice = plan.price_monthly;
-            let totalBilled = '<div class="text-xs text-gray-500 font-medium mb-4">Billed monthly</div>';
+            let totalBilled = '<div class="text-xs text-gray-400 font-medium mb-4">Billed monthly</div>';
             
             if (currentBillingCycle === 'half_yearly') {
                 let totalAmount = Math.round((plan.price_monthly * 6) * 0.85);
@@ -846,7 +846,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 fetchWhatsappTemplates();
             } else {
                 var tbody = document.getElementById('wa-templates-tbody');
-                if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-8">Save your Meta API credentials to view templates.</td></tr>';
+                if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8">Save your Meta API credentials to view templates.</td></tr>';
             }
         } catch (e) {
             console.error('WhatsApp load error:', e);
@@ -858,7 +858,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         var refreshBtn = document.getElementById('btn-refresh-templates');
         if (!tbody) return;
         
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-8"><span class="loading loading-spinner text-primary"></span> Fetching from Meta...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8"><span class="loading loading-spinner text-primary"></span> Fetching from Meta...</td></tr>';
         if (refreshBtn) refreshBtn.classList.add('animate-spin');
 
         try {
@@ -867,7 +867,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tbody.innerHTML = '';
             
             if (templates.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-8">No templates found in your Meta account.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8">No templates found in your Meta account.</td></tr>';
             } else {
                 templates.forEach(t => {
                     var statusColor = 'text-gray-400';
@@ -935,7 +935,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             } else {
                 badge.classList.add('hidden');
-                list.innerHTML = '<div class="p-4 text-center text-gray-500">No new announcements.</div>';
+                list.innerHTML = '<div class="p-4 text-center text-gray-400">No new announcements.</div>';
             }
         } catch (e) {}
     }
@@ -1000,13 +1000,21 @@ window.toggleTemplateMode = function(mode) {
     const panelManual = document.getElementById('panel-manual');
 
     if (mode === 'manual') {
-        tabManual.classList.add('tab-active');
-        tabAI.classList.remove('tab-active');
+        tabManual.classList.add('tab-active', 'text-white');
+        tabManual.classList.remove('text-gray-400');
+        
+        tabAI.classList.remove('tab-active', 'text-white');
+        tabAI.classList.add('text-gray-400');
+        
         panelAI.classList.add('hidden');
         if (panelManual) panelManual.classList.remove('hidden');
     } else {
-        tabAI.classList.add('tab-active');
-        tabManual.classList.remove('tab-active');
+        tabAI.classList.add('tab-active', 'text-white');
+        tabAI.classList.remove('text-gray-400');
+        
+        tabManual.classList.remove('tab-active', 'text-white');
+        tabManual.classList.add('text-gray-400');
+        
         panelAI.classList.remove('hidden');
         if (panelManual) panelManual.classList.add('hidden');
     }
