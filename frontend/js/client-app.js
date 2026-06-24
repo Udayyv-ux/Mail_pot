@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Global Trial & Lockout Check
     try {
         const profileData = await api.get('/client/profile');
-        window.hasAITemplates = profileData.plan ? profileData.plan.has_ai_templates : false;
+        window.hasAITemplates = profileData.has_ai_templates || false;
         if (profileData && profileData.trial_ends_at) {
             const trialEnd = new Date(profileData.trial_ends_at);
             const subEnd = profileData.subscription_ends_at ? new Date(profileData.subscription_ends_at) : null;
