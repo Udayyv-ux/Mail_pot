@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Auto-refresh the current active route every 10 seconds to keep data live
             setInterval(() => {
                 if (this.currentRoute === 'dashboard') {
-                    loadDashboard();
+                    loadDashboard(true);
                 } else if (this.currentRoute === 'campaigns') {
                     // loadCampaigns(); // uncomment if you want campaigns table to auto refresh
                 }
@@ -126,9 +126,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     let emailChart = null;
     let whatsappChart = null;
 
-    async function loadDashboard() {
+    async function loadDashboard(isBackground = false) {
         try {
-            const data = await api.get('/client/dashboard');
+            const data = await api.get('/client/dashboard', { background: isBackground });
             const el = (id) => document.getElementById(id);
 
             if (el('dash-emails-sent')) el('dash-emails-sent').textContent = data.emails_sent_today || 0;
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Gamified Onboarding
             try {
-                const templatesReq = await api.get('/client/templates');
+                const templatesReq = await api.get('/client/templates', { background: isBackground });
                 const hasGoogle = document.getElementById('service-account-email') && !document.getElementById('service-account-email').innerText.includes('Not configured');
                 const hasTemplates = templatesReq && templatesReq.length > 0;
                 const hasCampaigns = data.total_campaigns > 0;

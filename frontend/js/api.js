@@ -43,7 +43,10 @@ const api = {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        this.showLoader();
+        if (!options.background) {
+            this.showLoader();
+        }
+        
         try {
             let response = await fetch(`${this.baseUrl}${endpoint}`, { ...options, headers });
 
@@ -61,12 +64,14 @@ const api = {
 
             return await response.json();
         } finally {
-            this.hideLoader();
+            if (!options.background) {
+                this.hideLoader();
+            }
         }
     },
 
-    get(endpoint) { return this.fetchWithAuth(endpoint); },
-    post(endpoint, body) { return this.fetchWithAuth(endpoint, { method: 'POST', body: JSON.stringify(body) }); },
-    put(endpoint, body) { return this.fetchWithAuth(endpoint, { method: 'PUT', body: JSON.stringify(body) }); },
-    delete(endpoint) { return this.fetchWithAuth(endpoint, { method: 'DELETE' }); }
+    get(endpoint, options = {}) { return this.fetchWithAuth(endpoint, options); },
+    post(endpoint, body, options = {}) { return this.fetchWithAuth(endpoint, { method: 'POST', body: JSON.stringify(body), ...options }); },
+    put(endpoint, body, options = {}) { return this.fetchWithAuth(endpoint, { method: 'PUT', body: JSON.stringify(body), ...options }); },
+    delete(endpoint, options = {}) { return this.fetchWithAuth(endpoint, { method: 'DELETE', ...options }); }
 };
