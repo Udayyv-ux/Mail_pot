@@ -51,6 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const navEl = document.querySelector(`.nav-item[data-route="${path}"]`);
             if (navEl) navEl.classList.add('active');
             
+            // Close drawer on mobile
+            const drawerToggle = document.getElementById('portal-drawer');
+            if (drawerToggle) drawerToggle.checked = false;
+            
             if (this.routes[path]) await this.routes[path]();
         },
         init() {

@@ -57,6 +57,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const titleEl = document.getElementById('topbar-title');
             if (titleEl) titleEl.textContent = path.charAt(0).toUpperCase() + path.slice(1);
 
+            // Close drawer on mobile
+            const drawerToggle = document.getElementById('portal-drawer');
+            if (drawerToggle) drawerToggle.checked = false;
+
             // Fire route callback
             if (this.routes[path]) {
                 try {
