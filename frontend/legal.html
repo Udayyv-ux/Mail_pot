@@ -33,6 +33,12 @@
         .prose a { color: #3b82f6; text-decoration: underline; }
         .policy-tab.active { background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; border-left: 3px solid #3b82f6; font-weight: 600; }
         .policy-tab { border-left: 3px solid transparent; }
+        
+        /* Force clean UI overrides for any DB content with inline styles */
+        #policy-text * { color: inherit !important; background-color: transparent !important; font-family: inherit !important; }
+        #policy-text h1, #policy-text h2, #policy-text h3, #policy-text h4, #policy-text h5, #policy-text h6 { color: #ffffff !important; }
+        #policy-text p, #policy-text li { color: #cbd5e1 !important; }
+        #policy-text strong, #policy-text b { color: #f8fafc !important; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col bg-[#0f172a] text-slate-200">
