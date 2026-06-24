@@ -11,11 +11,6 @@ async def send_whatsapp_message(phone: str, template_name: str, access_token: st
     # Clean the phone number to digits only (Meta API requires country code without '+')
     clean_phone = str(phone).replace("+", "").replace(" ", "").replace("-", "").strip()
     clean_phone = re.sub(r'\D', '', clean_phone)
-    
-    if clean_phone.startswith("0"):
-        clean_phone = "91" + clean_phone[1:]
-    if len(clean_phone) == 10:
-        clean_phone = "91" + clean_phone
         
     if not clean_phone:
         return False, "Invalid phone number."
