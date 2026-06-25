@@ -550,4 +550,4 @@ async def run_247_engine():
         except Exception as e:
             print(f"24/7 Engine Iteration Error: {e}")
 
-        await asyncio.sleep(60) # Poll every minute
+        await asyncio.sleep(15) # Poll every 15 seconds
