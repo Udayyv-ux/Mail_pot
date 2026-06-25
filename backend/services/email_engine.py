@@ -63,7 +63,7 @@ async def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> 
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
             ],
-            model="llama-3.3-70b-versatile",
+            model="llama3-8b-8192",
             temperature=0.0
         )
         decision = response.choices[0].message.content.strip()
