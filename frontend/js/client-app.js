@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } else if (this.currentRoute === 'campaigns') {
                     // loadCampaigns(); // uncomment if you want campaigns table to auto refresh
                 }
-            }, 10000);
+            }, 300000);
         }
     };
 
