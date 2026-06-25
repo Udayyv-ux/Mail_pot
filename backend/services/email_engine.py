@@ -63,7 +63,7 @@ async def categorize_with_ai(lead_info: str, templates: list, groq_key: str) -> 
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
             ],
-            model="openai/gpt-oss-20b",
+            model="llama-3.3-70b-versatile",
             temperature=0.0
         )
         decision = response.choices[0].message.content.strip()

@@ -127,7 +127,7 @@ async def generate_template(req: AIGenerateRequest, db: AsyncSession = Depends(g
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": req.prompt}
             ],
-            model="openai/gpt-oss-20b",
+            model="llama-3.3-70b-versatile",
             temperature=0.7,
             response_format={"type": "json_object"}
         )
