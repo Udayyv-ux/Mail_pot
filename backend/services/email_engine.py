@@ -134,10 +134,16 @@ async def send_email_via_gmail_api(to_email: str, first_name: str, template, acc
             banner_url = settings.APP_URL.rstrip('/') + banner_url
         html_body = f'<img src="{banner_url}" style="max-width:100%;"><br><br>' + html_body
 
+    import re
     msg = EmailMessage()
     msg['To'] = to_email
     msg['Subject'] = subject
-    msg.set_content("Please view this email in an HTML-compatible client.")
+    
+    # Generate an authentic plain text version to avoid spam filters
+    plain_text = re.sub(r'<br\s*/?>', '\n', html_body, flags=re.IGNORECASE)
+    plain_text = re.sub(r'<[^>]+>', '', plain_text)
+    
+    msg.set_content(plain_text.strip())
     msg.add_alternative(html_body, subtype='html')
     
     raw = base64.urlsafe_b64encode(msg.as_bytes()).decode('utf-8')
