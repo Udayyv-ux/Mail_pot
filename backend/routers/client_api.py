@@ -81,7 +81,7 @@ async def get_dashboard(db: AsyncSession = Depends(get_db), current_user = Depen
         
         recent_res = await db.execute(select(EmailLog).where(
             EmailLog.client_id == client.id
-        ).order_by(desc(EmailLog.sent_at)).limit(10))
+        ).order_by(EmailLog.sent_at.desc().nulls_last()).limit(10))
         recent_logs = recent_res.scalars().all()
         recent_activity = [{
             "id": r.id,

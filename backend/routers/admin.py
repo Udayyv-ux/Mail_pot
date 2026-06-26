@@ -30,7 +30,7 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 async def get_global_email_logs(db: AsyncSession = Depends(get_db), admin = Depends(require_admin), limit: int = 50):
     result = await db.execute(
         select(EmailLog)
-        .order_by(EmailLog.sent_at.desc())
+        .order_by(EmailLog.sent_at.desc().nulls_last())
         .limit(limit)
     )
     logs = result.scalars().all()
