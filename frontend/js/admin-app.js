@@ -681,7 +681,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if(!document.getElementById('landing-features').value) {
                 document.getElementById('landing-features').value = JSON.stringify([
                     {title: "AI Matching", description: "Our engine analyses your lead notes and automatically selects the most relevant template.", color: "text-primary"},
-                    {title: "Google Sheets Sync", description: "Just paste your Google Sheet URL. We read rows instantly and log the status right back to it.", color: "text-secondary"}
+                    {title: "Google Sheets Sync", description: "Just paste your Google Sheet URL. We read rows instantly and log the status right back to it.", color: "text-secondary"},
+                    {title: "Email & WhatsApp", description: "Connect seamlessly via Gmail API & Meta Cloud API. We throttle sending speeds and handle API limits to protect your domain and number reputation automatically.", color: "text-green-400"},
+                    {title: "Native WhatsApp API", description: "Go beyond email. Trigger official Meta WhatsApp templates directly from your Sheet to guarantee 98% open rates.", color: "text-green-400"}
                 ], null, 2);
             }
             if(!document.getElementById('landing-steps').value) {
