@@ -36,6 +36,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (trialEnd < now && (!subEnd || subEnd < now)) {
                 const banner = document.getElementById('trial-lockout-banner');
                 if (banner) banner.classList.remove('hidden');
+            } else if (trialEnd >= now && (!subEnd || subEnd < now)) {
+                const activeBanner = document.getElementById('trial-active-banner');
+                const textEl = document.getElementById('trial-countdown-text');
+                if (activeBanner && textEl) {
+                    const diffMs = trialEnd - now;
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    const diffHrs = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    textEl.textContent = `Your free trial ends in ${diffDays} days and ${diffHrs} hours.`;
+                    activeBanner.classList.remove('hidden');
+                }
             }
         }
     } catch (e) {

@@ -65,6 +65,11 @@
             <div id="trial-lockout-banner" class="hidden bg-error/90 text-error-content p-4 text-center z-50 shrink-0 text-sm md:text-base font-medium">
                 Your 5-day free trial has expired. You cannot perform tasks. Please <a href="#billing" onclick="document.querySelector('[data-route=billing]').click(); return false;" class="font-bold underline hover:text-white">upgrade your plan</a> to continue.
             </div>
+            
+            <!-- Active Trial Countdown Banner -->
+            <div id="trial-active-banner" class="hidden bg-blue-500/90 text-white p-3 text-center z-50 shrink-0 text-sm font-medium border-b border-blue-400">
+                🚀 <span id="trial-countdown-text">Your free trial is active.</span> <a href="#billing" onclick="document.querySelector('[data-route=billing]').click(); return false;" class="font-bold underline hover:text-blue-100 ml-2">Upgrade now to unlock all features!</a>
+            </div>
 
             
             <main class="flex-1 overflow-y-auto p-8 relative">
