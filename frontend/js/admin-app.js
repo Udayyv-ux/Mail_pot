@@ -1033,7 +1033,7 @@ window.generateAdminEmailAI = async function() {
     btn.disabled = true;
 
     try {
-        const res = await API.post('/admin/generate-email', { prompt: promptText });
+        const res = await api.post('/admin/generate-email', { prompt: promptText });
         if(res.subject && res.body_html) {
             document.getElementById('admin-email-subject').value = res.subject;
             document.getElementById('admin-email-body').value = res.body_html;
