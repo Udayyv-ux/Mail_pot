@@ -35,3 +35,6 @@ oauth2client
 # Encryption
 cryptography
 itsdangerous
+
+# Sub-Admin Auth
+passlib[bcrypt]
