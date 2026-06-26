@@ -31,11 +31,22 @@ async def get_client_profile(user, db: AsyncSession):
     result = await db.execute(select(Client).where(Client.user_id == user.id))
     client = result.scalar_one_or_none()
     if not client:
-        # If an admin is testing the client portal, they might not have a client profile yet.
+        # If an admin is testing the client portal or a user was manually created, they might not have a client profile yet.
+        from backend.models.app_settings import AppSetting
+        setting = await db.execute(select(AppSetting).where(AppSetting.key == "trial_days"))
+        setting_obj = setting.scalar_one_or_none()
+        trial_days = int(setting_obj.value) if setting_obj and setting_obj.value.isdigit() else 5
+        
+        plan_result = await db.execute(select(Plan).where(Plan.name.ilike('%Ultra%')))
+        ultra_plan = plan_result.scalar_one_or_none()
+
         client = Client(
             id=str(uuid.uuid4()),
             user_id=user.id,
-            company_name=user.name + " Company" if getattr(user, "name", None) else "My Company"
+            company_name=user.name + " Company" if getattr(user, "name", None) else "My Company",
+            daily_email_limit=ultra_plan.email_limit_daily if ultra_plan else 1000,
+            plan_id=ultra_plan.id if ultra_plan else None,
+            trial_ends_at=datetime.now(timezone.utc) + timedelta(days=trial_days)
         )
         db.add(client)
         await db.commit()
