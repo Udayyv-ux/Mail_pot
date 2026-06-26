@@ -232,11 +232,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? `<button class="text-accent hover:text-white font-semibold text-sm mr-2" onclick="toggleDemoStatus('${c.id}', false)">Make Active</button>`
                     : `<button class="text-accent hover:text-white font-semibold text-sm mr-2" onclick="toggleDemoStatus('${c.id}', true)">Make Demo</button>`;
                 
+                let planHtml = `<span class="bg-primary/20 text-primary px-2 py-1 rounded-full text-xs">${c.plan || 'Free'}</span>`;
+                
+                if (c.trial_ends_at) {
+                    const trialEnd = new Date(c.trial_ends_at);
+                    const now = new Date();
+                    if (trialEnd > now) {
+                        const diffMs = trialEnd - now;
+                        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                        const diffHrs = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        planHtml += `<br><span class="text-blue-400 text-xs mt-1 inline-block">Trial: ${diffDays}d ${diffHrs}h left</span>`;
+                    } else {
+                        planHtml += `<br><span class="text-error text-xs mt-1 inline-block">Trial Expired</span>`;
+                    }
+                }
+                
                 tr.innerHTML = `
                     <td class="p-4"><input type="checkbox" class="cb-${typeStr} checkbox checkbox-sm checkbox-primary" value="${c.email}" onchange="updateBulkEmailButton('${typeStr}')" /></td>
                     <td class="p-4 text-white font-medium">${c.email}</td>
                     <td class="p-4 text-gray-300">${c.company_name || 'N/A'}</td>
-                    <td class="p-4 text-gray-300"><span class="bg-primary/20 text-primary px-2 py-1 rounded-full text-xs">${c.plan || 'Free'}</span></td>
+                    <td class="p-4 text-gray-300">${planHtml}</td>
                     <td class="p-4 text-right">
                         <button onclick="resetUsage('${c.id}')" class="text-xs bg-dark/50 hover:bg-white/10 text-gray-300 py-1 px-3 rounded transition-colors mr-2">Reset</button>
                         <button class="text-secondary hover:text-pink-400 font-semibold text-sm mr-2" onclick="viewClientDetails('${c.id}')">Details</button>

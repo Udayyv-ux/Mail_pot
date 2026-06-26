@@ -112,7 +112,8 @@ async def list_clients(db: AsyncSession = Depends(get_db), admin = Depends(requi
         "plan": c.plan.name if c.plan else "Free",
         "status": c.status, 
         "emails_sent_today": c.emails_sent_today,
-        "is_demo": getattr(c, "is_demo", False)
+        "is_demo": getattr(c, "is_demo", False),
+        "trial_ends_at": c.trial_ends_at.isoformat() if c.trial_ends_at else None
     } for c in clients]
 
 @router.get("/clients/{id}")
