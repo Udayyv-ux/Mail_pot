@@ -37,7 +37,7 @@ async def get_client_profile(user, db: AsyncSession):
         setting_obj = setting.scalar_one_or_none()
         trial_days = int(setting_obj.value) if setting_obj and setting_obj.value.isdigit() else 5
         
-        plan_result = await db.execute(select(Plan).where(Plan.name.ilike('%Ultra%')))
+        plan_result = await db.execute(select(Plan).where(Plan.name.ilike('%Ultimat%')))
         ultra_plan = plan_result.scalar_one_or_none()
 
         client = Client(
