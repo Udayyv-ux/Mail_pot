@@ -503,3 +503,35 @@ async def send_admin_email(req: AdminEmailRequest, db: AsyncSession = Depends(ge
     await db.commit()
             
     return {"status": "success", "sent": sent}
+
+class AdminAIGenerateRequest(BaseModel):
+    prompt: str
+
+@router.post('/generate-email')
+async def admin_generate_email(req: AdminAIGenerateRequest, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    from groq import AsyncGroq
+    from backend.config import settings
+    import json
+    
+    system_prompt = (
+        "You are an expert email copywriter. The user will give you a brief prompt about what to say to a user. " 
+        "Write a highly professional, concise email. Return ONLY a JSON object with two keys: 'subject' and 'body_html'. " 
+        "The 'body_html' should use standard HTML formatting (paragraphs, bold, etc)." 
+    )
+    
+    try:
+        client = AsyncGroq(api_key=settings.GROQ_API_KEY)
+        response = await client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": req.prompt}
+            ],
+            model="llama-3.1-8b-instant",
+            temperature=0.7,
+            response_format={"type": "json_object"}
+        )
+        content = response.choices[0].message.content
+        return json.loads(content)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

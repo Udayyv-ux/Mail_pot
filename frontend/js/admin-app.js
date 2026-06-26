@@ -1021,3 +1021,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+
+
+window.generateAdminEmailAI = async function() {
+    const promptText = prompt("What kind of email do you want to send to this user?\n(e.g., 'Welcome them to the platform', 'Warn them about their usage limit')");
+    if(!promptText) return;
+
+    const btn = document.getElementById('btn-admin-ai');
+    const ogHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Generating...';
+    btn.disabled = true;
+
+    try {
+        const res = await API.post('/admin/generate-email', { prompt: promptText });
+        if(res.subject && res.body_html) {
+            document.getElementById('admin-email-subject').value = res.subject;
+            document.getElementById('admin-email-body').value = res.body_html;
+            if(window.showToast) showToast('AI Email Generated Successfully!', 'success');
+        } else {
+            if(window.showToast) showToast('Failed to generate template format', 'error');
+        }
+    } catch (err) {
+        if(window.showToast) showToast('AI Generation failed: ' + err.message, 'error');
+    } finally {
+        btn.innerHTML = ogHtml;
+        btn.disabled = false;
+    }
+}
