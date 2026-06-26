@@ -535,3 +535,75 @@ async def admin_generate_email(req: AdminAIGenerateRequest, db: AsyncSession = D
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# --- WHATSAPP ENGINE ---
+import httpx
+
+@router.get("/whatsapp/templates")
+async def get_admin_whatsapp_templates(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    from backend.models.app_settings import AppSetting
+    result = await db.execute(select(AppSetting).where(AppSetting.key.in_(
+        ["WHATSAPP_ACCESS_TOKEN", "WHATSAPP_BUSINESS_ACCOUNT_ID"]
+    )))
+    settings_dict = {s.key: s.value for s in result.scalars().all()}
+    
+    access_token = settings_dict.get("WHATSAPP_ACCESS_TOKEN")
+    waba_id = settings_dict.get("WHATSAPP_BUSINESS_ACCOUNT_ID")
+    
+    if not access_token or not waba_id:
+        raise HTTPException(status_code=400, detail="Global WhatsApp API credentials not configured in App Settings.")
+
+    url = f"https://graph.facebook.com/v23.0/{waba_id}/message_templates"
+    headers = {"Authorization": f"Bearer {access_token}"}
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
+
+class AdminWhatsappBroadcastRequest(BaseModel):
+    template_name: str
+
+@router.post("/broadcast-whatsapp")
+async def broadcast_whatsapp(req: AdminWhatsappBroadcastRequest, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    from backend.services.whatsapp_service import send_whatsapp_message
+    from backend.models.app_settings import AppSetting
+    
+    result = await db.execute(select(AppSetting).where(AppSetting.key.in_(
+        ["WHATSAPP_ACCESS_TOKEN", "WHATSAPP_PHONE_NUMBER_ID"]
+    )))
+    settings_dict = {s.key: s.value for s in result.scalars().all()}
+    
+    access_token = settings_dict.get("WHATSAPP_ACCESS_TOKEN")
+    phone_id = settings_dict.get("WHATSAPP_PHONE_NUMBER_ID")
+    
+    if not access_token or not phone_id:
+        raise HTTPException(status_code=400, detail="Global WhatsApp API credentials not configured.")
+        
+    res = await db.execute(select(Client).where(Client.status == "active"))
+    clients = res.scalars().all()
+    
+    sent_count = 0
+    errors = []
+    
+    for c in clients:
+        phone = getattr(c, "phone", None)
+        if phone:
+            success, err = await send_whatsapp_message(
+                phone=phone,
+                template_name=req.template_name,
+                access_token=access_token,
+                phone_number_id=phone_id
+            )
+            if success:
+                sent_count += 1
+            else:
+                errors.append(f"{phone}: {err}")
+                
+    return {
+        "status": "success",
+        "sent": sent_count,
+        "errors": errors
+    }
+

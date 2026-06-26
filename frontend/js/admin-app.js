@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         router.on('plans', loadPlans);
         router.on('promo', loadPromoCodes);
         router.on('monitor', loadGlobalLogs);
+        router.on('whatsapp', loadWhatsapp);
         router.on('settings', loadSettings);
         router.on('landing', loadLandingContent);
         router.on('policies', loadPolicies);
@@ -363,6 +364,74 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(window.showToast) showToast(e.message, 'error');
             }
         });
+
+    // --- WhatsApp Settings (Admin) ---
+    async function loadWhatsapp() {
+        try {
+            const settings = await api.get('/admin/settings');
+            settings.forEach(s => {
+                if (s.key === 'WHATSAPP_ACCESS_TOKEN' && document.getElementById('admin-wa-token')) document.getElementById('admin-wa-token').value = s.value;
+                if (s.key === 'WHATSAPP_PHONE_NUMBER_ID' && document.getElementById('admin-wa-phone-id')) document.getElementById('admin-wa-phone-id').value = s.value;
+                if (s.key === 'WHATSAPP_BUSINESS_ACCOUNT_ID' && document.getElementById('admin-wa-business-id')) document.getElementById('admin-wa-business-id').value = s.value;
+            });
+            fetchAdminWhatsappTemplates();
+        } catch(e) {}
+    }
+
+    async function fetchAdminWhatsappTemplates() {
+        try {
+            const btn = document.getElementById('btn-admin-refresh-templates');
+            const select = document.getElementById('admin-wa-template');
+            const notifSelect = document.getElementById('notif-whatsapp-template');
+            if (btn) btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Fetching...';
+            
+            const response = await api.get('/admin/whatsapp/templates');
+            // The response itself is the json payload containing {data: [...]}
+            const templates = response.data || [];
+            
+            let optionsHtml = '';
+            if (templates.length === 0) {
+                optionsHtml = '<option value="">No templates found in Meta</option>';
+            } else {
+                templates.forEach(t => {
+                    if (t.status === 'APPROVED') {
+                        optionsHtml += `<option value="${t.name}">${t.name} (${t.language})</option>`;
+                    }
+                });
+            }
+            if (select) select.innerHTML = optionsHtml || '<option value="">No approved templates</option>';
+            if (notifSelect) notifSelect.innerHTML = optionsHtml || '<option value="">No approved templates</option>';
+            
+        } catch(e) {
+            console.error(e);
+            if(window.showToast) showToast('Failed to fetch templates: ' + e.message, 'error');
+        } finally {
+            const btn = document.getElementById('btn-admin-refresh-templates');
+            if(btn) btn.textContent = 'Fetch / Refresh Templates';
+        }
+    }
+
+    document.getElementById('btn-admin-refresh-templates')?.addEventListener('click', fetchAdminWhatsappTemplates);
+
+    document.getElementById('form-admin-whatsapp')?.addEventListener('submit', async(e) => {
+        e.preventDefault();
+        const payload = [];
+        const tokenEl = document.getElementById('admin-wa-token');
+        const phoneEl = document.getElementById('admin-wa-phone-id');
+        const bizEl = document.getElementById('admin-wa-business-id');
+        
+        if (tokenEl) payload.push({key: 'WHATSAPP_ACCESS_TOKEN', value: tokenEl.value});
+        if (phoneEl) payload.push({key: 'WHATSAPP_PHONE_NUMBER_ID', value: phoneEl.value});
+        if (bizEl) payload.push({key: 'WHATSAPP_BUSINESS_ACCOUNT_ID', value: bizEl.value});
+
+        try {
+            await api.post('/admin/settings', payload);
+            if(window.showToast) showToast('WhatsApp settings saved!', 'success');
+            fetchAdminWhatsappTemplates();
+        } catch(e) {
+            if(window.showToast) showToast(e.message, 'error');
+        }
+    });
 
     // --- Global Monitor ---
     window.loadGlobalLogs = async () => {
@@ -788,10 +857,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const waCheckbox = document.getElementById('notif-send-whatsapp');
+    const waContainer = document.getElementById('notif-wa-template-container');
+    if (waCheckbox) {
+        waCheckbox.addEventListener('change', (e) => {
+            if(waContainer) waContainer.style.display = e.target.checked ? 'block' : 'none';
+            if (e.target.checked && document.getElementById('notif-whatsapp-template').options.length <= 1) {
+                if (typeof fetchAdminWhatsappTemplates === 'function') fetchAdminWhatsappTemplates();
+            }
+        });
+    }
+
     document.getElementById('form-notif')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const msg = document.getElementById('notif-msg')?.value;
         const sendEmail = document.getElementById('notif-send-email')?.checked;
+        const sendWa = document.getElementById('notif-send-whatsapp')?.checked;
+        const waTemplate = document.getElementById('notif-whatsapp-template')?.value;
         const subject = document.getElementById('notif-subject')?.value || "Important Announcement";
         
         if(!msg) return;
@@ -801,11 +883,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sendEmail) {
                 await api.post('/admin/send-email', { target_email: "all_users", subject: subject, body_html: msg });
             }
+
+            if (sendWa && waTemplate) {
+                await api.post('/admin/broadcast-whatsapp', { template_name: waTemplate });
+            }
             
             if(window.showToast) showToast("Broadcast sent!", "success");
             document.getElementById('notif-modal')?.close();
             document.getElementById('form-notif')?.reset();
             if(notifSubjContainer) notifSubjContainer.style.display = 'none';
+            if(waContainer) waContainer.style.display = 'none';
         } catch(err) { if(window.showToast) showToast(err.message, "error"); }
     });
 
