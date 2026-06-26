@@ -29,10 +29,17 @@ async def send_whatsapp_message(phone: str, template_name: str, access_token: st
     }
     
     if variables:
+        safe_params = []
+        for v in variables:
+            val = str(v) if v is not None else ""
+            if not val.strip():
+                val = " " # Meta API rejects empty text parameters
+            safe_params.append({"type": "text", "text": val})
+            
         template_data["components"] = [
             {
                 "type": "body",
-                "parameters": [{"type": "text", "text": str(v)} for v in variables]
+                "parameters": safe_params
             }
         ]
     
