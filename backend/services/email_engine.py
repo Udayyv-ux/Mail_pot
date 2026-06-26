@@ -132,12 +132,17 @@ async def send_email_via_gmail_api(to_email: str, first_name: str, template, acc
         banner_url = template.banner_url
         if banner_url.startswith("/"):
             banner_url = settings.APP_URL.rstrip('/') + banner_url
-        html_body = f'<img src="{banner_url}" style="max-width:100%;"><br><br>' + html_body
+        # Avoid embedding localhost links in emails as it triggers high spam scores
+        if "localhost" not in banner_url and "127.0.0.1" not in banner_url:
+            html_body = f'<img src="{banner_url}" style="max-width:100%;"><br><br>' + html_body
 
     import re
+    from email.utils import make_msgid, formatdate
     msg = EmailMessage()
     msg['To'] = to_email
     msg['Subject'] = subject
+    msg['Date'] = formatdate(localtime=True)
+    msg['Message-ID'] = make_msgid()
     
     # Generate an authentic plain text version to avoid spam filters
     plain_text = re.sub(r'<br\s*/?>', '\n', html_body, flags=re.IGNORECASE)
