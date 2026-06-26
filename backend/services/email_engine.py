@@ -231,9 +231,13 @@ async def process_single_client(client_id: int, queued_email_ids: list[int], cam
                 db_client.last_reset_date = today_str
                 await db.commit()
                 
-            # Auto-upgrade beta testers to 500 daily limits to prevent testing blocks
-            if db_client.daily_email_limit < 500:
-                db_client.daily_email_limit = 500
+            # Auto-sync daily limit with the client's paid plan (or min 500 for testing)
+            await db.refresh(db_client, ['plan'])
+            plan_limit = db_client.plan.email_limit_daily if db_client.plan else 50
+            target_limit = max(plan_limit, 500)
+            
+            if db_client.daily_email_limit != target_limit:
+                db_client.daily_email_limit = target_limit
                 await db.commit()
                 
             if db_client.emails_sent_today >= db_client.daily_email_limit:
