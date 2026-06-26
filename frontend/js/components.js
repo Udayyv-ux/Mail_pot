@@ -109,4 +109,5 @@ const components = {
 };
 
 // Global alias for convenience
+window.components = components;
 window.showToast = (msg, type) => components.showToast(msg, type);

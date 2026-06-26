@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const isSent = a.status === 'sent';
                         const colorClass = isSent ? 'text-success' : (a.status === 'failed' ? 'text-error' : 'text-warning');
                         const icon = isSent ? '✓' : (a.status === 'failed' ? '✗' : '⟳');
-                        const dateStr = a.sent_at ? UIComponents.timeAgo(a.sent_at) : 'Just now';
+                        const dateStr = a.sent_at ? components.timeAgo(a.sent_at) : 'Just now';
                         const errMsg = a.error_message ? `<div class="text-xs text-error/80 mt-1 truncate" title="${a.error_message}">${a.error_message}</div>` : '';
 
                         return `
@@ -508,7 +508,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     statusHtml = '<span class="badge badge-success badge-sm">Running</span>';
                 }
                 
-                let runText = c.last_run_at ? `<div class="text-xs text-gray-400 mt-1">Last run: ${UIComponents.timeAgo(c.last_run_at)}</div>` : '';
+                let runText = c.last_run_at ? `<div class="text-xs text-gray-400 mt-1">Last run: ${components.timeAgo(c.last_run_at)}</div>` : '';
 
                 tr.innerHTML =
                     '<td class="p-4 font-bold text-white">' + c.name + '</td>' +
@@ -651,7 +651,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <div class="font-medium text-white">${m.subject}</div>
                             <div class="text-xs text-gray-400 truncate max-w-xs">${m.snippet}</div>
                         </td>
-                        <td class="p-4 text-xs text-gray-400 whitespace-nowrap">${UIComponents.timeAgo(m.date)}</td>
+                        <td class="p-4 text-xs text-gray-400 whitespace-nowrap">${components.timeAgo(m.date)}</td>
                     </tr>
                 `).join('');
                 if (items.length === 0) {
@@ -930,7 +930,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 notifs.forEach(function (n) {
                     var div = document.createElement('div');
                     div.className = 'p-3 border-b border-white/10 text-sm text-gray-300';
-                    div.innerHTML = '<span class="block text-white font-bold mb-1">' + UIComponents.timeAgo(n.created_at) + '</span>' + n.message;
+                    div.innerHTML = '<span class="block text-white font-bold mb-1">' + components.timeAgo(n.created_at) + '</span>' + n.message;
                     list.appendChild(div);
                 });
             } else {
