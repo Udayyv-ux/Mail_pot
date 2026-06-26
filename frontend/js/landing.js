@@ -381,7 +381,7 @@ window.addEventListener('DOMContentLoaded', () => {
             scheduleStep2.classList.add('hidden');
 
             try {
-                const data = await api.get(`/api/public/appointments/slots?date=${date}`);
+                const data = await api.get(`/public/appointments/slots?date=${date}`);
                 if (data.available_slots.length === 0) {
                     scheduleSlots.innerHTML = '<div class="col-span-full text-center text-gray-400 py-4">No slots available on this date.</div>';
                     return;
@@ -431,7 +431,7 @@ window.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                await api.post('/api/public/appointments/book', payload);
+                await api.post('/public/appointments/book', payload);
                 scheduleStep1.classList.add('hidden');
                 scheduleStep2.classList.add('hidden');
                 scheduleSuccess.classList.remove('hidden');
