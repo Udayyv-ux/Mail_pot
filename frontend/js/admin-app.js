@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function initAdmin() {
         router.on('dashboard', loadDashboard);
         router.on('users', loadUsers);
+        router.on('appointments', loadAppointments);
         router.on('plans', loadPlans);
         router.on('promo', loadPromoCodes);
         router.on('monitor', loadGlobalLogs);
@@ -1107,5 +1108,35 @@ window.generateAdminEmailAI = async function() {
     } finally {
         btn.innerHTML = ogHtml;
         btn.disabled = false;
+    }
+}
+
+// --- Appointments ---
+async function loadAppointments() {
+    try {
+        const appointments = await api.get('/admin/appointments');
+        const tbody = document.getElementById('admin-appointments-tbody');
+        if (!tbody) return;
+        
+        if (!appointments || appointments.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-gray-500 py-4">No appointments found.</td></tr>`;
+            return;
+        }
+        
+        tbody.innerHTML = appointments.map(a => `
+            <tr>
+                <td>${a.date}</td>
+                <td>${a.time_slot}</td>
+                <td class="font-bold">${a.name}</td>
+                <td>${a.email}</td>
+                <td>
+                    <span class="badge ${a.status === 'confirmed' ? 'badge-success' : 'badge-ghost'} badge-sm">
+                        ${a.status}
+                    </span>
+                </td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        console.error("Failed to load appointments:", err);
     }
 }

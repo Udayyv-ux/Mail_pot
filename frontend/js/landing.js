@@ -356,5 +356,100 @@ window.addEventListener('DOMContentLoaded', () => {
             }, 5000);
         });
     }
+
+    // --- Scheduling Logic ---
+    const scheduleDate = document.getElementById('schedule-date');
+    const scheduleSlotsContainer = document.getElementById('schedule-slots-container');
+    const scheduleSlots = document.getElementById('schedule-slots');
+    const scheduleStep2 = document.getElementById('schedule-step-2');
+    const scheduleSelectedTime = document.getElementById('schedule-selected-time');
+    const formSchedule = document.getElementById('form-schedule');
+    const scheduleSuccess = document.getElementById('schedule-success');
+    const scheduleStep1 = document.getElementById('schedule-step-1');
+
+    if (scheduleDate) {
+        // Minimum date is today
+        const today = new Date().toISOString().split('T')[0];
+        scheduleDate.min = today;
+
+        scheduleDate.addEventListener('change', async (e) => {
+            const date = e.target.value;
+            if (!date) return;
+
+            scheduleSlotsContainer.classList.remove('hidden');
+            scheduleSlots.innerHTML = '<div class="col-span-full text-center py-4"><span class="loading loading-spinner text-primary"></span></div>';
+            scheduleStep2.classList.add('hidden');
+
+            try {
+                const data = await api.get(`/api/public/appointments/slots?date=${date}`);
+                if (data.available_slots.length === 0) {
+                    scheduleSlots.innerHTML = '<div class="col-span-full text-center text-gray-400 py-4">No slots available on this date.</div>';
+                    return;
+                }
+
+                scheduleSlots.innerHTML = '';
+                data.available_slots.forEach(slot => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-outline border-white/20 text-white hover:bg-primary hover:border-primary w-full';
+                    btn.textContent = slot;
+                    btn.onclick = () => selectTimeSlot(btn, slot);
+                    scheduleSlots.appendChild(btn);
+                });
+            } catch (err) {
+                scheduleSlots.innerHTML = '<div class="col-span-full text-center text-error py-4">Failed to load slots.</div>';
+            }
+        });
+    }
+
+    function selectTimeSlot(selectedBtn, time) {
+        // Reset all buttons
+        Array.from(scheduleSlots.children).forEach(btn => {
+            btn.classList.remove('bg-primary', 'border-primary');
+            btn.classList.add('btn-outline');
+        });
+        
+        // Highlight selected
+        selectedBtn.classList.remove('btn-outline');
+        selectedBtn.classList.add('bg-primary', 'border-primary');
+        
+        scheduleSelectedTime.value = time;
+        scheduleStep2.classList.remove('hidden');
+    }
+
+    if (formSchedule) {
+        formSchedule.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-schedule-submit');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading loading-spinner"></span> Booking...';
+
+            const payload = {
+                name: document.getElementById('schedule-name').value,
+                email: document.getElementById('schedule-email').value,
+                date: scheduleDate.value,
+                time_slot: scheduleSelectedTime.value
+            };
+
+            try {
+                await api.post('/api/public/appointments/book', payload);
+                scheduleStep1.classList.add('hidden');
+                scheduleStep2.classList.add('hidden');
+                scheduleSuccess.classList.remove('hidden');
+            } catch (err) {
+                alert(err.message || "Failed to book appointment.");
+                btn.disabled = false;
+                btn.innerHTML = 'Confirm Booking';
+            }
+        });
+    }
+
+    window.resetScheduling = () => {
+        formSchedule.reset();
+        scheduleDate.value = '';
+        scheduleSlotsContainer.classList.add('hidden');
+        scheduleStep2.classList.add('hidden');
+        scheduleSuccess.classList.add('hidden');
+        scheduleStep1.classList.remove('hidden');
+    };
 });
 

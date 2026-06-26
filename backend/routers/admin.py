@@ -17,7 +17,11 @@ from backend.models.client import Client
 from backend.models.user import User
 from backend.models.plan import Plan
 from backend.models.payment import Payment
-from backend.models.app_settings import Policy, AppSetting, DemoRequest
+from backend.models.app_settings import Policy, AppSetting, DemoRequest, Notification
+from backend.models.promo_code import PromoCode
+from backend.models.appointment import Appointment
+from backend.middleware.auth_middleware import require_admin
+from backend.services.whatsapp_service import send_whatsapp_message, timedelta, timezone
 from backend.models.email_log import EmailLog
 from backend.models.campaign import Campaign
 from datetime import datetime, timedelta, timezone
@@ -606,4 +610,9 @@ async def broadcast_whatsapp(req: AdminWhatsappBroadcastRequest, db: AsyncSessio
         "sent": sent_count,
         "errors": errors
     }
+
+@router.get("/appointments")
+async def list_appointments(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    result = await db.execute(select(Appointment).order_by(Appointment.date.desc(), Appointment.time_slot.desc()))
+    return result.scalars().all()
 

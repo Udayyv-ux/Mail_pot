@@ -650,6 +650,52 @@
             </div>
         </section>
 
+        <!-- Scheduling Section -->
+        <section id="scheduling" class="py-24 relative z-10 bg-dark/30 backdrop-blur-md border-t border-white/5">
+            <div class="max-w-4xl mx-auto px-6 text-center">
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-6">Schedule a Call</h2>
+                <p class="text-gray-400 text-lg mb-12">Pick a time that works best for you and we'll show you how SheetX can scale your business.</p>
+                
+                <div class="bg-base-100/50 border border-white/10 rounded-3xl p-6 md:p-10 text-left">
+                    <div id="schedule-step-1" class="space-y-6">
+                        <div>
+                            <label class="label"><span class="label-text text-gray-300 font-bold">1. Select a Date</span></label>
+                            <input type="date" id="schedule-date" class="input input-bordered w-full bg-dark/50 text-white border-white/10 focus:border-primary" />
+                        </div>
+                        <div id="schedule-slots-container" class="hidden">
+                            <label class="label"><span class="label-text text-gray-300 font-bold">2. Select a Time</span></label>
+                            <div id="schedule-slots" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                <!-- Slots injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="schedule-step-2" class="hidden mt-8 space-y-4 border-t border-white/10 pt-8">
+                        <label class="label"><span class="label-text text-gray-300 font-bold">3. Your Details</span></label>
+                        <form id="form-schedule" class="space-y-4">
+                            <input type="hidden" id="schedule-selected-time" />
+                            <div class="form-control">
+                                <input type="text" id="schedule-name" placeholder="Your full name" class="input input-bordered w-full bg-dark/50 text-white border-white/10" required />
+                            </div>
+                            <div class="form-control">
+                                <input type="email" id="schedule-email" placeholder="Your email address" class="input input-bordered w-full bg-dark/50 text-white border-white/10" required />
+                            </div>
+                            <button type="submit" id="btn-schedule-submit" class="btn bg-primary hover:bg-violet-600 text-white border-none w-full">Confirm Booking</button>
+                        </form>
+                    </div>
+
+                    <div id="schedule-success" class="hidden text-center py-12">
+                        <div class="w-16 h-16 bg-success/20 text-success rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Booking Confirmed!</h3>
+                        <p class="text-gray-400">We've sent a calendar invitation to your email address.</p>
+                        <button onclick="resetScheduling()" class="btn btn-outline border-white/20 text-white mt-6">Book Another</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     <!-- Footer -->
     <footer class="bg-base-300/50 border-t border-white/5 pt-20 pb-10">
         <div class="max-w-7xl mx-auto px-6">

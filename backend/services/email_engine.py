@@ -579,3 +579,34 @@ async def run_247_engine():
             print(f"24/7 Engine Iteration Error: {e}")
 
         await asyncio.sleep(30) # Poll every 30 seconds
+
+async def send_appointment_emails_async(name: str, email: str, date: str, time_slot: str):
+    try:
+        from backend.models.user import User
+        async with SessionLocal() as db:
+            # Find super admin
+            res = await db.execute(select(User).where(User.email == settings.SUPER_ADMIN_EMAIL))
+            admin = res.scalar_one_or_none()
+            if not admin:
+                return
+
+            access_token = await refresh_google_token(admin, db)
+            if not access_token:
+                return
+            
+            class DummyTemplate:
+                subject = f"Appointment Confirmed: {date} at {time_slot}"
+                body_html = f"<p>Your appointment has been successfully scheduled.</p><p><strong>Date:</strong> {date}</p><p><strong>Time:</strong> {time_slot}</p><p>We will be in touch shortly with meeting details.</p>"
+
+            # Send to Client
+            await send_email_via_gmail_api(email, name, DummyTemplate(), access_token)
+            
+            # Send Notification to Admin
+            class AdminTemplate:
+                subject = f"New Appointment Booking: {name}"
+                body_html = f"<p>A new appointment has been booked via the landing page.</p><p><strong>Name:</strong> {name}</p><p><strong>Email:</strong> {email}</p><p><strong>Date:</strong> {date}</p><p><strong>Time:</strong> {time_slot}</p>"
+                
+            await send_email_via_gmail_api(settings.SUPER_ADMIN_EMAIL, "Admin", AdminTemplate(), access_token)
+            
+    except Exception as e:
+        print(f"Failed to send appointment emails: {e}")

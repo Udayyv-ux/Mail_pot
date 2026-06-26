@@ -9,6 +9,9 @@ from pydantic import BaseModel
 from backend.database import get_db
 from backend.models.plan import Plan
 from backend.models.app_settings import Policy, AppSetting, DemoRequest
+from backend.models.appointment import Appointment
+import uuid
+from datetime import datetime, timedelta
 
 router = APIRouter(prefix="/api/public", tags=["public"])
 
@@ -112,3 +115,51 @@ async def get_public_settings(db: AsyncSession = Depends(get_db)):
     
     # Format as key-value dict
     return {s.key: s.value for s in settings_list}
+
+class BookAppointmentReq(BaseModel):
+    name: str
+    email: str
+    date: str
+    time_slot: str
+
+@router.get("/appointments/slots")
+async def get_available_slots(date: str, db: AsyncSession = Depends(get_db)):
+    # Standard slots 9 AM to 5 PM, 30 min intervals
+    all_slots = [
+        "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM",
+        "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM",
+        "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM",
+        "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM", "05:00 PM"
+    ]
+    
+    # Query database for booked slots on this date
+    result = await db.execute(select(Appointment.time_slot).where(Appointment.date == date, Appointment.status.in_(["pending", "confirmed"])))
+    booked_slots = result.scalars().all()
+    
+    available_slots = [slot for slot in all_slots if slot not in booked_slots]
+    return {"date": date, "available_slots": available_slots}
+
+@router.post("/appointments/book")
+async def book_appointment(data: BookAppointmentReq, db: AsyncSession = Depends(get_db)):
+    # Verify slot availability
+    result = await db.execute(select(Appointment).where(Appointment.date == data.date, Appointment.time_slot == data.time_slot, Appointment.status.in_(["pending", "confirmed"])))
+    if result.scalars().first():
+        raise HTTPException(400, "This time slot is already booked. Please select another time.")
+
+    appointment = Appointment(
+        id=str(uuid.uuid4()),
+        name=data.name,
+        email=data.email,
+        date=data.date,
+        time_slot=data.time_slot,
+        status="confirmed"
+    )
+    db.add(appointment)
+    await db.commit()
+
+    # Trigger async email notification
+    from backend.services.email_engine import send_appointment_emails_async
+    import asyncio
+    asyncio.create_task(send_appointment_emails_async(data.name, data.email, data.date, data.time_slot))
+
+    return {"status": "success", "message": "Appointment booked successfully!"}
