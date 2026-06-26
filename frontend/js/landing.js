@@ -49,11 +49,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         let faqData = null;
         let footerData = null;
         let reviewsData = null;
+        let featuresData = null;
 
         if (settings.LANDING_STEPS) stepsData = JSON.parse(settings.LANDING_STEPS);
         if (settings.LANDING_FAQ) faqData = JSON.parse(settings.LANDING_FAQ);
         if (settings.LANDING_REVIEWS) reviewsData = JSON.parse(settings.LANDING_REVIEWS);
+        if (settings.LANDING_FEATURES) featuresData = JSON.parse(settings.LANDING_FEATURES);
         
+        // Hero Hydration
+        if (settings.LANDING_HERO_BADGE) document.getElementById('landing-hero-badge').innerHTML = `<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> ${settings.LANDING_HERO_BADGE}`;
+        if (settings.LANDING_HERO_TITLE) document.getElementById('landing-hero-title').innerHTML = settings.LANDING_HERO_TITLE;
+        if (settings.LANDING_HERO_SUBTITLE) document.getElementById('landing-hero-subtitle').textContent = settings.LANDING_HERO_SUBTITLE;
+        if (settings.LANDING_HERO_CTA) document.getElementById('landing-hero-cta').textContent = settings.LANDING_HERO_CTA;
+
+        // Features Hydration
+        if (settings.LANDING_FEATURES_TITLE) document.getElementById('landing-features-title').textContent = settings.LANDING_FEATURES_TITLE;
+        if (settings.LANDING_FEATURES_SUBTITLE) document.getElementById('landing-features-subtitle').textContent = settings.LANDING_FEATURES_SUBTITLE;
+
+        // How it works Hydration
         if (settings.LANDING_HOW_IT_WORKS_TITLE) {
             const el = document.getElementById('landing-how-it-works-title');
             if (el) el.textContent = settings.LANDING_HOW_IT_WORKS_TITLE;
@@ -64,6 +77,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Fallbacks if not configured yet
+        if(!featuresData) featuresData = [
+            {title: "AI Matching", description: "Our engine analyses your lead notes and automatically selects the most relevant template.", color: "text-primary"},
+            {title: "Google Sheets Sync", description: "Just paste your Google Sheet URL. We read rows instantly and log the status right back to it.", color: "text-secondary"},
+            {title: "Email & WhatsApp", description: "Connect seamlessly via Gmail API & Meta Cloud API. We throttle sending speeds and handle API limits to protect your domain and number reputation automatically.", color: "text-green-400"},
+            {title: "Native WhatsApp API", description: "Go beyond email. Trigger official Meta WhatsApp templates directly from your Sheet to guarantee 98% open rates.", color: "text-green-400"}
+        ];
+
         if(!stepsData) stepsData = [
             {step_num: "01", title: "Connect your Google Sheet", description: "Paste your Google Sheet URL. We automatically read your leads instantly without complex setup."},
             {step_num: "02", title: "Define your templates", description: "Create various email templates for different types of clients or outreach scenarios."},
@@ -109,6 +129,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             {quote: "The Google Sheets integration is seamless. Our team loves the timeline view, and configuration errors dropped to zero from day one.", name: "James Rawlinson", role: "Ops Director", initials: "J"},
             {quote: "We operate across multiple countries. Sheetx.io is the only platform that handles all dynamic tax rules without custom workarounds.", name: "Sarah Mitchell", role: "Finance Manager", initials: "S"}
         ];
+
+        // Render Features
+        const featuresGrid = document.getElementById('landing-features-grid');
+        if(featuresGrid && featuresData) {
+            featuresGrid.innerHTML = '';
+            featuresData.forEach(feature => {
+                featuresGrid.innerHTML += `
+                    <div class="card bg-base-100 border border-white/5 hover:border-primary/50 transition-colors">
+                        <div class="card-body">
+                            <h2 class="card-title ${feature.color || 'text-primary'}">${feature.title}</h2>
+                            <p class="text-gray-400 text-sm mt-2">${feature.description}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
 
         // Render Steps
         const stepsContainer = document.getElementById('landing-steps-container');

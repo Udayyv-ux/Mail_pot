@@ -657,7 +657,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(s.key === 'LANDING_FAQ') document.getElementById('landing-faq').value = s.value;
                 if(s.key === 'LANDING_FOOTER') document.getElementById('landing-footer').value = s.value;
                 if(s.key === 'LANDING_REVIEWS') document.getElementById('landing-reviews').value = s.value;
+                if(s.key === 'LANDING_FEATURES') document.getElementById('landing-features').value = s.value;
                 
+                if(s.key === 'LANDING_HERO_BADGE' && document.getElementById('set-hero-badge')) document.getElementById('set-hero-badge').value = s.value;
+                if(s.key === 'LANDING_HERO_TITLE' && document.getElementById('set-hero-title')) document.getElementById('set-hero-title').value = s.value;
+                if(s.key === 'LANDING_HERO_SUBTITLE' && document.getElementById('set-hero-subtitle')) document.getElementById('set-hero-subtitle').value = s.value;
+                if(s.key === 'LANDING_HERO_CTA' && document.getElementById('set-hero-cta')) document.getElementById('set-hero-cta').value = s.value;
+
+                if(s.key === 'LANDING_FEATURES_TITLE' && document.getElementById('set-features-title')) document.getElementById('set-features-title').value = s.value;
+                if(s.key === 'LANDING_FEATURES_SUBTITLE' && document.getElementById('set-features-subtitle')) document.getElementById('set-features-subtitle').value = s.value;
+
                 if(s.key === 'partner_title' && document.getElementById('set-partner-title')) document.getElementById('set-partner-title').value = s.value;
                 if(s.key === 'partner_subtitle' && document.getElementById('set-partner-subtitle')) document.getElementById('set-partner-subtitle').value = s.value;
                 if(s.key === 'partner_b1_title' && document.getElementById('set-partner-b1-title')) document.getElementById('set-partner-b1-title').value = s.value;
@@ -669,6 +678,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             // Populate defaults if empty to help the admin
+            if(!document.getElementById('landing-features').value) {
+                document.getElementById('landing-features').value = JSON.stringify([
+                    {title: "AI Matching", description: "Our engine analyses your lead notes and automatically selects the most relevant template.", color: "text-primary"},
+                    {title: "Google Sheets Sync", description: "Just paste your Google Sheet URL. We read rows instantly and log the status right back to it.", color: "text-secondary"}
+                ], null, 2);
+            }
             if(!document.getElementById('landing-steps').value) {
                 document.getElementById('landing-steps').value = JSON.stringify([
                     {step_num: "01", title: "Connect your Google Sheet", description: "Paste your Google Sheet URL. We automatically read your leads instantly without complex setup."},
@@ -702,8 +717,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 ], null, 2);
             }
             
-            // Render FAQ Builder UI
+            // Render Builder UIs
             renderFaqBuilder();
+            renderFeaturesBuilder();
+            renderStepsBuilder();
+            renderReviewsBuilder();
+            renderFooterBuilder();
         } catch(e) {}
     }
 
@@ -744,9 +763,238 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.closest('.faq-row').remove();
     };
 
+    // --- Features Builder Logic ---
+    function renderFeaturesBuilder() {
+        const container = document.getElementById('features-builder-container');
+        if(!container) return;
+        let features = [];
+        try { features = JSON.parse(document.getElementById('landing-features').value); } catch(e){}
+        
+        container.innerHTML = '';
+        features.forEach((feature, idx) => {
+            container.insertAdjacentHTML('beforeend', `
+                <div class="feature-row bg-base-100 p-4 rounded-xl border border-white/5 relative group">
+                    <button type="button" onclick="removeFeatureRow(this)" class="btn btn-sm btn-circle btn-ghost text-red-400 absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                    <div class="grid grid-cols-2 gap-4 mb-2 pr-8">
+                        <div class="form-control">
+                            <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Title</span></label>
+                            <input type="text" class="feature-title input input-sm input-bordered bg-base-200 border-white/10" value="${(feature.title || '').replace(/"/g, '&quot;')}">
+                        </div>
+                        <div class="form-control">
+                            <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Color Class (e.g. text-primary)</span></label>
+                            <input type="text" class="feature-color input input-sm input-bordered bg-base-200 border-white/10" value="${(feature.color || 'text-primary').replace(/"/g, '&quot;')}">
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Description</span></label>
+                        <textarea class="feature-desc textarea textarea-sm textarea-bordered bg-base-200 border-white/10 h-16">${feature.description || ''}</textarea>
+                    </div>
+                </div>
+            `);
+        });
+    }
+
+    window.addFeatureRow = () => {
+        let features = [];
+        try { features = JSON.parse(document.getElementById('landing-features').value || "[]"); } catch(e){}
+        features.push({title: "", description: "", color: "text-primary"});
+        document.getElementById('landing-features').value = JSON.stringify(features);
+        renderFeaturesBuilder();
+    };
+
+    window.removeFeatureRow = (btn) => {
+        btn.closest('.feature-row').remove();
+    };
+
+    // --- Steps Builder Logic ---
+    function renderStepsBuilder() {
+        const container = document.getElementById('steps-builder-container');
+        if(!container) return;
+        let steps = [];
+        try { steps = JSON.parse(document.getElementById('landing-steps').value); } catch(e){}
+        
+        container.innerHTML = '';
+        steps.forEach((step, idx) => {
+            container.insertAdjacentHTML('beforeend', `
+                <div class="step-row bg-base-100 p-4 rounded-xl border border-white/5 relative group">
+                    <button type="button" onclick="removeStepRow(this)" class="btn btn-sm btn-circle btn-ghost text-red-400 absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                    <div class="grid grid-cols-2 gap-4 mb-2 pr-8">
+                        <div class="form-control">
+                            <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Step Number (e.g. 01)</span></label>
+                            <input type="text" class="step-num input input-sm input-bordered bg-base-200 border-white/10" value="${(step.step_num || '').replace(/"/g, '&quot;')}">
+                        </div>
+                        <div class="form-control">
+                            <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Title</span></label>
+                            <input type="text" class="step-title input input-sm input-bordered bg-base-200 border-white/10" value="${(step.title || '').replace(/"/g, '&quot;')}">
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Description</span></label>
+                        <textarea class="step-desc textarea textarea-sm textarea-bordered bg-base-200 border-white/10 h-16">${step.description || ''}</textarea>
+                    </div>
+                </div>
+            `);
+        });
+    }
+
+    window.addStepRow = () => {
+        let steps = [];
+        try { steps = JSON.parse(document.getElementById('landing-steps').value || "[]"); } catch(e){}
+        steps.push({step_num: "0" + (steps.length + 1), title: "", description: ""});
+        document.getElementById('landing-steps').value = JSON.stringify(steps);
+        renderStepsBuilder();
+    };
+
+    window.removeStepRow = (btn) => {
+        btn.closest('.step-row').remove();
+    };
+
+    // --- Reviews Builder Logic ---
+    function renderReviewsBuilder() {
+        const container = document.getElementById('reviews-builder-container');
+        if(!container) return;
+        let reviews = [];
+        try { reviews = JSON.parse(document.getElementById('landing-reviews').value); } catch(e){}
+        
+        container.innerHTML = '';
+        reviews.forEach((review, idx) => {
+            container.insertAdjacentHTML('beforeend', `
+                <div class="review-row bg-base-100 p-4 rounded-xl border border-white/5 relative group">
+                    <button type="button" onclick="removeReviewRow(this)" class="btn btn-sm btn-circle btn-ghost text-red-400 absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                    <div class="form-control mb-2 pr-8">
+                        <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Quote</span></label>
+                        <textarea class="review-quote textarea textarea-sm textarea-bordered bg-base-200 border-white/10 h-16">${review.quote || ''}</textarea>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="form-control">
+                            <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Name</span></label>
+                            <input type="text" class="review-name input input-sm input-bordered bg-base-200 border-white/10" value="${(review.name || '').replace(/"/g, '&quot;')}">
+                        </div>
+                        <div class="form-control">
+                            <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Role</span></label>
+                            <input type="text" class="review-role input input-sm input-bordered bg-base-200 border-white/10" value="${(review.role || '').replace(/"/g, '&quot;')}">
+                        </div>
+                        <div class="form-control">
+                            <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Initials</span></label>
+                            <input type="text" class="review-initials input input-sm input-bordered bg-base-200 border-white/10" value="${(review.initials || '').replace(/"/g, '&quot;')}">
+                        </div>
+                    </div>
+                </div>
+            `);
+        });
+    }
+
+    window.addReviewRow = () => {
+        let reviews = [];
+        try { reviews = JSON.parse(document.getElementById('landing-reviews').value || "[]"); } catch(e){}
+        reviews.push({quote: "", name: "", role: "", initials: ""});
+        document.getElementById('landing-reviews').value = JSON.stringify(reviews);
+        renderReviewsBuilder();
+    };
+
+    window.removeReviewRow = (btn) => {
+        btn.closest('.review-row').remove();
+    };
+
+    // --- Footer Builder Logic ---
+    function renderFooterBuilder() {
+        const container = document.getElementById('footer-builder-container');
+        if(!container) return;
+        let footerData = {};
+        try { footerData = JSON.parse(document.getElementById('landing-footer').value); } catch(e){}
+        
+        container.innerHTML = '';
+        
+        // Define standard columns if empty
+        const columns = ['Product', 'Company', 'Enterprise', 'Resources'];
+        
+        columns.forEach(col => {
+            const links = footerData[col] || [];
+            
+            let linksHtml = links.map((link, linkIdx) => `
+                <div class="footer-link-row flex items-center gap-2 mb-2 group/link">
+                    <input type="text" class="footer-link-name input input-sm input-bordered bg-base-200 border-white/10 w-1/2" placeholder="Name" value="${(link.name || '').replace(/"/g, '&quot;')}">
+                    <input type="text" class="footer-link-url input input-sm input-bordered bg-base-200 border-white/10 w-1/2" placeholder="URL" value="${(link.url || '').replace(/"/g, '&quot;')}">
+                    <button type="button" onclick="this.closest('.footer-link-row').remove()" class="btn btn-xs btn-circle btn-ghost text-red-400 opacity-0 group-hover/link:opacity-100">✕</button>
+                </div>
+            `).join('');
+
+            container.insertAdjacentHTML('beforeend', `
+                <div class="footer-col-block bg-base-100 p-4 rounded-xl border border-white/5" data-col="${col}">
+                    <h4 class="font-bold mb-4 text-primary">${col}</h4>
+                    <div class="footer-links-container">
+                        ${linksHtml}
+                    </div>
+                    <button type="button" class="btn btn-xs btn-outline border-white/20 text-white mt-2" onclick="addFooterLinkRow(this)">+ Add Link</button>
+                </div>
+            `);
+        });
+    }
+
+    window.addFooterLinkRow = (btn) => {
+        const linksContainer = btn.previousElementSibling;
+        linksContainer.insertAdjacentHTML('beforeend', `
+            <div class="footer-link-row flex items-center gap-2 mb-2 group/link">
+                <input type="text" class="footer-link-name input input-sm input-bordered bg-base-200 border-white/10 w-1/2" placeholder="Name">
+                <input type="text" class="footer-link-url input input-sm input-bordered bg-base-200 border-white/10 w-1/2" placeholder="URL">
+                <button type="button" onclick="this.closest('.footer-link-row').remove()" class="btn btn-xs btn-circle btn-ghost text-red-400 opacity-0 group-hover/link:opacity-100">✕</button>
+            </div>
+        `);
+    };
+
     document.getElementById('form-admin-landing')?.addEventListener('submit', async(e) => {
         e.preventDefault();
         
+        // Serialize Features Builder
+        const featureRows = document.querySelectorAll('.feature-row');
+        const newFeatures = [];
+        featureRows.forEach(row => {
+            const title = row.querySelector('.feature-title').value.trim();
+            const color = row.querySelector('.feature-color').value.trim();
+            const desc = row.querySelector('.feature-desc').value.trim();
+            if(title || desc) newFeatures.push({title, color, description: desc});
+        });
+        document.getElementById('landing-features').value = JSON.stringify(newFeatures);
+
+        // Serialize Steps Builder
+        const stepRows = document.querySelectorAll('.step-row');
+        const newSteps = [];
+        stepRows.forEach(row => {
+            const num = row.querySelector('.step-num').value.trim();
+            const title = row.querySelector('.step-title').value.trim();
+            const desc = row.querySelector('.step-desc').value.trim();
+            if(title || desc) newSteps.push({step_num: num, title, description: desc});
+        });
+        document.getElementById('landing-steps').value = JSON.stringify(newSteps);
+
+        // Serialize Reviews Builder
+        const reviewRows = document.querySelectorAll('.review-row');
+        const newReviews = [];
+        reviewRows.forEach(row => {
+            const quote = row.querySelector('.review-quote').value.trim();
+            const name = row.querySelector('.review-name').value.trim();
+            const role = row.querySelector('.review-role').value.trim();
+            const initials = row.querySelector('.review-initials').value.trim();
+            if(quote || name) newReviews.push({quote, name, role, initials});
+        });
+        document.getElementById('landing-reviews').value = JSON.stringify(newReviews);
+
+        // Serialize Footer Builder
+        const footerColBlocks = document.querySelectorAll('.footer-col-block');
+        const newFooter = {};
+        footerColBlocks.forEach(block => {
+            const colName = block.getAttribute('data-col');
+            const linkRows = block.querySelectorAll('.footer-link-row');
+            const links = [];
+            linkRows.forEach(row => {
+                const name = row.querySelector('.footer-link-name').value.trim();
+                const url = row.querySelector('.footer-link-url').value.trim();
+                if(name || url) links.push({name, url});
+            });
+            newFooter[colName] = links;
+        });
+        document.getElementById('landing-footer').value = JSON.stringify(newFooter);
+
         // Serialize FAQ Builder back to JSON
         const faqRows = document.querySelectorAll('.faq-row');
         const newFaqs = [];
@@ -763,8 +1011,9 @@ document.addEventListener('DOMContentLoaded', () => {
             JSON.parse(document.getElementById('landing-faq').value);
             JSON.parse(document.getElementById('landing-footer').value);
             JSON.parse(document.getElementById('landing-reviews').value);
+            JSON.parse(document.getElementById('landing-features').value);
         } catch(err) {
-            if(window.showToast) showToast("Invalid JSON format. Please check your syntax.", "error");
+            if(window.showToast) showToast("Invalid format internally. Please report this error.", "error");
             return;
         }
 
@@ -773,6 +1022,16 @@ document.addEventListener('DOMContentLoaded', () => {
             {key: 'LANDING_FAQ', value: document.getElementById('landing-faq').value},
             {key: 'LANDING_FOOTER', value: document.getElementById('landing-footer').value},
             {key: 'LANDING_REVIEWS', value: document.getElementById('landing-reviews').value},
+            {key: 'LANDING_FEATURES', value: document.getElementById('landing-features').value},
+            
+            {key: 'LANDING_HERO_BADGE', value: document.getElementById('set-hero-badge')?.value || ''},
+            {key: 'LANDING_HERO_TITLE', value: document.getElementById('set-hero-title')?.value || ''},
+            {key: 'LANDING_HERO_SUBTITLE', value: document.getElementById('set-hero-subtitle')?.value || ''},
+            {key: 'LANDING_HERO_CTA', value: document.getElementById('set-hero-cta')?.value || ''},
+            
+            {key: 'LANDING_FEATURES_TITLE', value: document.getElementById('set-features-title')?.value || ''},
+            {key: 'LANDING_FEATURES_SUBTITLE', value: document.getElementById('set-features-subtitle')?.value || ''},
+
             {category: 'landing', key: 'partner_title', value: document.getElementById('set-partner-title')?.value || ''},
             {category: 'landing', key: 'partner_subtitle', value: document.getElementById('set-partner-subtitle')?.value || ''},
             {category: 'landing', key: 'partner_b1_title', value: document.getElementById('set-partner-b1-title')?.value || ''},

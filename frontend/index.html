@@ -118,19 +118,19 @@
         <div class="hero pt-32 pb-24 lg:pt-40 lg:pb-32">
             <div class="hero-content text-center px-4 sm:px-6 lg:px-8">
                 <div class="max-w-5xl">
-                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-8 border border-primary/20">
+                    <div id="landing-hero-badge" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-8 border border-primary/20">
                         <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
                         Built for Scale
                     </div>
-                    <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 leading-tight">
+                    <h1 id="landing-hero-title" class="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 leading-tight">
                         Automate your outreach with <br class="hidden md:block"/>
                         <span class="gradient-text">AI-Driven Personalization</span>
                     </h1>
-                    <p class="py-6 text-xl text-gray-400 max-w-2xl mx-auto">
+                    <p id="landing-hero-subtitle" class="py-6 text-xl text-gray-400 max-w-2xl mx-auto">
                         Connect your Google Sheets, define your templates, and let our AI dispatch the perfect, personalized Email & WhatsApp message to every lead automatically.
                     </p>
                     <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mt-4">
-                        <button onclick="document.getElementById('demo-modal').showModal()" class="btn bg-primary hover:bg-violet-600 text-white border-none btn-lg px-8 rounded-full shadow-lg shadow-primary/30">
+                        <button id="landing-hero-cta" onclick="document.getElementById('demo-modal').showModal()" class="btn bg-primary hover:bg-violet-600 text-white border-none btn-lg px-8 rounded-full shadow-lg shadow-primary/30">
                             Book a Demo
                         </button>
                         <a href="#features" class="btn btn-ghost btn-lg px-8 rounded-full text-gray-300">
@@ -450,35 +450,12 @@
         <section id="features" class="py-24 border-y border-white/5">
             <div class="max-w-7xl mx-auto px-6">
                 <div class="text-center mb-16">
-                    <h2 class="text-3xl md:text-5xl font-bold mb-4">Everything your business needs</h2>
-                    <p class="text-gray-400 text-lg">Stop sending generic blasts. Start building relationships at scale.</p>
+                    <h2 id="landing-features-title" class="text-3xl md:text-5xl font-bold mb-4">Everything your business needs</h2>
+                    <p id="landing-features-subtitle" class="text-gray-400 text-lg">Stop sending generic blasts. Start building relationships at scale.</p>
                 </div>
                 
-                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <div class="card bg-base-100 border border-white/5 hover:border-primary/50 transition-colors">
-                        <div class="card-body">
-                            <h2 class="card-title text-primary">AI Matching</h2>
-                            <p class="text-gray-400 text-sm mt-2">Our engine analyses your lead notes and automatically selects the most relevant template.</p>
-                        </div>
-                    </div>
-                    <div class="card bg-base-100 border border-white/5 hover:border-secondary/50 transition-colors">
-                        <div class="card-body">
-                            <h2 class="card-title text-secondary">Google Sheets Sync</h2>
-                            <p class="text-gray-400 text-sm mt-2">Just paste your Google Sheet URL. We read rows instantly and log the status right back to it.</p>
-                        </div>
-                    </div>
-                    <div class="card bg-base-100 border border-white/5 hover:border-green-500/50 transition-colors">
-                        <div class="card-body">
-                            <h2 class="card-title text-green-400">Email & WhatsApp</h2>
-                            <p class="text-gray-400 text-sm mt-2">Connect seamlessly via Gmail API & Meta Cloud API. We throttle sending speeds and handle API limits to protect your domain and number reputation automatically.</p>
-                        </div>
-                    </div>
-                    <div class="card bg-base-100 border border-white/5 hover:border-green-400/50 transition-colors">
-                        <div class="card-body">
-                            <h2 class="card-title text-green-400">Native WhatsApp API</h2>
-                            <p class="text-gray-400 text-sm mt-2">Go beyond email. Trigger official Meta WhatsApp templates directly from your Sheet to guarantee 98% open rates.</p>
-                        </div>
-                    </div>
+                <div id="landing-features-grid" class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Features populated by JS -->
                 </div>
             </div>
         </section>

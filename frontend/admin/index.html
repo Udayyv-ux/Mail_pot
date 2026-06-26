@@ -612,11 +612,64 @@
                 <div class="card bg-base-200 border border-white/5 shadow-lg max-w-4xl">
                     <div class="card-body p-8">
                         <form id="form-admin-landing" class="space-y-8">
+                            <!-- Hero Section Editor -->
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Hero Section</h3>
+                                <p class="text-gray-400 text-sm mb-4">Manage the main text at the top of your landing page.</p>
+                                <div class="space-y-4">
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text">Top Badge Text</span></label>
+                                        <input type="text" id="set-hero-badge" class="input input-bordered bg-dark/50" placeholder="e.g. Built for Scale" />
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text">Main Title (HTML allowed)</span></label>
+                                        <textarea id="set-hero-title" class="textarea textarea-bordered bg-dark/50 h-24" placeholder="Automate your outreach..."></textarea>
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text">Subtitle</span></label>
+                                        <textarea id="set-hero-subtitle" class="textarea textarea-bordered bg-dark/50 h-24" placeholder="Connect your Google Sheets..."></textarea>
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text">Call To Action Button Text</span></label>
+                                        <input type="text" id="set-hero-cta" class="input input-bordered bg-dark/50" placeholder="e.g. Book a Demo" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="border-white/10">
+
+                            <!-- Features Section Editor -->
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Features Section</h3>
+                                <p class="text-gray-400 text-sm mb-4">Manage the features grid.</p>
+                                <div class="space-y-4 mb-4">
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text">Features Section Title</span></label>
+                                        <input type="text" id="set-features-title" class="input input-bordered bg-dark/50" />
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text">Features Section Subtitle</span></label>
+                                        <input type="text" id="set-features-subtitle" class="input input-bordered bg-dark/50" />
+                                    </div>
+                                </div>
+                                <div id="features-builder-container" class="space-y-4 mb-4">
+                                    <!-- Populated dynamically by JS -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline border-white/20 text-white" onclick="addFeatureRow()">+ Add Feature</button>
+                                <textarea id="landing-features" class="hidden"></textarea>
+                            </div>
+
+                            <hr class="border-white/10">
+
                             <!-- Steps Editor -->
                             <div>
                                 <h3 class="text-xl font-bold mb-2">How It Works (Steps)</h3>
-                                <p class="text-gray-400 text-sm mb-4">JSON Array of objects: [{"step_num":"01", "title":"...", "description":"..."}, ...]</p>
-                                <textarea id="landing-steps" class="textarea textarea-bordered bg-base-300 border-white/10 focus:border-secondary font-mono text-sm w-full h-48"></textarea>
+                                <p class="text-gray-400 text-sm mb-4">Manage the step-by-step instructions.</p>
+                                <div id="steps-builder-container" class="space-y-4 mb-4">
+                                    <!-- Populated dynamically by JS -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline border-white/20 text-white" onclick="addStepRow()">+ Add Step</button>
+                                <textarea id="landing-steps" class="hidden"></textarea>
                             </div>
 
                             <hr class="border-white/10">
@@ -637,8 +690,12 @@
                             <!-- Testimonials Editor -->
                             <div>
                                 <h3 class="text-xl font-bold mb-2">Testimonials</h3>
-                                <p class="text-gray-400 text-sm mb-4">JSON Array of objects: [{"quote":"...", "name":"...", "role":"...", "initials":"..."}, ...]</p>
-                                <textarea id="landing-reviews" class="textarea textarea-bordered bg-base-300 border-white/10 focus:border-secondary font-mono text-sm w-full h-48"></textarea>
+                                <p class="text-gray-400 text-sm mb-4">Manage the customer reviews shown on the landing page.</p>
+                                <div id="reviews-builder-container" class="space-y-4 mb-4">
+                                    <!-- Populated dynamically by JS -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline border-white/20 text-white" onclick="addReviewRow()">+ Add Review</button>
+                                <textarea id="landing-reviews" class="hidden"></textarea>
                             </div>
 
                             <hr class="border-white/10">
@@ -646,8 +703,11 @@
                             <!-- Footer Editor -->
                             <div>
                                 <h3 class="text-xl font-bold mb-2">Footer Columns</h3>
-                                <p class="text-gray-400 text-sm mb-4">JSON Object with column names as keys and array of {name, url} as values.</p>
-                                <textarea id="landing-footer" class="textarea textarea-bordered bg-base-300 border-white/10 focus:border-secondary font-mono text-sm w-full h-48"></textarea>
+                                <p class="text-gray-400 text-sm mb-4">Manage the links in the footer. Links ending in "policy" or "terms" will automatically redirect to the Legal page.</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="footer-builder-container">
+                                    <!-- Populated dynamically by JS -->
+                                </div>
+                                <textarea id="landing-footer" class="hidden"></textarea>
                             </div>
 
                             <hr class="border-white/10">
