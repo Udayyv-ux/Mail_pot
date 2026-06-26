@@ -33,7 +33,7 @@ async def send_whatsapp_message(phone: str, template_name: str, access_token: st
         for v in variables:
             val = str(v) if v is not None else ""
             if not val.strip():
-                val = " " # Meta API rejects empty text parameters
+                val = "-" # Meta API might trim spaces, so use a hyphen to guarantee it's not empty
             safe_params.append({"type": "text", "text": val})
             
         template_data["components"] = [
