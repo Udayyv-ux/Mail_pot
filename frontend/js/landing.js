@@ -87,6 +87,40 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (el) el.textContent = settings.LANDING_HOW_IT_WORKS_SUBTITLE;
         }
 
+        // Partner Hydration
+        if (settings.partner_title) {
+            const el = document.getElementById('partner-title');
+            if (el) el.innerHTML = settings.partner_title;
+        }
+        if (settings.partner_subtitle) {
+            const el = document.getElementById('partner-subtitle');
+            if (el) el.textContent = settings.partner_subtitle;
+        }
+        if (settings.partner_b1_title) {
+            const el = document.getElementById('partner-b1-title');
+            if (el) el.textContent = settings.partner_b1_title;
+        }
+        if (settings.partner_b1_desc) {
+            const el = document.getElementById('partner-b1-desc');
+            if (el) el.textContent = settings.partner_b1_desc;
+        }
+        if (settings.partner_b2_title) {
+            const el = document.getElementById('partner-b2-title');
+            if (el) el.textContent = settings.partner_b2_title;
+        }
+        if (settings.partner_b2_desc) {
+            const el = document.getElementById('partner-b2-desc');
+            if (el) el.textContent = settings.partner_b2_desc;
+        }
+        if (settings.partner_b3_title) {
+            const el = document.getElementById('partner-b3-title');
+            if (el) el.textContent = settings.partner_b3_title;
+        }
+        if (settings.partner_b3_desc) {
+            const el = document.getElementById('partner-b3-desc');
+            if (el) el.textContent = settings.partner_b3_desc;
+        }
+
         // Fallbacks if not configured yet
         if(!featuresData) featuresData = [
             {title: "AI Matching", description: "Our engine analyses your lead notes and automatically selects the most relevant template.", color: "text-primary"},
