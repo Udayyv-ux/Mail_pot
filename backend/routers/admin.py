@@ -616,3 +616,50 @@ async def list_appointments(db: AsyncSession = Depends(get_db), admin = Depends(
     result = await db.execute(select(Appointment).order_by(Appointment.date.desc(), Appointment.time_slot.desc()))
     return result.scalars().all()
 
+@router.get("/newsletter/subscribers")
+async def list_newsletter_subscribers(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    from backend.models.newsletter import NewsletterSubscriber
+    result = await db.execute(select(NewsletterSubscriber).order_by(NewsletterSubscriber.created_at.desc()))
+    return result.scalars().all()
+
+class NewsletterBroadcastReq(BaseModel):
+    subject: str
+    body_html: str
+
+@router.post("/newsletter/broadcast")
+async def broadcast_newsletter(req: NewsletterBroadcastReq, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    from backend.services.email_engine import refresh_google_token, send_email_via_gmail_api
+    from backend.models.user import User
+    from backend.models.newsletter import NewsletterSubscriber
+
+    admin_user = await db.get(User, admin.id)
+    if not admin_user:
+        raise HTTPException(400, "Admin user not found.")
+        
+    access_token = await refresh_google_token(admin_user, db)
+    if not access_token:
+        raise HTTPException(400, "Super Admin Google Auth missing. Please sign in with Google first.")
+
+    result = await db.execute(select(NewsletterSubscriber).where(NewsletterSubscriber.is_active == True))
+    subscribers = result.scalars().all()
+
+    class DummyTemplate:
+        def __init__(self, subject, body_html):
+            self.subject = subject
+            self.body_html = body_html
+            
+    template = DummyTemplate(req.subject, req.body_html)
+    
+    sent_count = 0
+    errors = []
+    
+    for sub in subscribers:
+        success, msg = await send_email_via_gmail_api(sub.email, "Subscriber", template, access_token)
+        if success:
+            sent_count += 1
+        else:
+            errors.append(f"{sub.email}: {msg}")
+            
+    return {"status": "success", "sent": sent_count, "errors": errors}
+
+

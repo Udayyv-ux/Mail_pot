@@ -163,3 +163,26 @@ async def book_appointment(data: BookAppointmentReq, db: AsyncSession = Depends(
     asyncio.create_task(send_appointment_emails_async(data.name, data.email, data.date, data.time_slot))
 
     return {"status": "success", "message": "Appointment booked successfully!"}
+
+class NewsletterReq(BaseModel):
+    email: str
+    mobile: str = None
+
+@router.post("/newsletter/subscribe")
+async def subscribe_newsletter(data: NewsletterReq, db: AsyncSession = Depends(get_db)):
+    from backend.models.newsletter import NewsletterSubscriber
+    
+    # Check if already subscribed
+    result = await db.execute(select(NewsletterSubscriber).where(NewsletterSubscriber.email == data.email))
+    if result.scalars().first():
+        return {"status": "success", "message": "Already subscribed."}
+
+    sub = NewsletterSubscriber(
+        id=str(uuid.uuid4()),
+        email=data.email,
+        mobile=data.mobile
+    )
+    db.add(sub)
+    await db.commit()
+    return {"status": "success", "message": "Subscribed successfully!"}
+

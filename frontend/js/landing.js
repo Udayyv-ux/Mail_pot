@@ -344,13 +344,25 @@ window.addEventListener('DOMContentLoaded', () => {
             btn.disabled = true;
             btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span>';
             
-            // Simulate API call
-            await new Promise(r => setTimeout(r, 800));
+            const email = document.getElementById('newsletter-email').value;
+            const mobile = document.getElementById('newsletter-mobile').value;
             
-            newsletterForm.reset();
+            try {
+                await api.post('/public/newsletter/subscribe', { email, mobile });
+                newsletterForm.reset();
+                successMsg.classList.remove('hidden');
+                successMsg.classList.remove('text-error');
+                successMsg.classList.add('text-success');
+                successMsg.textContent = 'Thanks for subscribing! Check your inbox soon.';
+            } catch (err) {
+                successMsg.classList.remove('hidden');
+                successMsg.classList.remove('text-success');
+                successMsg.classList.add('text-error');
+                successMsg.textContent = 'Something went wrong. Please try again later.';
+            }
+            
             btn.disabled = false;
             btn.innerHTML = 'Subscribe';
-            successMsg.classList.remove('hidden');
             setTimeout(() => {
                 successMsg.classList.add('hidden');
             }, 5000);

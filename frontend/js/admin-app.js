@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         router.on('settings', loadSettings);
         router.on('landing', loadLandingContent);
         router.on('policies', loadPolicies);
+        router.on('newsletter', loadNewsletter);
         router.init();
     }
 
@@ -1155,3 +1156,64 @@ async function loadAppointments() {
         console.error("Failed to load appointments:", err);
     }
 }
+
+async function loadNewsletter() {
+    try {
+        const subscribers = await api.get('/admin/newsletter/subscribers');
+        const tbody = document.getElementById('newsletter-tbody');
+        tbody.innerHTML = subscribers.map(s => `
+            <tr>
+                <td>${s.email}</td>
+                <td>${s.mobile || '-'}</td>
+                <td>${window.components.formatDate(s.created_at)}</td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        console.error("Failed to load newsletter subscribers:", err);
+    }
+}
+
+document.getElementById('btn-nl-generate').addEventListener('click', async () => {
+    const prompt = document.getElementById('nl-ai-prompt').value;
+    if (!prompt) return window.showToast('Please provide a prompt for the AI.', 'error');
+    
+    const btn = document.getElementById('btn-nl-generate');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Generating...';
+    
+    try {
+        const res = await api.post('/admin/generate-email', { prompt });
+        document.getElementById('nl-subject').value = res.subject;
+        document.getElementById('nl-body').value = res.body;
+        window.showToast('Email generated successfully!');
+    } catch (err) {
+        window.showToast('Failed to generate email.', 'error');
+    }
+    
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+});
+
+document.getElementById('form-nl-broadcast').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const subject = document.getElementById('nl-subject').value;
+    const body_html = document.getElementById('nl-body').value;
+    const btn = e.target.querySelector('button[type="submit"]');
+    
+    if (!confirm('Are you sure you want to broadcast this to ALL active subscribers?')) return;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Sending...';
+    
+    try {
+        const res = await api.post('/admin/newsletter/broadcast', { subject, body_html });
+        window.showToast(`Broadcast sent! Sent to ${res.sent} subscribers.`, 'success');
+        e.target.reset();
+    } catch (err) {
+        window.showToast(err.message || 'Failed to send broadcast.', 'error');
+    }
+    
+    btn.disabled = false;
+    btn.innerHTML = 'Send Broadcast';
+});

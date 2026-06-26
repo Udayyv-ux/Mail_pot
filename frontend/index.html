@@ -712,9 +712,12 @@
                     <div>
                         <h4 class="text-xs font-bold text-gray-400 tracking-wider uppercase mb-4">Newsletter & Growth Tips</h4>
                         <p class="text-gray-400 text-sm mb-4">Join 10,000+ founders. Get our top 5 outreach templates that generate 30%+ reply rates directly to your inbox.</p>
-                        <form id="form-newsletter" class="flex flex-col sm:flex-row gap-2">
-                            <input type="email" id="newsletter-email" placeholder="Enter your email address" class="input input-bordered bg-dark/50 focus:bg-dark text-white border-white/10 focus:border-primary w-full" required />
-                            <button type="submit" class="btn bg-primary hover:bg-violet-600 text-white border-none shrink-0">Subscribe</button>
+                        <form id="form-newsletter" class="flex flex-col gap-2">
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <input type="email" id="newsletter-email" placeholder="Enter your email address" class="input input-bordered bg-dark/50 focus:bg-dark text-white border-white/10 focus:border-primary w-full" required />
+                                <input type="tel" id="newsletter-mobile" placeholder="Mobile Number (Optional)" class="input input-bordered bg-dark/50 focus:bg-dark text-white border-white/10 focus:border-primary w-full" />
+                            </div>
+                            <button type="submit" class="btn bg-primary hover:bg-violet-600 text-white border-none w-full sm:w-auto">Subscribe</button>
                         </form>
                         <p id="newsletter-success" class="text-success text-xs mt-2 hidden">Thanks for subscribing! Check your inbox soon.</p>
                     </div>

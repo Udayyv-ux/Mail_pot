@@ -13,8 +13,9 @@ from backend.models.email_queue import EmailQueue
 from backend.models.promo_code import PromoCode
 from backend.models.image import UploadedImage
 from backend.models.appointment import Appointment
+from backend.models.newsletter import NewsletterSubscriber
 __all__ = [
     "User", "Client", "Plan", "Template", "Campaign",
     "EmailLog", "Payment", "Policy", "AppSetting", "DemoRequest", "Notification",
-    "EmailQueue", "PromoCode", "UploadedImage", "Appointment"
+    "EmailQueue", "PromoCode", "UploadedImage", "Appointment", "NewsletterSubscriber"
 ]
