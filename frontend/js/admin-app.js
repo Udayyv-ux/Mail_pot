@@ -84,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
         router.on('promo', loadPromoCodes);
         router.on('monitor', loadGlobalLogs);
         router.on('settings', loadSettings);
-        router.on('whatsapp', loadWhatsapp);
         router.on('landing', loadLandingContent);
         router.on('policies', loadPolicies);
         router.init();
@@ -364,31 +363,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(window.showToast) showToast(e.message, 'error');
             }
         });
-
-    // --- WhatsApp Settings ---
-    async function loadWhatsapp() {
-        try {
-            const settings = await api.get('/admin/settings');
-            settings.forEach(s => {
-                const waIdEl = document.getElementById('admin-wa-business-id');
-                if (s.key === 'WHATSAPP_BUSINESS_ID' && waIdEl) waIdEl.value = s.value;
-            });
-        } catch(e) {}
-    }
-
-    document.getElementById('form-admin-whatsapp')?.addEventListener('submit', async(e) => {
-        e.preventDefault();
-        const payload = [];
-        const waIdEl = document.getElementById('admin-wa-business-id');
-        if (waIdEl) payload.push({key: 'WHATSAPP_BUSINESS_ID', value: waIdEl.value});
-
-        try {
-            await api.post('/admin/settings', payload);
-            if(window.showToast) showToast('WhatsApp settings saved!', 'success');
-        } catch(e) {
-            if(window.showToast) showToast(e.message, 'error');
-        }
-    });
 
     // --- Global Monitor ---
     window.loadGlobalLogs = async () => {
