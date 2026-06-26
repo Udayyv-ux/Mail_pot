@@ -20,8 +20,7 @@ from backend.models.payment import Payment
 from backend.models.app_settings import Policy, AppSetting, DemoRequest, Notification
 from backend.models.promo_code import PromoCode
 from backend.models.appointment import Appointment
-from backend.middleware.auth_middleware import require_admin
-from backend.services.whatsapp_service import send_whatsapp_message, timedelta, timezone
+from backend.services.whatsapp_service import send_whatsapp_message
 from backend.models.email_log import EmailLog
 from backend.models.campaign import Campaign
 from datetime import datetime, timedelta, timezone
