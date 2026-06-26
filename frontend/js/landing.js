@@ -51,20 +51,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         let reviewsData = null;
         let featuresData = null;
 
-        if (settings.LANDING_STEPS) stepsData = JSON.parse(settings.LANDING_STEPS);
-        if (settings.LANDING_FAQ) faqData = JSON.parse(settings.LANDING_FAQ);
-        if (settings.LANDING_REVIEWS) reviewsData = JSON.parse(settings.LANDING_REVIEWS);
-        if (settings.LANDING_FEATURES) featuresData = JSON.parse(settings.LANDING_FEATURES);
+        try { if (settings.LANDING_STEPS) stepsData = JSON.parse(settings.LANDING_STEPS); } catch(e) {}
+        try { if (settings.LANDING_FAQ) faqData = JSON.parse(settings.LANDING_FAQ); } catch(e) {}
+        try { if (settings.LANDING_REVIEWS) reviewsData = JSON.parse(settings.LANDING_REVIEWS); } catch(e) {}
+        try { if (settings.LANDING_FEATURES) featuresData = JSON.parse(settings.LANDING_FEATURES); } catch(e) {}
+        try { if (settings.LANDING_FOOTER) footerData = JSON.parse(settings.LANDING_FOOTER); } catch(e) {}
         
         // Hero Hydration
-        if (settings.LANDING_HERO_BADGE) document.getElementById('landing-hero-badge').innerHTML = `<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> ${settings.LANDING_HERO_BADGE}`;
-        if (settings.LANDING_HERO_TITLE) document.getElementById('landing-hero-title').innerHTML = settings.LANDING_HERO_TITLE;
-        if (settings.LANDING_HERO_SUBTITLE) document.getElementById('landing-hero-subtitle').textContent = settings.LANDING_HERO_SUBTITLE;
-        if (settings.LANDING_HERO_CTA) document.getElementById('landing-hero-cta').textContent = settings.LANDING_HERO_CTA;
+        const elHeroBadge = document.getElementById('landing-hero-badge');
+        if (elHeroBadge && settings.LANDING_HERO_BADGE) elHeroBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> ${settings.LANDING_HERO_BADGE}`;
+        
+        const elHeroTitle = document.getElementById('landing-hero-title');
+        if (elHeroTitle && settings.LANDING_HERO_TITLE) elHeroTitle.innerHTML = settings.LANDING_HERO_TITLE;
+        
+        const elHeroSubtitle = document.getElementById('landing-hero-subtitle');
+        if (elHeroSubtitle && settings.LANDING_HERO_SUBTITLE) elHeroSubtitle.textContent = settings.LANDING_HERO_SUBTITLE;
+        
+        const elHeroCta = document.getElementById('landing-hero-cta');
+        if (elHeroCta && settings.LANDING_HERO_CTA) elHeroCta.textContent = settings.LANDING_HERO_CTA;
 
         // Features Hydration
-        if (settings.LANDING_FEATURES_TITLE) document.getElementById('landing-features-title').textContent = settings.LANDING_FEATURES_TITLE;
-        if (settings.LANDING_FEATURES_SUBTITLE) document.getElementById('landing-features-subtitle').textContent = settings.LANDING_FEATURES_SUBTITLE;
+        const elFeaturesTitle = document.getElementById('landing-features-title');
+        if (elFeaturesTitle && settings.LANDING_FEATURES_TITLE) elFeaturesTitle.textContent = settings.LANDING_FEATURES_TITLE;
+        
+        const elFeaturesSubtitle = document.getElementById('landing-features-subtitle');
+        if (elFeaturesSubtitle && settings.LANDING_FEATURES_SUBTITLE) elFeaturesSubtitle.textContent = settings.LANDING_FEATURES_SUBTITLE;
 
         // How it works Hydration
         if (settings.LANDING_HOW_IT_WORKS_TITLE) {
@@ -132,7 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Render Features
         const featuresGrid = document.getElementById('landing-features-grid');
-        if(featuresGrid && featuresData) {
+        if(featuresGrid && Array.isArray(featuresData)) {
             featuresGrid.innerHTML = '';
             featuresData.forEach(feature => {
                 featuresGrid.innerHTML += `
@@ -148,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Render Steps
         const stepsContainer = document.getElementById('landing-steps-container');
-        if(stepsContainer && stepsData) {
+        if(stepsContainer && Array.isArray(stepsData)) {
             stepsContainer.innerHTML = '';
             stepsData.forEach(step => {
                 stepsContainer.innerHTML += `
@@ -167,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Render FAQ
         const faqContainer = document.getElementById('landing-faq-container');
-        if(faqContainer && faqData) {
+        if(faqContainer && Array.isArray(faqData)) {
             faqContainer.innerHTML = '';
             faqData.forEach(faq => {
                 faqContainer.innerHTML += `
@@ -186,7 +197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Render Testimonials
         const testimonialsContainer = document.getElementById('landing-testimonials-container');
-        if(testimonialsContainer && reviewsData) {
+        if(testimonialsContainer && Array.isArray(reviewsData)) {
             testimonialsContainer.innerHTML = '';
             reviewsData.forEach(review => {
                 testimonialsContainer.innerHTML += `
@@ -215,14 +226,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Render Footer
         const footerGrid = document.getElementById('landing-footer-grid');
+        if (!footerData || typeof footerData !== 'object' || Array.isArray(footerData)) footerData = null;
         if(footerGrid && footerData) {
             footerGrid.innerHTML = '';
             Object.keys(footerData).forEach(colName => {
                 const links = footerData[colName];
+                if(!Array.isArray(links)) return;
                 const linksHtml = links.map(l => {
                     let url = l.url;
-                    if (url === "#" && l.name.toLowerCase().includes("policy")) url = "/legal.html?policy=" + l.name.toLowerCase().replace(/\s+/g, '-');
-                    if (url === "#" && l.name.toLowerCase().includes("terms")) url = "/legal.html?policy=" + l.name.toLowerCase().replace(/\s+/g, '-');
+                    if (url === "#" && l.name && l.name.toLowerCase().includes("policy")) url = "/legal.html?policy=" + l.name.toLowerCase().replace(/\s+/g, '-');
+                    if (url === "#" && l.name && l.name.toLowerCase().includes("terms")) url = "/legal.html?policy=" + l.name.toLowerCase().replace(/\s+/g, '-');
                     return `<li><a href="${url}" class="text-gray-400 hover:text-white text-sm transition-colors">${l.name}</a></li>`;
                 }).join('');
                 footerGrid.innerHTML += `

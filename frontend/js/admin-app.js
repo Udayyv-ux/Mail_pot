@@ -732,6 +732,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!container) return;
         let faqs = [];
         try { faqs = JSON.parse(document.getElementById('landing-faq').value); } catch(e){}
+        if (!Array.isArray(faqs)) faqs = [];
         
         container.innerHTML = '';
         faqs.forEach((faq, idx) => {
@@ -754,6 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addFaqRow = () => {
         let faqs = [];
         try { faqs = JSON.parse(document.getElementById('landing-faq').value || "[]"); } catch(e){}
+        if (!Array.isArray(faqs)) faqs = [];
         faqs.push({question: "", answer: ""});
         document.getElementById('landing-faq').value = JSON.stringify(faqs);
         renderFaqBuilder();
@@ -769,6 +771,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!container) return;
         let features = [];
         try { features = JSON.parse(document.getElementById('landing-features').value); } catch(e){}
+        if (!Array.isArray(features)) features = [];
         
         container.innerHTML = '';
         features.forEach((feature, idx) => {
@@ -797,6 +800,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addFeatureRow = () => {
         let features = [];
         try { features = JSON.parse(document.getElementById('landing-features').value || "[]"); } catch(e){}
+        if (!Array.isArray(features)) features = [];
         features.push({title: "", description: "", color: "text-primary"});
         document.getElementById('landing-features').value = JSON.stringify(features);
         renderFeaturesBuilder();
@@ -812,6 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!container) return;
         let steps = [];
         try { steps = JSON.parse(document.getElementById('landing-steps').value); } catch(e){}
+        if (!Array.isArray(steps)) steps = [];
         
         container.innerHTML = '';
         steps.forEach((step, idx) => {
@@ -840,6 +845,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addStepRow = () => {
         let steps = [];
         try { steps = JSON.parse(document.getElementById('landing-steps').value || "[]"); } catch(e){}
+        if (!Array.isArray(steps)) steps = [];
         steps.push({step_num: "0" + (steps.length + 1), title: "", description: ""});
         document.getElementById('landing-steps').value = JSON.stringify(steps);
         renderStepsBuilder();
@@ -855,6 +861,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!container) return;
         let reviews = [];
         try { reviews = JSON.parse(document.getElementById('landing-reviews').value); } catch(e){}
+        if (!Array.isArray(reviews)) reviews = [];
         
         container.innerHTML = '';
         reviews.forEach((review, idx) => {
@@ -887,6 +894,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addReviewRow = () => {
         let reviews = [];
         try { reviews = JSON.parse(document.getElementById('landing-reviews').value || "[]"); } catch(e){}
+        if (!Array.isArray(reviews)) reviews = [];
         reviews.push({quote: "", name: "", role: "", initials: ""});
         document.getElementById('landing-reviews').value = JSON.stringify(reviews);
         renderReviewsBuilder();
@@ -902,6 +910,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!container) return;
         let footerData = {};
         try { footerData = JSON.parse(document.getElementById('landing-footer').value); } catch(e){}
+        if (!footerData || typeof footerData !== 'object' || Array.isArray(footerData)) footerData = {};
         
         container.innerHTML = '';
         
@@ -909,7 +918,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const columns = ['Product', 'Company', 'Enterprise', 'Resources'];
         
         columns.forEach(col => {
-            const links = footerData[col] || [];
+            let links = footerData[col] || [];
+            if(!Array.isArray(links)) links = [];
             
             let linksHtml = links.map((link, linkIdx) => `
                 <div class="footer-link-row flex items-center gap-2 mb-2 group/link">
