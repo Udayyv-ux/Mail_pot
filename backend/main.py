@@ -301,6 +301,11 @@ async def feedback_page():
     """Serve the feedback page."""
     return FileResponse(os.path.join(FRONTEND_DIR, "feedback.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
+@app.get("/admin-login.html")
+async def admin_login_page():
+    """Serve the admin login page for sub-admins."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "admin-login.html"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+
 
 @app.get("/client")
 async def client_portal_redirect():
