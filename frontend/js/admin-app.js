@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginScreen = document.getElementById('admin-login-screen');
 
     auth.getCurrentUser().then(user => {
-        if (!user || user.role !== 'admin') {
+        if (!user || (user.role !== 'admin' && user.role !== 'sub_admin')) {
             if (user && user.role !== 'admin') {
                 window.location.href = '/client/';
                 return;
@@ -78,6 +78,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let adminChart = null;
 
     function initAdmin() {
+    // Role-Based UI adjustments
+    auth.getCurrentUser().then(user => {
+        if (user && user.role === 'sub_admin') {
+            document.querySelectorAll('.super-admin-only').forEach(el => el.style.display = 'none');
+            // If they try to load dashboard or default, ensure it works.
+            if (['plans', 'promo', 'subadmins', 'settings', 'landing', 'policies'].includes(window.location.hash.substring(1))) {
+                window.location.hash = 'dashboard';
+            }
+        }
+    });
+
         router.on('dashboard', loadDashboard);
         router.on('users', loadUsers);
         router.on('appointments', loadAppointments);
@@ -1551,3 +1562,63 @@ document.getElementById('form-nl-wa-broadcast').addEventListener('submit', async
     btn.disabled = false;
     btn.innerHTML = 'Send WhatsApp Broadcast';
 });
+
+
+
+// --- SUB-ADMINS ---
+async function renderSubAdmins() {
+    try {
+        const users = await api.get('/admin/subadmins');
+        const tbody = document.getElementById('subadmins-tbody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+        users.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${u.name}</td>
+                <td>${u.email}</td>
+                <td>${new Date(u.created_at).toLocaleDateString()}</td>
+                <td><span class="badge ${u.is_active ? 'badge-success' : 'badge-error'}">${u.is_active ? 'Active' : 'Disabled'}</span></td>
+                <td class="text-right">
+                    <button class="btn btn-sm btn-ghost text-red-400 hover:bg-red-400/20" onclick="deleteSubAdmin('${u.id}')">Revoke</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch(e) {
+        if (e.message.includes('403')) {
+            showToast('Access denied', 'error');
+            window.location.hash = 'dashboard';
+        }
+    }
+}
+
+document.getElementById('form-subadmin')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+        name: document.getElementById('subadmin-name').value,
+        email: document.getElementById('subadmin-email').value,
+        password: document.getElementById('subadmin-password').value
+    };
+    try {
+        await api.post('/admin/subadmins', payload);
+        document.getElementById('modal-subadmin').close();
+        e.target.reset();
+        showToast('Sub-Admin created', 'success');
+        renderSubAdmins();
+    } catch(err) {
+        showToast(err.message || 'Failed to create sub-admin', 'error');
+    }
+});
+
+window.deleteSubAdmin = async (id) => {
+    if(!confirm("Are you sure you want to revoke this sub-admin's access?")) return;
+    try {
+        await api.delete(`/admin/subadmins/${id}`);
+        showToast('Sub-admin revoked', 'success');
+        renderSubAdmins();
+    } catch (e) {
+        showToast('Failed to revoke', 'error');
+    }
+};

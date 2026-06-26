@@ -80,16 +80,23 @@ async def get_current_user(
     return user
 
 
-async def require_admin(user: User = Depends(get_current_user)) -> User:
-    """Restrict endpoint to admin users only."""
+async def require_super_admin(user: User = Depends(get_current_user)) -> User:
+    """Restrict endpoint strictly to the super admin."""
     if user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Super Admin access required")
+    return user
+
+
+async def require_admin(user: User = Depends(get_current_user)) -> User:
+    """Restrict endpoint to admin and sub-admin users."""
+    if user.role not in (UserRole.ADMIN, UserRole.SUB_ADMIN):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return user
 
 
 async def require_client(user: User = Depends(get_current_user)) -> User:
     """Restrict endpoint to client, demo, or admin users (admins need access to test the client portal)."""
-    if user.role not in (UserRole.CLIENT, UserRole.DEMO, UserRole.ADMIN):
+    if user.role not in (UserRole.CLIENT, UserRole.DEMO, UserRole.ADMIN, UserRole.SUB_ADMIN):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Client access required")
     return user
 

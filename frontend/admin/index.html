@@ -131,6 +131,32 @@
                   </div>
               </section>
 
+
+            <!-- Sub-Admins Page -->
+            <section id="page-subadmins" class="page-section max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-3xl font-bold">Sub-Admins</h1>
+                    <button class="btn bg-white text-dark hover:bg-gray-200 border-none" onclick="document.getElementById('modal-subadmin').showModal()">+ Add Sub-Admin</button>
+                </div>
+                
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                    <table class="table w-full">
+                        <thead>
+                            <tr class="text-gray-400 border-white/10">
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Created</th>
+                                <th>Status</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subadmins-tbody">
+                            <!-- Injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- Users Page -->
             <section id="page-users" class="page-section max-w-7xl mx-auto">
                 <div class="flex justify-between items-center mb-8">
@@ -354,6 +380,32 @@
                       </div>
                   </div>
               </section>
+
+
+            <!-- Sub-Admins Page -->
+            <section id="page-subadmins" class="page-section max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-3xl font-bold">Sub-Admins</h1>
+                    <button class="btn bg-white text-dark hover:bg-gray-200 border-none" onclick="document.getElementById('modal-subadmin').showModal()">+ Add Sub-Admin</button>
+                </div>
+                
+                <div class="card bg-base-200 border border-white/5 shadow-lg overflow-x-auto">
+                    <table class="table w-full">
+                        <thead>
+                            <tr class="text-gray-400 border-white/10">
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Created</th>
+                                <th>Status</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subadmins-tbody">
+                            <!-- Injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
             <!-- Users Page -->
             <section id="page-users" class="page-section max-w-7xl mx-auto">
@@ -879,20 +931,24 @@
             </a>
         </div>
         <nav class="flex-1 p-4 overflow-y-auto">
-            <ul class="menu w-full p-0 space-y-2">
-                <li><a class="nav-item active" data-route="dashboard">Dashboard</a></li>
-                <li><a class="nav-item" data-route="users">Users & Clients</a></li>
-                <li><a class="nav-item" data-route="appointments">Appointments</a></li>
-                <li><a class="nav-item" data-route="plans">Pricing Plans</a></li>
-                <li><a class="nav-item" data-route="promo">Promo Codes</a></li>
-                <li><a class="nav-item" data-route="monitor">Global Monitor</a></li>
-                <li><a class="nav-item" data-route="whatsapp">WhatsApp Engine</a></li>
-                <li><a class="nav-item" data-route="settings">App Settings</a></li>
-                <li><a class="nav-item" data-route="landing">Landing Page</a></li>
-                <li><a class="nav-item" data-route="policies">Policies (CMS)</a></li>
-                <li><a class="nav-item" data-route="newsletter">Newsletter</a></li>
-            </ul>
-        </nav>
+              <ul class="menu w-full p-0 space-y-2">
+                  <li><a class="nav-item active" data-route="dashboard">Dashboard</a></li>
+                  <li><a class="nav-item" data-route="users">Users & Clients</a></li>
+                  <li><a class="nav-item" data-route="appointments">Appointments</a></li>
+                  <li><a class="nav-item" data-route="newsletter">Newsletter</a></li>
+                  <li><a class="nav-item" data-route="monitor">Global Monitor</a></li>
+                  <li><a class="nav-item" data-route="whatsapp">WhatsApp Engine</a></li>
+                  
+                  <div class="divider my-2 border-white/10 super-admin-only"></div>
+                  
+                  <li class="super-admin-only"><a class="nav-item" data-route="plans">Pricing Plans</a></li>
+                  <li class="super-admin-only"><a class="nav-item" data-route="promo">Promo Codes</a></li>
+                  <li class="super-admin-only"><a class="nav-item" data-route="subadmins">Sub-Admins</a></li>
+                  <li class="super-admin-only"><a class="nav-item" data-route="settings">App Settings</a></li>
+                  <li class="super-admin-only"><a class="nav-item" data-route="landing">Landing Page</a></li>
+                  <li class="super-admin-only"><a class="nav-item" data-route="policies">Policies (CMS)</a></li>
+              </ul>
+          </nav>
         <div class="p-4 border-t border-white/5">
             <button id="btn-admin-logout" class="btn btn-outline btn-sm w-full border-white/10 hover:bg-white/10 text-gray-400">Lock Admin</button>
         </div>
@@ -1151,6 +1207,33 @@
             </form>
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+    
+    <!-- Sub-Admin Modal -->
+    <dialog id="modal-subadmin" class="modal backdrop-blur-sm">
+        <div class="modal-box bg-base-200 border border-white/10 shadow-2xl">
+            <h3 class="font-bold text-2xl mb-6">Create Sub-Admin</h3>
+            <form id="form-subadmin" class="space-y-4">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Name</span></label>
+                    <input type="text" id="subadmin-name" class="input input-bordered focus:border-secondary" required placeholder="John Doe">
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Email</span></label>
+                    <input type="email" id="subadmin-email" class="input input-bordered focus:border-secondary" required placeholder="john@example.com">
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Password</span></label>
+                    <input type="password" id="subadmin-password" class="input input-bordered focus:border-secondary" required minlength="6">
+                </div>
+                
+                <div class="modal-action mt-6">
+                    <button type="button" class="btn btn-ghost" onclick="document.getElementById('modal-subadmin').close()">Cancel</button>
+                    <button type="submit" class="btn btn-primary bg-white text-black hover:bg-gray-200 border-none px-8">Create</button>
+                </div>
+            </form>
+        </div>
     </dialog>
 
     <!-- Toast Container -->

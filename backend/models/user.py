@@ -11,6 +11,7 @@ import enum
 class UserRole(str, enum.Enum):
     CLIENT = "client"
     ADMIN = "admin"
+    SUB_ADMIN = "sub_admin"
     DEMO = "demo"
 
 
@@ -20,6 +21,7 @@ class User(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     email = Column(String, unique=True, nullable=False, index=True)
     name = Column(String, nullable=False, default="")
+    hashed_password = Column(String, nullable=True) # Used for sub-admins
     google_id = Column(String, unique=True, nullable=True)
     google_access_token = Column(String, nullable=True)
     google_refresh_token = Column(String, nullable=True)

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <!-- Tailwind & DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        :root {
+            --p: 258 79% 66%;
+            --s: 217 91% 60%;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex items-center justify-center p-4">
+
+    <div class="card bg-base-200 border border-white/5 shadow-2xl p-8 rounded-2xl w-full max-w-md">
+        <div class="text-center mb-8">
+            <h2 class="text-2xl font-bold">Admin Portal</h2>
+            <p class="text-gray-400 mt-2 text-sm">Sign in to manage campaigns and clients.</p>
+        </div>
+
+        <div id="error-msg" class="alert alert-error shadow-lg mb-6 hidden">
+            <span>Invalid email or password.</span>
+        </div>
+
+        <form id="login-form" class="space-y-4">
+            <div class="form-control">
+                <label class="label"><span class="label-text">Email Address</span></label>
+                <input type="email" id="email" class="input input-bordered focus:border-primary" required placeholder="admin@example.com">
+            </div>
+            
+            <div class="form-control">
+                <label class="label"><span class="label-text">Password</span></label>
+                <input type="password" id="password" class="input input-bordered focus:border-primary" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-full text-white mt-6" id="submit-btn">Sign In</button>
+        </form>
+        
+        <div class="mt-6 text-center">
+            <a href="/" class="link text-sm text-gray-500 hover:text-white">Return to Homepage</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            const errorMsg = document.getElementById('error-msg');
+            
+            btn.innerHTML = '<span class="loading loading-spinner"></span> Signing in...';
+            btn.disabled = true;
+            errorMsg.classList.add('hidden');
+
+            const payload = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const res = await fetch('/api/auth/login/basic', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('refresh_token', data.refresh_token);
+                    window.location.href = '/admin/';
+                } else {
+                    errorMsg.querySelector('span').textContent = data.detail || 'Login failed';
+                    errorMsg.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorMsg.querySelector('span').textContent = 'Network error. Please try again.';
+                errorMsg.classList.remove('hidden');
+            } finally {
+                btn.innerHTML = 'Sign In';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -12,7 +12,7 @@ import asyncio
 from backend.config import settings
 
 from backend.database import get_db
-from backend.middleware.auth_middleware import require_admin
+from backend.middleware.auth_middleware import require_admin, require_super_admin
 from backend.models.client import Client
 from backend.models.user import User
 from backend.models.plan import Plan
@@ -192,19 +192,19 @@ class PlanCreate(BaseModel):
     has_ai_templates: bool = False
 
 @router.get("/plans")
-async def list_plans(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+async def list_plans(db: AsyncSession = Depends(get_db), admin = Depends(require_super_admin)):
     result = await db.execute(select(Plan).order_by(Plan.sort_order))
     return result.scalars().all()
 
 @router.post("/plans")
-async def create_plan(plan: PlanCreate, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+async def create_plan(plan: PlanCreate, db: AsyncSession = Depends(get_db), admin = Depends(require_super_admin)):
     new_plan = Plan(**plan.model_dump())
     db.add(new_plan)
     await db.commit()
     return new_plan
 
 @router.put("/plans/{id}")
-async def update_plan(id: str, plan_update: PlanCreate, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+async def update_plan(id: str, plan_update: PlanCreate, db: AsyncSession = Depends(get_db), admin = Depends(require_super_admin)):
     plan = await db.get(Plan, id)
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
@@ -216,7 +216,7 @@ async def update_plan(id: str, plan_update: PlanCreate, db: AsyncSession = Depen
     return plan
 
 @router.delete("/plans/{id}")
-async def delete_plan(id: str, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+async def delete_plan(id: str, db: AsyncSession = Depends(get_db), admin = Depends(require_super_admin)):
     plan = await db.get(Plan, id)
     if plan:
         await db.delete(plan)
@@ -229,12 +229,12 @@ class SettingUpdate(BaseModel):
     value: str
 
 @router.get("/settings")
-async def get_settings(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+async def get_settings(db: AsyncSession = Depends(get_db), admin = Depends(require_super_admin)):
     result = await db.execute(select(AppSetting))
     return result.scalars().all()
 
 @router.put("/settings")
-async def update_settings(settings: List[SettingUpdate], db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+async def update_settings(settings: List[SettingUpdate], db: AsyncSession = Depends(get_db), admin = Depends(require_super_admin)):
     for setting in settings:
         result = await db.execute(select(AppSetting).where(AppSetting.key == setting.key))
         db_setting = result.scalar_one_or_none()
@@ -250,7 +250,7 @@ async def update_settings(settings: List[SettingUpdate], db: AsyncSession = Depe
     return {"status": "success"}
 
 @router.post("/settings/logo")
-async def upload_logo(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+async def upload_logo(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), admin = Depends(require_super_admin)):
     contents = await file.read()
     b64 = base64.b64encode(contents).decode("utf-8")
     mime = file.content_type if file.content_type else "image/png"
@@ -398,7 +398,7 @@ async def send_demo_emails(req: DemoEmailRequest, db: AsyncSession = Depends(get
     return {"status": "success", "sent_count": sent_count}
 
 @router.get("/revenue")
-async def get_revenue_metrics(db: AsyncSession = Depends(get_db), current_admin = Depends(require_admin)):
+async def get_revenue_metrics(db: AsyncSession = Depends(get_db), current_admin = Depends(require_super_admin)):
     from backend.models.client import Client
     from backend.models.plan import Plan
     from sqlalchemy.orm import selectinload
@@ -434,13 +434,13 @@ class PromoCodeCreate(BaseModel):
     is_active: bool = True
 
 @router.get("/promo-codes")
-async def get_promo_codes(db: AsyncSession = Depends(get_db), current_admin = Depends(require_admin)):
+async def get_promo_codes(db: AsyncSession = Depends(get_db), current_admin = Depends(require_super_admin)):
     from backend.models.promo_code import PromoCode
     res = await db.execute(select(PromoCode).order_by(PromoCode.created_at.desc()))
     return res.scalars().all()
 
 @router.post("/promo-codes")
-async def create_promo_code(promo: PromoCodeCreate, db: AsyncSession = Depends(get_db), current_admin = Depends(require_admin)):
+async def create_promo_code(promo: PromoCodeCreate, db: AsyncSession = Depends(get_db), current_admin = Depends(require_super_admin)):
     from backend.models.promo_code import PromoCode
     pc = PromoCode(**promo.model_dump())
     db.add(pc)
@@ -452,7 +452,7 @@ async def create_promo_code(promo: PromoCodeCreate, db: AsyncSession = Depends(g
     return pc
 
 @router.delete("/promo-codes/{id}")
-async def delete_promo_code(id: str, db: AsyncSession = Depends(get_db), current_admin = Depends(require_admin)):
+async def delete_promo_code(id: str, db: AsyncSession = Depends(get_db), current_admin = Depends(require_super_admin)):
     from backend.models.promo_code import PromoCode
     pc = await db.get(PromoCode, id)
     if not pc:
@@ -538,7 +538,6 @@ async def admin_generate_email(req: AdminAIGenerateRequest, db: AsyncSession = D
         return json.loads(content)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 # --- WHATSAPP ENGINE ---
 import httpx
 
@@ -714,3 +713,51 @@ async def broadcast_newsletter_whatsapp(req: NewsletterWhatsappBroadcastReq, db:
                 errors.append(f"WhatsApp error for {phone}: {err}")
                 
     return {"status": "success", "sent": sent_count, "errors": errors}
+
+
+# --- SUB-ADMINS ---
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+class SubAdminCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+
+@router.get("/subadmins")
+async def list_subadmins(db: AsyncSession = Depends(get_db), admin = Depends(require_super_admin)):
+    result = await db.execute(select(User).where(User.role == UserRole.SUB_ADMIN).order_by(User.created_at.desc()))
+    users = result.scalars().all()
+    return [{"id": u.id, "name": u.name, "email": u.email, "created_at": u.created_at, "is_active": u.is_active} for u in users]
+
+@router.post("/subadmins")
+async def create_subadmin(data: SubAdminCreate, db: AsyncSession = Depends(get_db), admin = Depends(require_super_admin)):
+    # Check if exists
+    result = await db.execute(select(User).where(User.email == data.email.strip().lower()))
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="User with this email already exists")
+        
+    hashed_password = pwd_context.hash(data.password)
+    
+    new_user = User(
+        name=data.name,
+        email=data.email.strip().lower(),
+        role=UserRole.SUB_ADMIN,
+        hashed_password=hashed_password,
+        is_active=True
+    )
+    db.add(new_user)
+    await db.commit()
+    return {"status": "success", "id": new_user.id}
+
+@router.delete("/subadmins/{id}")
+async def delete_subadmin(id: str, db: AsyncSession = Depends(get_db), admin = Depends(require_super_admin)):
+    user = await db.get(User, id)
+    if not user or user.role != UserRole.SUB_ADMIN:
+        raise HTTPException(status_code=404, detail="Sub-admin not found")
+        
+    await db.delete(user)
+    await db.commit()
+    return {"status": "success"}
+
