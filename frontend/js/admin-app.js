@@ -781,16 +781,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="grid grid-cols-2 gap-4 mb-2 pr-8">
                         <div class="form-control">
                             <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Title</span></label>
-                            <input type="text" class="feature-title input input-sm input-bordered bg-base-200 border-white/10" value="${(feature.title || '').replace(/"/g, '&quot;')}">
+                            <input type="text" class="feature-title input input-sm input-bordered bg-base-200 border-white/10" value="${String(feature.title || '').replace(/"/g, '&quot;')}">
                         </div>
                         <div class="form-control">
                             <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Color Class (e.g. text-primary)</span></label>
-                            <input type="text" class="feature-color input input-sm input-bordered bg-base-200 border-white/10" value="${(feature.color || 'text-primary').replace(/"/g, '&quot;')}">
+                            <input type="text" class="feature-color input input-sm input-bordered bg-base-200 border-white/10" value="${String(feature.color || 'text-primary').replace(/"/g, '&quot;')}">
                         </div>
                     </div>
                     <div class="form-control">
                         <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Description</span></label>
-                        <textarea class="feature-desc textarea textarea-sm textarea-bordered bg-base-200 border-white/10 h-16">${feature.description || ''}</textarea>
+                        <textarea class="feature-desc textarea textarea-sm textarea-bordered bg-base-200 border-white/10 h-16">${String(feature.description || '')}</textarea>
                     </div>
                 </div>
             `);
@@ -826,16 +826,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="grid grid-cols-2 gap-4 mb-2 pr-8">
                         <div class="form-control">
                             <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Step Number (e.g. 01)</span></label>
-                            <input type="text" class="step-num input input-sm input-bordered bg-base-200 border-white/10" value="${(step.step_num || '').replace(/"/g, '&quot;')}">
+                            <input type="text" class="step-num input input-sm input-bordered bg-base-200 border-white/10" value="${String(step.step_num || '').replace(/"/g, '&quot;')}">
                         </div>
                         <div class="form-control">
                             <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Title</span></label>
-                            <input type="text" class="step-title input input-sm input-bordered bg-base-200 border-white/10" value="${(step.title || '').replace(/"/g, '&quot;')}">
+                            <input type="text" class="step-title input input-sm input-bordered bg-base-200 border-white/10" value="${String(step.title || '').replace(/"/g, '&quot;')}">
                         </div>
                     </div>
                     <div class="form-control">
                         <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Description</span></label>
-                        <textarea class="step-desc textarea textarea-sm textarea-bordered bg-base-200 border-white/10 h-16">${step.description || ''}</textarea>
+                        <textarea class="step-desc textarea textarea-sm textarea-bordered bg-base-200 border-white/10 h-16">${String(step.description || '')}</textarea>
                     </div>
                 </div>
             `);
@@ -870,20 +870,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button type="button" onclick="removeReviewRow(this)" class="btn btn-sm btn-circle btn-ghost text-red-400 absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
                     <div class="form-control mb-2 pr-8">
                         <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Quote</span></label>
-                        <textarea class="review-quote textarea textarea-sm textarea-bordered bg-base-200 border-white/10 h-16">${review.quote || ''}</textarea>
+                        <textarea class="review-quote textarea textarea-sm textarea-bordered bg-base-200 border-white/10 h-16">${String(review.quote || '')}</textarea>
                     </div>
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-control">
                             <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Name</span></label>
-                            <input type="text" class="review-name input input-sm input-bordered bg-base-200 border-white/10" value="${(review.name || '').replace(/"/g, '&quot;')}">
+                            <input type="text" class="review-name input input-sm input-bordered bg-base-200 border-white/10" value="${String(review.name || '').replace(/"/g, '&quot;')}">
                         </div>
                         <div class="form-control">
                             <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Role</span></label>
-                            <input type="text" class="review-role input input-sm input-bordered bg-base-200 border-white/10" value="${(review.role || '').replace(/"/g, '&quot;')}">
+                            <input type="text" class="review-role input input-sm input-bordered bg-base-200 border-white/10" value="${String(review.role || '').replace(/"/g, '&quot;')}">
                         </div>
                         <div class="form-control">
                             <label class="label pt-0"><span class="label-text text-gray-400 text-xs">Initials</span></label>
-                            <input type="text" class="review-initials input input-sm input-bordered bg-base-200 border-white/10" value="${(review.initials || '').replace(/"/g, '&quot;')}">
+                            <input type="text" class="review-initials input input-sm input-bordered bg-base-200 border-white/10" value="${String(review.initials || '').replace(/"/g, '&quot;')}">
                         </div>
                     </div>
                 </div>
@@ -923,19 +923,19 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let linksHtml = links.map((link, linkIdx) => `
                 <div class="footer-link-row flex items-center gap-2 mb-2 group/link">
-                    <input type="text" class="footer-link-name input input-sm input-bordered bg-base-200 border-white/10 w-1/2" placeholder="Name" value="${(link.name || '').replace(/"/g, '&quot;')}">
-                    <input type="text" class="footer-link-url input input-sm input-bordered bg-base-200 border-white/10 w-1/2" placeholder="URL" value="${(link.url || '').replace(/"/g, '&quot;')}">
-                    <button type="button" onclick="this.closest('.footer-link-row').remove()" class="btn btn-xs btn-circle btn-ghost text-red-400 opacity-0 group-hover/link:opacity-100">✕</button>
+                    <button type="button" onclick="this.closest('.footer-link-row').remove()" class="btn btn-xs btn-circle btn-ghost text-red-400 opacity-0 group-hover/link:opacity-100 transition-opacity">✕</button>
+                    <input type="text" class="footer-link-name input input-xs input-bordered bg-base-200 border-white/10 flex-1" placeholder="Link Name" value="${String(link.name || '').replace(/"/g, '&quot;')}">
+                    <input type="text" class="footer-link-url input input-xs input-bordered bg-base-200 border-white/10 flex-1" placeholder="URL" value="${String(link.url || '').replace(/"/g, '&quot;')}">
                 </div>
             `).join('');
 
             container.insertAdjacentHTML('beforeend', `
-                <div class="footer-col-block bg-base-100 p-4 rounded-xl border border-white/5" data-col="${col}">
-                    <h4 class="font-bold mb-4 text-primary">${col}</h4>
+                <div class="footer-col-group bg-base-100 p-4 rounded-xl border border-white/5" data-col="${col}">
+                    <h3 class="text-white font-semibold mb-3">${col}</h3>
                     <div class="footer-links-container">
                         ${linksHtml}
                     </div>
-                    <button type="button" class="btn btn-xs btn-outline border-white/20 text-white mt-2" onclick="addFooterLinkRow(this)">+ Add Link</button>
+                    <button type="button" onclick="addFooterLinkRow(this)" class="btn btn-xs btn-outline border-white/20 text-gray-400 hover:text-white mt-2">+ Add Link</button>
                 </div>
             `);
         });
