@@ -224,8 +224,9 @@ async def process_single_client(client_id: int, queued_email_ids: list[int], cam
             if not db_client or db_client.status != "active":
                 continue
                 
-            # Auto-reset daily limits at midnight UTC
-            today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            # Auto-reset daily limits at midnight IST (UTC+5:30)
+            ist_time = datetime.now(timezone.utc) + __import__('datetime').timedelta(hours=5, minutes=30)
+            today_str = ist_time.strftime("%Y-%m-%d")
             if db_client.last_reset_date != today_str:
                 db_client.emails_sent_today = 0
                 db_client.last_reset_date = today_str
