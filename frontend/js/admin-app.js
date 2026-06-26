@@ -1185,7 +1185,7 @@ document.getElementById('btn-nl-generate').addEventListener('click', async () =>
     try {
         const res = await api.post('/admin/generate-email', { prompt });
         document.getElementById('nl-subject').value = res.subject;
-        document.getElementById('nl-body').value = res.body;
+        document.getElementById('nl-body').value = res.body_html;
         window.showToast('Email generated successfully!');
     } catch (err) {
         window.showToast('Failed to generate email.', 'error');
