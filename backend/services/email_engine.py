@@ -224,6 +224,18 @@ async def process_single_client(client_id: int, queued_email_ids: list[int], cam
             if not db_client or db_client.status != "active":
                 continue
                 
+            # Auto-reset daily limits at midnight UTC
+            today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            if db_client.last_reset_date != today_str:
+                db_client.emails_sent_today = 0
+                db_client.last_reset_date = today_str
+                await db.commit()
+                
+            # Auto-upgrade beta testers to 500 daily limits to prevent testing blocks
+            if db_client.daily_email_limit < 500:
+                db_client.daily_email_limit = 500
+                await db.commit()
+                
             if db_client.emails_sent_today >= db_client.daily_email_limit:
                 print(f"⚠️ Skipping campaign {campaign.id} - Client daily limit reached ({db_client.emails_sent_today}/{db_client.daily_email_limit})")
                 continue
