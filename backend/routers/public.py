@@ -164,9 +164,11 @@ async def book_appointment(data: BookAppointmentReq, db: AsyncSession = Depends(
 
     return {"status": "success", "message": "Appointment booked successfully!"}
 
+from typing import Optional
+
 class NewsletterReq(BaseModel):
     email: str
-    mobile: str = None
+    mobile: Optional[str] = None
 
 @router.post("/newsletter/subscribe")
 async def subscribe_newsletter(data: NewsletterReq, db: AsyncSession = Depends(get_db)):
