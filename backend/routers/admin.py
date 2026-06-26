@@ -622,9 +622,15 @@ async def list_newsletter_subscribers(db: AsyncSession = Depends(get_db), admin 
     result = await db.execute(select(NewsletterSubscriber).order_by(NewsletterSubscriber.created_at.desc()))
     return result.scalars().all()
 
+from typing import List, Optional
 class NewsletterBroadcastReq(BaseModel):
     subject: str
     body_html: str
+    target_emails: Optional[List[str]] = None
+
+class NewsletterWhatsappBroadcastReq(BaseModel):
+    template_name: str
+    target_emails: Optional[List[str]] = None
 
 @router.post("/newsletter/broadcast")
 async def broadcast_newsletter(req: NewsletterBroadcastReq, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
@@ -640,7 +646,11 @@ async def broadcast_newsletter(req: NewsletterBroadcastReq, db: AsyncSession = D
     if not access_token:
         raise HTTPException(400, "Super Admin Google Auth missing. Please sign in with Google first.")
 
-    result = await db.execute(select(NewsletterSubscriber).where(NewsletterSubscriber.is_active == True))
+    query = select(NewsletterSubscriber).where(NewsletterSubscriber.is_active == True)
+    if req.target_emails:
+        query = query.where(NewsletterSubscriber.email.in_(req.target_emails))
+    
+    result = await db.execute(query)
     subscribers = result.scalars().all()
 
     class DummyTemplate:
@@ -654,12 +664,53 @@ async def broadcast_newsletter(req: NewsletterBroadcastReq, db: AsyncSession = D
     errors = []
     
     for sub in subscribers:
-        success, msg = await send_email_via_gmail_api(sub.email, "Subscriber", template, access_token)
+        success, error_msg = await send_email_via_gmail_api(sub.email, "Subscriber", template, access_token)
         if success:
             sent_count += 1
         else:
-            errors.append(f"{sub.email}: {msg}")
+            errors.append(error_msg)
             
     return {"status": "success", "sent": sent_count, "errors": errors}
 
-
+@router.post("/newsletter/broadcast-whatsapp")
+async def broadcast_newsletter_whatsapp(req: NewsletterWhatsappBroadcastReq, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    from backend.services.whatsapp_service import send_whatsapp_message
+    from backend.models.app_settings import AppSetting
+    from backend.models.newsletter import NewsletterSubscriber
+    
+    result = await db.execute(select(AppSetting).where(AppSetting.key.in_(
+        ["WHATSAPP_ACCESS_TOKEN", "WHATSAPP_PHONE_NUMBER_ID"]
+    )))
+    settings_dict = {s.key: s.value for s in result.scalars().all()}
+    
+    access_token = settings_dict.get("WHATSAPP_ACCESS_TOKEN")
+    phone_id = settings_dict.get("WHATSAPP_PHONE_NUMBER_ID")
+    
+    if not access_token or not phone_id:
+        raise HTTPException(status_code=400, detail="Global WhatsApp API credentials not configured.")
+        
+    query = select(NewsletterSubscriber).where(NewsletterSubscriber.is_active == True)
+    if req.target_emails:
+        query = query.where(NewsletterSubscriber.email.in_(req.target_emails))
+        
+    res = await db.execute(query)
+    subscribers = res.scalars().all()
+    
+    sent_count = 0
+    errors = []
+    
+    for sub in subscribers:
+        phone = getattr(sub, "mobile", None)
+        if phone:
+            success, err = await send_whatsapp_message(
+                phone=phone,
+                template_name=req.template_name,
+                access_token=access_token,
+                phone_number_id=phone_id
+            )
+            if success:
+                sent_count += 1
+            else:
+                errors.append(f"WhatsApp error for {phone}: {err}")
+                
+    return {"status": "success", "sent": sent_count, "errors": errors}

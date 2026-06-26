@@ -1163,11 +1163,24 @@ async function loadNewsletter() {
         const tbody = document.getElementById('newsletter-tbody');
         tbody.innerHTML = subscribers.map(s => `
             <tr>
+                <td>
+                    <label>
+                        <input type="checkbox" class="checkbox checkbox-sm nl-row-checkbox" value="${s.email}" />
+                    </label>
+                </td>
                 <td>${s.email}</td>
                 <td>${s.mobile || '-'}</td>
                 <td>${window.components.formatDate(s.created_at)}</td>
             </tr>
         `).join('');
+
+        const selectAll = document.getElementById('nl-select-all');
+        if (selectAll) {
+            selectAll.checked = false;
+            selectAll.onchange = (e) => {
+                document.querySelectorAll('.nl-row-checkbox').forEach(cb => cb.checked = e.target.checked);
+            };
+        }
     } catch (err) {
         console.error("Failed to load newsletter subscribers:", err);
     }
@@ -1195,19 +1208,43 @@ document.getElementById('btn-nl-generate').addEventListener('click', async () =>
     btn.innerHTML = originalText;
 });
 
+window.switchNlTab = (tab) => {
+    document.getElementById('tab-nl-email').classList.remove('tab-active');
+    document.getElementById('tab-nl-whatsapp').classList.remove('tab-active');
+    document.getElementById('nl-email-content').classList.add('hidden');
+    document.getElementById('nl-whatsapp-content').classList.add('hidden');
+
+    document.getElementById(`tab-nl-${tab}`).classList.add('tab-active');
+    document.getElementById(`nl-${tab}-content`).classList.remove('hidden');
+};
+
+document.getElementById('btn-nl-preview').addEventListener('click', () => {
+    const subject = document.getElementById('nl-subject').value;
+    const body_html = document.getElementById('nl-body').value;
+    if (!subject || !body_html) return window.showToast('Please provide a subject and body first.', 'error');
+    
+    document.getElementById('nl-preview-subject').innerText = subject;
+    document.getElementById('nl-preview-body').innerHTML = body_html;
+    document.getElementById('nl-preview-modal').showModal();
+});
+
 document.getElementById('form-nl-broadcast').addEventListener('submit', async (e) => {
     e.preventDefault();
     const subject = document.getElementById('nl-subject').value;
     const body_html = document.getElementById('nl-body').value;
-    const btn = e.target.querySelector('button[type="submit"]');
     
-    if (!confirm('Are you sure you want to broadcast this to ALL active subscribers?')) return;
+    const checkboxes = document.querySelectorAll('.nl-row-checkbox:checked');
+    if (checkboxes.length === 0) return window.showToast('Please select at least one subscriber.', 'error');
+    const target_emails = Array.from(checkboxes).map(cb => cb.value);
+    
+    const btn = e.target.querySelector('button[type="submit"]');
+    if (!confirm(`Are you sure you want to send this email to ${target_emails.length} subscriber(s)?`)) return;
     
     btn.disabled = true;
     btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Sending...';
     
     try {
-        const res = await api.post('/admin/newsletter/broadcast', { subject, body_html });
+        const res = await api.post('/admin/newsletter/broadcast', { subject, body_html, target_emails });
         window.showToast(`Broadcast sent! Sent to ${res.sent} subscribers.`, 'success');
         e.target.reset();
     } catch (err) {
@@ -1216,4 +1253,30 @@ document.getElementById('form-nl-broadcast').addEventListener('submit', async (e
     
     btn.disabled = false;
     btn.innerHTML = 'Send Broadcast';
+});
+
+document.getElementById('form-nl-wa-broadcast').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const template_name = document.getElementById('nl-wa-template').value;
+    
+    const checkboxes = document.querySelectorAll('.nl-row-checkbox:checked');
+    if (checkboxes.length === 0) return window.showToast('Please select at least one subscriber.', 'error');
+    const target_emails = Array.from(checkboxes).map(cb => cb.value);
+    
+    const btn = e.target.querySelector('button[type="submit"]');
+    if (!confirm(`Are you sure you want to send this WhatsApp message to ${target_emails.length} subscriber(s)?`)) return;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Sending...';
+    
+    try {
+        const res = await api.post('/admin/newsletter/broadcast-whatsapp', { template_name, target_emails });
+        window.showToast(`WhatsApp Broadcast finished! Sent to ${res.sent} subscribers.`, 'success');
+        e.target.reset();
+    } catch (err) {
+        window.showToast(err.message || 'Failed to send WhatsApp broadcast.', 'error');
+    }
+    
+    btn.disabled = false;
+    btn.innerHTML = 'Send WhatsApp Broadcast';
 });

@@ -732,6 +732,11 @@
                             <table class="table w-full">
                                 <thead class="bg-dark/50 text-gray-400">
                                     <tr>
+                                        <th>
+                                            <label>
+                                                <input type="checkbox" id="nl-select-all" class="checkbox checkbox-sm checkbox-primary" />
+                                            </label>
+                                        </th>
                                         <th>Email</th>
                                         <th>Mobile</th>
                                         <th>Subscribed Date</th>
@@ -747,31 +752,55 @@
                     <!-- Broadcast Panel -->
                     <div class="card bg-base-200 border border-white/5 shadow-lg h-fit">
                         <div class="card-body p-6">
-                            <h3 class="card-title text-xl mb-4">AI Email Broadcast</h3>
-                            
-                            <div class="form-control mb-4">
-                                <label class="label"><span class="label-text">1. Tell AI what to write</span></label>
-                                <textarea id="nl-ai-prompt" class="textarea textarea-bordered h-24 focus:border-secondary" placeholder="Write a short newsletter announcing our new integration with Zapier..."></textarea>
+                            <div class="tabs tabs-boxed mb-4 bg-dark/50 p-1">
+                                <a class="tab tab-active" id="tab-nl-email" onclick="switchNlTab('email')">Email</a>
+                                <a class="tab" id="tab-nl-whatsapp" onclick="switchNlTab('whatsapp')">WhatsApp</a>
                             </div>
                             
-                            <button id="btn-nl-generate" class="btn btn-outline btn-secondary w-full mb-6">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                                Generate Email
-                            </button>
-                            
-                            <div class="divider text-gray-500 text-sm">OR WRITE MANUALLY</div>
+                            <!-- Email Tab Content -->
+                            <div id="nl-email-content">
+                                <div class="form-control mb-4">
+                                    <label class="label"><span class="label-text">1. Tell AI what to write</span></label>
+                                    <textarea id="nl-ai-prompt" class="textarea textarea-bordered h-24 focus:border-secondary" placeholder="Write a short newsletter announcing our new integration with Zapier..."></textarea>
+                                </div>
+                                
+                                <button id="btn-nl-generate" class="btn btn-outline btn-secondary w-full mb-6">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                    Generate Email
+                                </button>
+                                
+                                <div class="divider text-gray-500 text-sm">OR WRITE MANUALLY</div>
 
-                            <form id="form-nl-broadcast" class="space-y-4">
-                                <div class="form-control">
-                                    <label class="label"><span class="label-text">Subject Line</span></label>
-                                    <input type="text" id="nl-subject" class="input input-bordered focus:border-primary" required>
-                                </div>
-                                <div class="form-control">
-                                    <label class="label"><span class="label-text">Email Body (HTML)</span></label>
-                                    <textarea id="nl-body" class="textarea textarea-bordered h-48 font-mono text-sm focus:border-primary" required></textarea>
-                                </div>
-                                <button type="submit" class="btn bg-primary hover:bg-violet-600 text-white w-full border-none mt-4">Send Broadcast</button>
-                            </form>
+                                <form id="form-nl-broadcast" class="space-y-4">
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text">Subject Line</span></label>
+                                        <input type="text" id="nl-subject" class="input input-bordered focus:border-primary" required>
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text">Email Body (HTML)</span></label>
+                                        <textarea id="nl-body" class="textarea textarea-bordered h-48 font-mono text-sm focus:border-primary" required></textarea>
+                                    </div>
+                                    <div class="flex gap-2 mt-4">
+                                        <button type="button" id="btn-nl-preview" class="btn btn-outline border-white/20 hover:bg-white/10 flex-1">Preview</button>
+                                        <button type="submit" class="btn bg-primary hover:bg-violet-600 text-white border-none flex-1">Send Broadcast</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- WhatsApp Tab Content -->
+                            <div id="nl-whatsapp-content" class="hidden">
+                                <form id="form-nl-wa-broadcast" class="space-y-4">
+                                    <div class="form-control">
+                                        <label class="label"><span class="label-text">WhatsApp Template Name</span></label>
+                                        <input type="text" id="nl-wa-template" class="input input-bordered focus:border-green-500" placeholder="e.g. newsletter_update_01" required>
+                                        <label class="label"><span class="label-text-alt text-gray-400">Must be a pre-approved Meta template.</span></label>
+                                    </div>
+                                    <button type="submit" class="btn bg-green-600 hover:bg-green-700 text-white w-full border-none mt-4">
+                                        <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                        Send WhatsApp Broadcast
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -996,6 +1025,42 @@
             </div>
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+    <dialog id="global-modal" class="modal">
+        <div class="modal-box bg-base-100 border border-white/10">
+            <h3 class="font-bold text-lg" id="modal-title"></h3>
+            <p class="py-4" id="modal-content"></p>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn btn-outline">Close</button>
+                    <button class="btn btn-primary ml-2" id="modal-confirm">Confirm</button>
+                </form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <dialog id="nl-preview-modal" class="modal">
+        <div class="modal-box bg-base-100 border border-white/10 max-w-3xl w-11/12 h-5/6 flex flex-col">
+            <h3 class="font-bold text-lg mb-2">Email Preview</h3>
+            <div class="text-sm text-gray-400 mb-4 pb-2 border-b border-white/10">
+                <strong>Subject:</strong> <span id="nl-preview-subject"></span>
+            </div>
+            <div id="nl-preview-body" class="flex-grow overflow-y-auto bg-white text-black p-6 rounded-md">
+                <!-- HTML rendered here -->
+            </div>
+            <div class="modal-action mt-4">
+                <form method="dialog">
+                    <button class="btn btn-outline border-white/20 hover:bg-white/10">Close Preview</button>
+                </form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
     </dialog>
 
     <!-- Client Manage Features Modal -->

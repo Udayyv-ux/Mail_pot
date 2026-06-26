@@ -168,7 +168,7 @@ from typing import Optional
 
 class NewsletterReq(BaseModel):
     email: str
-    mobile: Optional[str] = None
+    mobile: str
 
 @router.post("/newsletter/subscribe")
 async def subscribe_newsletter(data: NewsletterReq, db: AsyncSession = Depends(get_db)):
