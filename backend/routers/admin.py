@@ -14,7 +14,7 @@ from backend.config import settings
 from backend.database import get_db
 from backend.middleware.auth_middleware import require_admin, require_super_admin
 from backend.models.client import Client
-from backend.models.user import User
+from backend.models.user import User, UserRole
 from backend.models.plan import Plan
 from backend.models.payment import Payment
 from backend.models.app_settings import Policy, AppSetting, DemoRequest, Notification
