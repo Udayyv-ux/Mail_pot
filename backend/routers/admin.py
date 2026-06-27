@@ -611,7 +611,8 @@ async def broadcast_whatsapp(req: AdminWhatsappBroadcastRequest, db: AsyncSessio
                 phone=phone,
                 template_name=req.template_name,
                 access_token=access_token,
-                phone_number_id=phone_id
+                phone_number_id=phone_id,
+                variables=[getattr(c, "name", "User")]
             )
             if success:
                 sent_count += 1
@@ -724,7 +725,8 @@ async def broadcast_newsletter_whatsapp(req: NewsletterWhatsappBroadcastReq, db:
                 phone=phone,
                 template_name=req.template_name,
                 access_token=access_token,
-                phone_number_id=phone_id
+                phone_number_id=phone_id,
+                variables=[getattr(sub, "name", "Subscriber")]
             )
             if success:
                 sent_count += 1
