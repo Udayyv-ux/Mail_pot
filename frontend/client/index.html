@@ -135,23 +135,23 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300">
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="document.querySelector('[data-route=campaigns]').click()">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Emails Sent Today</div>
                         <div class="stat-value text-primary mt-1" id="dash-emails-sent">0</div>
                         <div class="stat-desc mt-1">Daily Limit: <span id="dash-emails-limit">0</span></div>
                         <progress id="dash-meter" class="progress progress-primary w-full mt-4" value="0" max="100"></progress>
                     </div>
-                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300">
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="document.querySelector('[data-route=templates]').click()">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Active Templates</div>
                         <div class="stat-value text-secondary mt-1" id="dash-templates">0</div>
                         <div class="stat-desc mt-1 text-success">↗︎ Connected to AI</div>
                     </div>
-                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300">
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="document.querySelector('[data-route=campaigns]').click()">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Total Sent All Time</div>
                         <div class="stat-value mt-1" id="dash-total">0</div>
                         <div class="stat-desc mt-1">Across all campaigns</div>
                     </div>
-                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-error/30 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-error/10 transition-all duration-300">
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-error/30 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-error/10 transition-all duration-300 cursor-pointer" onclick="document.querySelector('[data-route=campaigns]').click()">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Failed Emails</div>
                         <div class="stat-value text-error mt-1" id="dash-failed">0</div>
                         <div class="stat-desc mt-1 text-error/80">Requires attention</div>

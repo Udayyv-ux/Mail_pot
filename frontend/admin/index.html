@@ -94,21 +94,21 @@
                 <h1 class="text-3xl font-bold mb-8">Platform Overview</h1>
                 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg cursor-pointer hover:bg-base-300 transition-all" onclick="document.querySelector('[data-route=users]').click()">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Total Users</div>
-                        <div class="stat-value mt-1" id="stat-users">0</div>
+                        <div class="stat-value text-primary mt-1" id="stat-users">0</div>
                     </div>
-                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg cursor-pointer hover:bg-base-300 transition-all" onclick="document.querySelector('[data-route=plans]').click()">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Active Plans</div>
                         <div class="stat-value text-secondary mt-1" id="stat-plans">0</div>
                     </div>
-                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg cursor-pointer hover:bg-base-300 transition-all" onclick="document.querySelector('[data-route=monitor]').click()">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Emails (24h)</div>
-                        <div class="stat-value text-primary mt-1" id="stat-emails">0</div>
+                        <div class="stat-value mt-1" id="stat-emails">0</div>
                     </div>
-                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
+                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg cursor-pointer hover:bg-base-300 transition-all" onclick="document.querySelector('[data-route=users]').click()">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Demos</div>
-                        <div class="stat-value text-accent mt-1" id="stat-demos">0</div>
+                        <div class="stat-value text-error mt-1" id="stat-demos">0</div>
                     </div>
                 </div>
 
