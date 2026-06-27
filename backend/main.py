@@ -80,16 +80,21 @@ async def lifespan(app: FastAPI):
 
     from sqlalchemy import text
     try:
-        async with engine.begin() as conn:
+        async with engine.connect() as conn:
             for table, col, col_def in migrations:
                 try:
                     await conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {col_def}"))
+                    await conn.commit()
                 except Exception:
+                    await conn.rollback()
                     pass
 
             try:
                 await conn.execute(text("ALTER TABLE email_logs ALTER COLUMN campaign_id DROP NOT NULL"))
-            except Exception: pass
+                await conn.commit()
+            except Exception:
+                await conn.rollback()
+                pass
 
             try:
                 await conn.execute(text("""
@@ -103,7 +108,10 @@ async def lifespan(app: FastAPI):
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                 )
                 """))
-            except Exception: pass
+                await conn.commit()
+            except Exception:
+                await conn.rollback()
+                pass
     except Exception as e:
         print(f"Schema migration error: {e}")
 
