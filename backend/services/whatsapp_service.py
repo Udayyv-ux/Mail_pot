@@ -19,7 +19,7 @@ async def send_whatsapp_message(phone: str, template_name: str, access_token: st
     if not clean_phone:
         return False, "Invalid phone number."
         
-    url = f"https://graph.facebook.com/v23.0/{phone_number_id}/messages" # Updated to v23.0 per user spec
+    url = f"https://graph.facebook.com/v20.0/{phone_number_id}/messages"
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
