@@ -556,6 +556,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('camp-name').value = '';
         document.getElementById('camp-sheet').value = '';
         document.getElementById('camp-followup-days').value = '0';
+        document.getElementById('camp-followup-condition').value = 'always';
         document.getElementById('camp-default-wa-template').value = '';
         document.getElementById('camp-followup-wa-template').value = '';
 
@@ -597,6 +598,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('camp-status-col').value = c.status_column;
         document.getElementById('camp-use-whatsapp').checked = c.use_whatsapp;
         document.getElementById('camp-followup-days').value = c.follow_up_days;
+        document.getElementById('camp-followup-condition').value = c.follow_up_condition || 'always';
         document.getElementById('camp-throttle-rate').value = c.max_emails_per_hour;
         document.getElementById('camp-review-mode').checked = c.review_mode;
         
@@ -642,6 +644,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             default_template_id: document.getElementById('camp-default-template').value || null,
             default_whatsapp_template_name: document.getElementById('camp-default-wa-template').value || null,
             follow_up_days: parseInt(document.getElementById('camp-followup-days').value) || 0,
+            follow_up_condition: document.getElementById('camp-followup-condition').value,
             follow_up_template_id: document.getElementById('camp-followup-template').value || null,
             follow_up_whatsapp_template_name: document.getElementById('camp-followup-wa-template').value || null,
             max_emails_per_hour: parseInt(document.getElementById('camp-throttle-rate').value) || 50,

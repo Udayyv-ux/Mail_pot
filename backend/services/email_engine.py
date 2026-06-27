@@ -291,6 +291,7 @@ async def process_single_client(client_id: int, queued_email_ids: list[int], cam
             camp_inquiry_column = getattr(campaign, 'inquiry_column', 'Inquiry')
             camp_follow_up_days = campaign.follow_up_days
             camp_follow_up_template_id = campaign.follow_up_template_id
+            camp_follow_up_condition = getattr(campaign, 'follow_up_condition', 'always')
             camp_default_template_id = getattr(campaign, 'default_template_id', None)
             camp_review_mode = getattr(campaign, 'review_mode', False)
             camp_use_whatsapp = getattr(campaign, 'use_whatsapp', False)
@@ -406,9 +407,18 @@ async def process_single_client(client_id: int, queued_email_ids: list[int], cam
                     if last_log and last_log.sent_at:
                         days_since = (datetime.now(timezone.utc) - last_log.sent_at).days
                         if days_since >= camp_follow_up_days:
-                            target_template = await db.get(Template, camp_follow_up_template_id)
-                            is_follow_up_run = True
-                            category = "FollowUp"
+                            condition_met = True
+                            if camp_follow_up_condition == "opened":
+                                condition_met = bool(last_log.opened_at)
+                            elif camp_follow_up_condition == "unopened":
+                                condition_met = not bool(last_log.opened_at)
+                                
+                            if condition_met:
+                                target_template = await db.get(Template, camp_follow_up_template_id)
+                                is_follow_up_run = True
+                                category = "FollowUp"
+                            else:
+                                print(f"⏭️ Skipping follow-up for {email or phone} (Condition '{camp_follow_up_condition}' not met)")
 
             elif status.strip() == "":
                 print(f"📩 Found new lead: {email or phone}")

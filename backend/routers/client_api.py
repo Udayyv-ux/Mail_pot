@@ -222,6 +222,7 @@ class CampaignCreate(BaseModel):
     follow_up_days: int = 0
     follow_up_template_id: Optional[str] = None
     follow_up_whatsapp_template_name: Optional[str] = None
+    follow_up_condition: str = "always"
     max_emails_per_hour: int = 50
     send_hours_start: int = 9
     send_hours_end: int = 17
@@ -239,6 +240,7 @@ class CampaignUpdate(BaseModel):
     follow_up_days: Optional[int] = None
     follow_up_template_id: Optional[str] = None
     follow_up_whatsapp_template_name: Optional[str] = None
+    follow_up_condition: Optional[str] = None
     max_emails_per_hour: Optional[int] = None
     send_hours_start: Optional[int] = None
     send_hours_end: Optional[int] = None
@@ -261,7 +263,8 @@ async def list_campaigns(db: AsyncSession = Depends(get_db), current_user = Depe
         "default_whatsapp_template_name": getattr(c, 'default_whatsapp_template_name', None),
         "follow_up_days": c.follow_up_days,
         "follow_up_template_id": c.follow_up_template_id,
-        "follow_up_whatsapp_template_name": getattr(c, 'follow_up_whatsapp_template_name', None),
+        "follow_up_whatsapp_template_name": c.follow_up_whatsapp_template_name,
+        "follow_up_condition": getattr(c, 'follow_up_condition', 'always'),
         "max_emails_per_hour": c.max_emails_per_hour,
         "send_hours_start": c.send_hours_start,
         "send_hours_end": c.send_hours_end,
@@ -300,6 +303,7 @@ async def create_campaign(data: CampaignCreate, db: AsyncSession = Depends(get_d
         follow_up_days=data.follow_up_days,
         follow_up_template_id=data.follow_up_template_id,
         follow_up_whatsapp_template_name=data.follow_up_whatsapp_template_name,
+        follow_up_condition=data.follow_up_condition,
         max_emails_per_hour=data.max_emails_per_hour,
         send_hours_start=data.send_hours_start,
         send_hours_end=data.send_hours_end,

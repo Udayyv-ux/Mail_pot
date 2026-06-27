@@ -30,6 +30,7 @@ class Campaign(Base):
     follow_up_days = Column(Integer, default=0) # 0 means no follow up
     follow_up_template_id = Column(String, ForeignKey("templates.id", ondelete="SET NULL"), nullable=True)
     follow_up_whatsapp_template_name = Column(String, nullable=True)
+    follow_up_condition = Column(String, default="always") # always, opened, unopened
     
     # Smart Scheduling & Throttling
     max_emails_per_hour = Column(Integer, default=50) # default safe limit

@@ -797,6 +797,15 @@
                     </select>
                 </div>
                 
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Follow-up Target</span></label>
+                    <select id="camp-followup-condition" class="select select-bordered bg-base-300 border-white/5 w-full">
+                        <option value="always">Always (Everyone who received previous email)</option>
+                        <option value="opened">Only if Opened (User clicked/opened previous email)</option>
+                        <option value="unopened">Only if Unopened (User ignored previous email)</option>
+                    </select>
+                </div>
+                
                 <div class="form-control mb-4">
                     <label class="label"><span class="label-text font-medium text-gray-300">Follow-up WhatsApp Template Name (Meta)</span></label>
                     <input type="text" id="camp-followup-wa-template" class="input input-bordered bg-base-300 border-white/5 w-full" placeholder="e.g. follow_up_offer">
