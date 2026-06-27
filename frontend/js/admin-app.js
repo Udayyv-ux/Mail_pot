@@ -1231,9 +1231,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('form-admin-email');
         if(form) form.dataset.bulkEmails = JSON.stringify(emails);
         
+        const title = document.getElementById('admin-email-modal-title');
+        if(title) title.textContent = `Send Bulk Email (${emails.length} Users)`;
+
         const toInput = document.getElementById('admin-email-to');
         if(toInput) {
-            toInput.value = emails.join(', ');
+            toInput.value = `${emails.length} Users Selected`;
             toInput.readOnly = true;
         }
         
@@ -1254,6 +1257,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('form-admin-email');
         if(form) delete form.dataset.bulkEmails;
         
+        const title = document.getElementById('admin-email-modal-title');
+        if(title) title.textContent = 'Send Email to User';
+
         const toInput = document.getElementById('admin-email-to');
         if(toInput) {
             toInput.value = email;
