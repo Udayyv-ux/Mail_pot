@@ -731,8 +731,9 @@
     <!-- Modal: New Campaign -->
     <dialog id="modal-campaign" class="modal">
         <div class="modal-box bg-base-200 border border-white/10 max-w-md">
-            <h3 class="font-bold text-xl mb-6">Create New Campaign</h3>
+            <h3 class="font-bold text-xl mb-4 text-white" id="modal-campaign-title">New AI Campaign</h3>
             <form id="form-campaign" class="space-y-4">
+                <input type="hidden" id="camp-id" value="">
                 <div class="form-control">
                     <label class="label"><span class="label-text font-medium text-gray-300">Campaign Name</span></label>
                     <input type="text" id="camp-name" class="input input-bordered bg-base-300 border-white/5" placeholder="e.g. Q3 Outreach" required>
@@ -777,6 +778,12 @@
                     <label class="label"><span class="label-text-alt text-gray-400">Used if the lead's Inquiry column is blank or AI fails to categorize.</span></label>
                 </div>
                 
+                <div class="form-control mb-4">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Default WhatsApp Template Name (Meta)</span></label>
+                    <input type="text" id="camp-default-wa-template" class="input input-bordered bg-base-300 border-white/5 w-full" placeholder="e.g. welcome_message">
+                    <label class="label"><span class="label-text-alt text-gray-400">If set, this WhatsApp template will be sent initially.</span></label>
+                </div>
+                
                 <div class="divider border-white/5 my-2">Follow-up Logic</div>
                 <div class="form-control">
                     <label class="label"><span class="label-text font-medium text-gray-300">Follow-up Days</span></label>
@@ -788,6 +795,12 @@
                     <select id="camp-followup-template" class="select select-bordered bg-base-300 border-white/5 w-full">
                         <option value="">-- None --</option>
                     </select>
+                </div>
+                
+                <div class="form-control mb-4">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Follow-up WhatsApp Template Name (Meta)</span></label>
+                    <input type="text" id="camp-followup-wa-template" class="input input-bordered bg-base-300 border-white/5 w-full" placeholder="e.g. follow_up_offer">
+                    <label class="label"><span class="label-text-alt text-gray-400">If set, this WhatsApp template will be sent on follow-up.</span></label>
                 </div>
                 
                 <div class="divider border-white/5 my-2">Review Mode</div>

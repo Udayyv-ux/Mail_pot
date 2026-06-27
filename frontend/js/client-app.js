@@ -517,6 +517,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             campaigns.forEach(function (c) {
+                window.campaignList = window.campaignList || {};
+                window.campaignList[c.id] = c;
                 var tr = document.createElement('tr');
                 var followUpText = (c.follow_up_days && c.follow_up_days > 0) ? ('Wait ' + c.follow_up_days + ' days') : 'Disabled';
                 
@@ -537,6 +539,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     '<td class="p-4 text-gray-400 text-sm">' + followUpText + '</td>' +
                     '<td class="p-4">' + statusHtml + runText + '</td>' +
                     '<td class="p-4 text-right space-x-2">' +
+                        '<button class="text-primary hover:text-indigo-400 font-semibold text-sm" onclick="editCampaign(\'' + c.id + '\')">Edit</button>' +
                         '<button class="text-red-400 hover:text-red-300 font-semibold text-sm" onclick="deleteCampaign(\'' + c.id + '\')">Delete</button>' +
                     '</td>';
                 tbody.appendChild(tr);
@@ -548,25 +551,84 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     document.getElementById('btn-new-campaign')?.addEventListener('click', async () => {
+        document.getElementById('camp-id').value = '';
+        document.getElementById('modal-campaign-title').textContent = 'New AI Campaign';
         document.getElementById('camp-name').value = '';
         document.getElementById('camp-sheet').value = '';
         document.getElementById('camp-followup-days').value = '0';
+        document.getElementById('camp-default-wa-template').value = '';
+        document.getElementById('camp-followup-wa-template').value = '';
 
         // Populate follow-up template dropdown from existing templates
         try {
             var templates = await api.get('/client/templates');
             var sel = document.getElementById('camp-followup-template');
             sel.innerHTML = '<option value="">-- None --</option>';
+            
+            var defaultSel = document.getElementById('camp-default-template');
+            defaultSel.innerHTML = '<option value="">-- Let AI Decide (Blank Inquiry skips) --</option>';
+
             templates.forEach(function (t) {
                 var opt = document.createElement('option');
                 opt.value = t.id;
                 opt.textContent = t.project_name;
                 sel.appendChild(opt);
+                
+                var optDefault = document.createElement('option');
+                optDefault.value = t.id;
+                optDefault.textContent = t.project_name;
+                defaultSel.appendChild(optDefault);
             });
         } catch (e) {}
 
         document.getElementById('modal-campaign').showModal();
     });
+
+    window.editCampaign = async (id) => {
+        const c = window.campaignList ? window.campaignList[id] : null;
+        if (!c) return;
+
+        document.getElementById('camp-id').value = c.id;
+        document.getElementById('modal-campaign-title').textContent = 'Edit Campaign';
+        document.getElementById('camp-name').value = c.name;
+        document.getElementById('camp-sheet').value = c.google_sheet_id;
+        document.getElementById('camp-target-cols').value = c.target_columns;
+        document.getElementById('camp-inquiry-col').value = c.inquiry_column;
+        document.getElementById('camp-status-col').value = c.status_column;
+        document.getElementById('camp-use-whatsapp').checked = c.use_whatsapp;
+        document.getElementById('camp-followup-days').value = c.follow_up_days;
+        document.getElementById('camp-throttle-rate').value = c.max_emails_per_hour;
+        document.getElementById('camp-review-mode').checked = c.review_mode;
+        
+        document.getElementById('camp-default-wa-template').value = c.default_whatsapp_template_name || '';
+        document.getElementById('camp-followup-wa-template').value = c.follow_up_whatsapp_template_name || '';
+
+        // Populate follow-up template dropdown from existing templates
+        try {
+            var templates = await api.get('/client/templates');
+            var sel = document.getElementById('camp-followup-template');
+            sel.innerHTML = '<option value="">-- None --</option>';
+            
+            var defaultSel = document.getElementById('camp-default-template');
+            defaultSel.innerHTML = '<option value="">-- Let AI Decide (Blank Inquiry skips) --</option>';
+
+            templates.forEach(function (t) {
+                var opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.project_name;
+                if (c.follow_up_template_id === t.id) opt.selected = true;
+                sel.appendChild(opt);
+                
+                var optDefault = document.createElement('option');
+                optDefault.value = t.id;
+                optDefault.textContent = t.project_name;
+                if (c.default_template_id === t.id) optDefault.selected = true;
+                defaultSel.appendChild(optDefault);
+            });
+        } catch (e) {}
+
+        document.getElementById('modal-campaign').showModal();
+    };
 
     document.getElementById('form-campaign')?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -578,22 +640,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             status_column: document.getElementById('camp-status-col').value || "Status",
             use_whatsapp: document.getElementById('camp-use-whatsapp').checked,
             default_template_id: document.getElementById('camp-default-template').value || null,
+            default_whatsapp_template_name: document.getElementById('camp-default-wa-template').value || null,
             follow_up_days: parseInt(document.getElementById('camp-followup-days').value) || 0,
             follow_up_template_id: document.getElementById('camp-followup-template').value || null,
+            follow_up_whatsapp_template_name: document.getElementById('camp-followup-wa-template').value || null,
             max_emails_per_hour: parseInt(document.getElementById('camp-throttle-rate').value) || 50,
             send_hours_start: 0,
             send_hours_end: 24,
             review_mode: document.getElementById('camp-review-mode').checked
         };
 
+        var campId = document.getElementById('camp-id').value;
         try {
-            await api.post('/client/campaigns', payload);
+            if (campId) {
+                await api.put('/client/campaigns/' + campId, payload);
+                if (window.showToast) showToast('Campaign updated!', 'success');
+            } else {
+                await api.post('/client/campaigns', payload);
+                if (window.showToast) showToast('Campaign created!', 'success');
+            }
             document.getElementById('modal-campaign').close();
-            if (window.showToast) showToast('Campaign created!', 'success');
             loadCampaigns();
             loadDashboard();
         } catch (e) {
-            if (window.showToast) showToast(e.message || 'Failed to create campaign', 'error');
+            if (window.showToast) showToast(e.message || 'Failed to save campaign', 'error');
         }
     });
 

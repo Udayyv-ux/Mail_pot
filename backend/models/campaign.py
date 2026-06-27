@@ -24,10 +24,12 @@ class Campaign(Base):
     # Template & AI
     default_template_id = Column(String, ForeignKey("templates.id", ondelete="SET NULL"), nullable=True)
     use_whatsapp = Column(Boolean, default=False)
+    default_whatsapp_template_name = Column(String, nullable=True)
     
     # Follow-up Logic
     follow_up_days = Column(Integer, default=0) # 0 means no follow up
     follow_up_template_id = Column(String, ForeignKey("templates.id", ondelete="SET NULL"), nullable=True)
+    follow_up_whatsapp_template_name = Column(String, nullable=True)
     
     # Smart Scheduling & Throttling
     max_emails_per_hour = Column(Integer, default=50) # default safe limit

@@ -218,12 +218,31 @@ class CampaignCreate(BaseModel):
     inquiry_column: str = "Inquiry"
     default_template_id: Optional[str] = None
     use_whatsapp: bool = False
+    default_whatsapp_template_name: Optional[str] = None
     follow_up_days: int = 0
     follow_up_template_id: Optional[str] = None
+    follow_up_whatsapp_template_name: Optional[str] = None
     max_emails_per_hour: int = 50
     send_hours_start: int = 9
     send_hours_end: int = 17
     review_mode: bool = False
+
+class CampaignUpdate(BaseModel):
+    name: Optional[str] = None
+    sheet_url_or_id: Optional[str] = None
+    target_columns: Optional[str] = None
+    status_column: Optional[str] = None
+    inquiry_column: Optional[str] = None
+    default_template_id: Optional[str] = None
+    use_whatsapp: Optional[bool] = None
+    default_whatsapp_template_name: Optional[str] = None
+    follow_up_days: Optional[int] = None
+    follow_up_template_id: Optional[str] = None
+    follow_up_whatsapp_template_name: Optional[str] = None
+    max_emails_per_hour: Optional[int] = None
+    send_hours_start: Optional[int] = None
+    send_hours_end: Optional[int] = None
+    review_mode: Optional[bool] = None
 
 @router.get("/campaigns")
 async def list_campaigns(db: AsyncSession = Depends(get_db), current_user = Depends(require_client)):
@@ -239,8 +258,10 @@ async def list_campaigns(db: AsyncSession = Depends(get_db), current_user = Depe
         "inquiry_column": getattr(c, 'inquiry_column', 'Inquiry'),
         "default_template_id": c.default_template_id,
         "use_whatsapp": getattr(c, 'use_whatsapp', False),
+        "default_whatsapp_template_name": getattr(c, 'default_whatsapp_template_name', None),
         "follow_up_days": c.follow_up_days,
         "follow_up_template_id": c.follow_up_template_id,
+        "follow_up_whatsapp_template_name": getattr(c, 'follow_up_whatsapp_template_name', None),
         "max_emails_per_hour": c.max_emails_per_hour,
         "send_hours_start": c.send_hours_start,
         "send_hours_end": c.send_hours_end,
@@ -275,8 +296,10 @@ async def create_campaign(data: CampaignCreate, db: AsyncSession = Depends(get_d
         inquiry_column=data.inquiry_column,
         default_template_id=data.default_template_id,
         use_whatsapp=data.use_whatsapp,
+        default_whatsapp_template_name=data.default_whatsapp_template_name,
         follow_up_days=data.follow_up_days,
         follow_up_template_id=data.follow_up_template_id,
+        follow_up_whatsapp_template_name=data.follow_up_whatsapp_template_name,
         max_emails_per_hour=data.max_emails_per_hour,
         send_hours_start=data.send_hours_start,
         send_hours_end=data.send_hours_end,
@@ -284,7 +307,33 @@ async def create_campaign(data: CampaignCreate, db: AsyncSession = Depends(get_d
     )
     db.add(new_campaign)
     await db.commit()
+    await db.refresh(new_campaign)
     return {"status": "success", "campaign": new_campaign}
+
+@router.put("/campaigns/{campaign_id}")
+async def update_campaign(campaign_id: str, data: CampaignUpdate, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
+    client = await get_client_profile(current_user, db)
+    
+    result = await db.execute(select(Campaign).where(Campaign.id == campaign_id, Campaign.client_id == client.id))
+    campaign = result.scalar_one_or_none()
+    
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+        
+    update_data = data.model_dump(exclude_unset=True)
+    
+    if 'sheet_url_or_id' in update_data:
+        match = re.search(r'/d/([a-zA-Z0-9-_]+)', update_data['sheet_url_or_id'])
+        sheet_id = match.group(1) if match else update_data['sheet_url_or_id'].strip()
+        campaign.google_sheet_id = sheet_id
+        del update_data['sheet_url_or_id']
+        
+    for key, value in update_data.items():
+        setattr(campaign, key, value)
+        
+    await db.commit()
+    await db.refresh(campaign)
+    return {"status": "success", "campaign": campaign}
 
 @router.delete("/campaigns/{campaign_id}")
 async def delete_campaign(campaign_id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):

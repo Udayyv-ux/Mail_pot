@@ -294,6 +294,8 @@ async def process_single_client(client_id: int, queued_email_ids: list[int], cam
             camp_default_template_id = getattr(campaign, 'default_template_id', None)
             camp_review_mode = getattr(campaign, 'review_mode', False)
             camp_use_whatsapp = getattr(campaign, 'use_whatsapp', False)
+            camp_default_wa_tmpl = getattr(campaign, 'default_whatsapp_template_name', None)
+            camp_follow_up_wa_tmpl = getattr(campaign, 'follow_up_whatsapp_template_name', None)
             camp_max_emails_per_hour = campaign.max_emails_per_hour
             
             # Check hourly limits
@@ -454,20 +456,24 @@ async def process_single_client(client_id: int, queued_email_ids: list[int], cam
                     wa_token = getattr(db_client_inner, 'whatsapp_access_token', None)
                     wa_phone_id = getattr(db_client_inner, 'whatsapp_phone_number_id', None)
                 
-                if camp_use_whatsapp and has_valid_phone and getattr(target_template, 'whatsapp_template_name', None) and wa_token:
-                    print(f"📱 Sending WhatsApp '{target_template.whatsapp_template_name}' to {phone}...")
-                    location = row[location_idx] if location_idx != -1 and len(row) > location_idx else ""
-                    wa_success, wa_err = await send_whatsapp_message(
-                        phone=phone,
-                        template_name=target_template.whatsapp_template_name,
-                        access_token=wa_token,
-                        phone_number_id=wa_phone_id,
-                        variables=[name, getattr(target_template, 'project_name', ''), location]
-                    )
-                    if wa_success:
-                        print(f"✅ WhatsApp sent to {phone}")
-                    else:
-                        print(f"❌ WhatsApp failed for {phone}: {wa_err}")
+                if camp_use_whatsapp and has_valid_phone and wa_token:
+                    wa_tmpl_name = camp_follow_up_wa_tmpl if is_follow_up_run else camp_default_wa_tmpl
+                    if wa_tmpl_name:
+                        print(f"📱 Sending WhatsApp '{wa_tmpl_name}' to {phone}...")
+                        location = row[location_idx] if location_idx != -1 and len(row) > location_idx else ""
+                        
+                        proj_name = getattr(target_template, 'project_name', '') if target_template else ''
+                        wa_success, wa_err = await send_whatsapp_message(
+                            phone=phone,
+                            template_name=wa_tmpl_name,
+                            access_token=wa_token,
+                            phone_number_id=wa_phone_id,
+                            variables=[name, proj_name, location]
+                        )
+                        if wa_success:
+                            print(f"✅ WhatsApp sent to {phone}")
+                        else:
+                            print(f"❌ WhatsApp failed for {phone}: {wa_err}")
                 
                 email_success, email_err, thread_id_or_err = False, "", None
                 log_id = None
