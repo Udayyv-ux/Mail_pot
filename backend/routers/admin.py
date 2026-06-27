@@ -374,8 +374,12 @@ async def send_demo_emails(req: DemoEmailRequest, db: AsyncSession = Depends(get
         return {"status": "success", "message": "No pending demo requests found.", "sent_count": 0}
 
     # Use the admin's OAuth token
-    super_admin = await db.execute(select(User).where(User.role == UserRole.ADMIN).where(User.google_refresh_token.is_not(None)))
-    super_admin_user = super_admin.scalars().first()
+    if admin.role == UserRole.ADMIN and getattr(admin, 'google_refresh_token', None):
+        super_admin_user = admin
+    else:
+        super_admin = await db.execute(select(User).where(User.role == UserRole.ADMIN).where(User.google_refresh_token.is_not(None)).order_by(User.created_at.asc()))
+        super_admin_user = super_admin.scalars().first()
+        
     if not super_admin_user:
         raise HTTPException(400, "Super Admin Google OAuth token is missing in the system.")
     access_token = await refresh_google_token(super_admin_user, db)
@@ -491,8 +495,12 @@ async def send_admin_email(req: AdminEmailRequest, db: AsyncSession = Depends(ge
     if not targets:
         return {"status": "success", "sent": 0, "message": "No targets found."}
 
-    super_admin = await db.execute(select(User).where(User.role == UserRole.ADMIN).where(User.google_refresh_token.is_not(None)))
-    super_admin_user = super_admin.scalars().first()
+    if admin.role == UserRole.ADMIN and getattr(admin, 'google_refresh_token', None):
+        super_admin_user = admin
+    else:
+        super_admin = await db.execute(select(User).where(User.role == UserRole.ADMIN).where(User.google_refresh_token.is_not(None)).order_by(User.created_at.asc()))
+        super_admin_user = super_admin.scalars().first()
+        
     if not super_admin_user:
         raise HTTPException(400, "Super Admin Google OAuth token is missing in the system.")
     access_token = await refresh_google_token(super_admin_user, db)
@@ -643,8 +651,12 @@ async def broadcast_newsletter(req: NewsletterBroadcastReq, db: AsyncSession = D
     from backend.models.user import User
     from backend.models.newsletter import NewsletterSubscriber
 
-    super_admin = await db.execute(select(User).where(User.role == UserRole.ADMIN).where(User.google_refresh_token.is_not(None)))
-    super_admin_user = super_admin.scalars().first()
+    if admin.role == UserRole.ADMIN and getattr(admin, 'google_refresh_token', None):
+        super_admin_user = admin
+    else:
+        super_admin = await db.execute(select(User).where(User.role == UserRole.ADMIN).where(User.google_refresh_token.is_not(None)).order_by(User.created_at.asc()))
+        super_admin_user = super_admin.scalars().first()
+        
     if not super_admin_user:
         raise HTTPException(400, "Super Admin Google OAuth token is missing in the system.")
         
