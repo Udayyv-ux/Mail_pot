@@ -73,8 +73,8 @@ async def google_callback(request: Request, db: AsyncSession):
         role = UserRole.CLIENT
         admin_emails = [e.strip().lower() for e in settings.SUPER_ADMIN_EMAIL.split(",")] if settings.SUPER_ADMIN_EMAIL else []
         
-        # Check against env vars OR hardcoded developer email
-        if email.strip().lower() in admin_emails or email.strip().lower() == "ambatman444@gmail.com":
+        # Check against env vars
+        if email.strip().lower() in admin_emails:
             role = UserRole.ADMIN
 
         user = User(
@@ -139,8 +139,8 @@ async def google_callback(request: Request, db: AsyncSession):
         if user.role != UserRole.ADMIN and email.strip().lower() in admin_emails:
             user.role = UserRole.ADMIN
             
-        # Hardcoded fallback for the original developer/admin if the env var is misconfigured
-        if email.strip().lower() == "ambatman444@gmail.com" and user.role != UserRole.ADMIN:
+        # Fallback to env var super admin email
+        if email.strip().lower() in admin_emails and user.role != UserRole.ADMIN:
             user.role = UserRole.ADMIN
             
         await db.commit()
