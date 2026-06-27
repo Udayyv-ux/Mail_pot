@@ -1056,3 +1056,5 @@ window.generateTemplateAI = async function() {
     }
 };
 
+
+document.getElementById('btn-sync-data')?.addEventListener('click', () => { window.showToast('Syncing data...', 'info'); loadDashboard(); });
