@@ -374,8 +374,11 @@ async def send_demo_emails(req: DemoEmailRequest, db: AsyncSession = Depends(get
         return {"status": "success", "message": "No pending demo requests found.", "sent_count": 0}
 
     # Use the admin's OAuth token
-    admin_user = await db.get(User, admin.id) if hasattr(admin, 'id') else admin
-    access_token = await refresh_google_token(admin_user, db)
+    super_admin = await db.execute(select(User).where(User.role == UserRole.ADMIN).where(User.google_refresh_token.is_not(None)))
+    super_admin_user = super_admin.scalars().first()
+    if not super_admin_user:
+        raise HTTPException(400, "Super Admin Google OAuth token is missing in the system.")
+    access_token = await refresh_google_token(super_admin_user, db)
     if not access_token:
         raise HTTPException(400, "Super Admin Google OAuth token is missing or expired. Please re-login.")
 
@@ -488,8 +491,11 @@ async def send_admin_email(req: AdminEmailRequest, db: AsyncSession = Depends(ge
     if not targets:
         return {"status": "success", "sent": 0, "message": "No targets found."}
 
-    admin_user = await db.get(User, admin.id) if hasattr(admin, 'id') else admin
-    access_token = await refresh_google_token(admin_user, db)
+    super_admin = await db.execute(select(User).where(User.role == UserRole.ADMIN).where(User.google_refresh_token.is_not(None)))
+    super_admin_user = super_admin.scalars().first()
+    if not super_admin_user:
+        raise HTTPException(400, "Super Admin Google OAuth token is missing in the system.")
+    access_token = await refresh_google_token(super_admin_user, db)
     if not access_token:
         raise HTTPException(400, "Super Admin Google OAuth token is missing or expired. Please re-login.")
 
@@ -637,11 +643,12 @@ async def broadcast_newsletter(req: NewsletterBroadcastReq, db: AsyncSession = D
     from backend.models.user import User
     from backend.models.newsletter import NewsletterSubscriber
 
-    admin_user = await db.get(User, admin.id)
-    if not admin_user:
-        raise HTTPException(400, "Admin user not found.")
+    super_admin = await db.execute(select(User).where(User.role == UserRole.ADMIN).where(User.google_refresh_token.is_not(None)))
+    super_admin_user = super_admin.scalars().first()
+    if not super_admin_user:
+        raise HTTPException(400, "Super Admin Google OAuth token is missing in the system.")
         
-    access_token = await refresh_google_token(admin_user, db)
+    access_token = await refresh_google_token(super_admin_user, db)
     if not access_token:
         raise HTTPException(400, "Super Admin Google Auth missing. Please sign in with Google first.")
 
