@@ -1057,4 +1057,4 @@ window.generateTemplateAI = async function() {
 };
 
 
-document.getElementById('btn-sync-data')?.addEventListener('click', () => { window.showToast('Syncing data...', 'info'); loadDashboard(); });
+document.getElementById('btn-sync-data')?.addEventListener('click', () => { window.showToast('Syncing data...', 'info'); if(router.currentRoute) { router.showPage(router.currentRoute); } else { loadDashboard(); } });
