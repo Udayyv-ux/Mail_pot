@@ -101,8 +101,10 @@ async def generate_template(req: AIGenerateRequest, db: AsyncSession = Depends(g
     client = await db.get(Client, client_id)
     plan = await db.get(Plan, client.plan_id) if client.plan_id else None
     
-    if not plan or not getattr(plan, 'has_ai_templates', False):
-        raise HTTPException(403, "Your plan does not support AI Generated Templates. Please upgrade to unlock this feature.")
+    from backend.models.user import UserRole
+    if current_user.role != UserRole.ADMIN:
+        if not plan or not getattr(plan, 'has_ai_templates', False):
+            raise HTTPException(403, "Your plan does not support AI Generated Templates. Please upgrade to unlock this feature.")
         
     # 2. Get AI API Key
     groq_key = getattr(client, 'groq_api_key', None) or settings.GROQ_API_KEY

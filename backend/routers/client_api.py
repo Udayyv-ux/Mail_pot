@@ -140,6 +140,16 @@ async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends
         daily_limit = client.plan.email_limit_daily
         has_ai = getattr(client.plan, 'has_ai_templates', False)
             
+    from backend.models.user import UserRole
+    if current_user.role == UserRole.ADMIN:
+        plan_name = "Super Admin (Unlimited)"
+        daily_limit = 99999999
+        has_ai = True
+        if client.trial_ends_at is not None or client.daily_email_limit != 99999999:
+            client.trial_ends_at = None
+            client.daily_email_limit = 99999999
+            await db.commit()
+
     return {
         "company_name": client.company_name,
         "service_account_email": service_email,
