@@ -134,7 +134,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
                     <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="showStatDetails('today')">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Emails Sent Today</div>
                         <div class="stat-value text-primary mt-1" id="dash-emails-sent">0</div>
@@ -147,9 +147,14 @@
                         <div class="stat-desc mt-1 text-success">↗︎ Connected to AI</div>
                     </div>
                     <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="showStatDetails('total')">
-                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Total Sent All Time</div>
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Total Sent</div>
                         <div class="stat-value mt-1" id="dash-total">0</div>
                         <div class="stat-desc mt-1">Across all campaigns</div>
+                    </div>
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="showStatDetails('opened')">
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Open Rate</div>
+                        <div class="stat-value text-accent mt-1" id="dash-opened">0%</div>
+                        <div class="stat-desc mt-1 text-accent/80"><span id="dash-opened-count">0</span> opens tracked</div>
                     </div>
                     <div class="stat bg-base-200/50 backdrop-blur-xl border border-error/30 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-error/10 transition-all duration-300 cursor-pointer" onclick="showStatDetails('failed')">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Failed Emails</div>

@@ -120,7 +120,7 @@ async def refresh_google_token(user, db) -> str | None:
         print(f"Token refresh failed: {e}")
         return user.google_access_token
 
-async def send_email_via_gmail_api(to_email: str, first_name: str, template, access_token: str) -> tuple[bool, str]:
+async def send_email_via_gmail_api(to_email: str, first_name: str, template, access_token: str, log_id: str = None) -> tuple[bool, str]:
     if not access_token:
         return False, "Client user has not authenticated with Google or access token is missing."
     
@@ -135,6 +135,10 @@ async def send_email_via_gmail_api(to_email: str, first_name: str, template, acc
         # Avoid embedding localhost links in emails as it triggers high spam scores
         if "localhost" not in banner_url and "127.0.0.1" not in banner_url:
             html_body = f'<img src="{banner_url}" style="max-width:100%;"><br><br>' + html_body
+            
+    if log_id:
+        tracking_url = f"{settings.APP_URL.rstrip('/')}/api/track/open/{log_id}"
+        html_body += f'<img src="{tracking_url}" width="1" height="1" alt="" style="display:none;" />'
 
     import re
     from email.utils import make_msgid, formatdate
@@ -197,19 +201,30 @@ async def process_single_client(client_id: int, queued_email_ids: list[int], cam
             access_token = await refresh_google_token(db_client.user, db) if db_client.user else None
             
             print(f"📤 Sending QUEUED '{target_template.project_name}' email to {q.recipient_email}...")
-            success, thread_id_or_err = await send_email_via_gmail_api(q.recipient_email, q.recipient_name or "", target_template, access_token)
             
+            # Pre-create log to get ID for tracking
             log = EmailLog(
                 client_id=client_id,
                 campaign_id=q.campaign_id,
                 recipient_email=q.recipient_email,
                 recipient_name=q.recipient_name,
                 template_used=target_template.project_name,
-                status="sent" if success else "failed",
-                error_message="" if success else thread_id_or_err,
-                thread_id=thread_id_or_err if success else None
+                status="queued"
             )
             db.add(log)
+            await db.flush() # Flush to get log.id
+            
+            success, thread_id_or_err = await send_email_via_gmail_api(
+                q.recipient_email, 
+                q.recipient_name or "", 
+                target_template, 
+                access_token,
+                log_id=log.id
+            )
+            
+            log.status = "sent" if success else "failed"
+            log.error_message = "" if success else thread_id_or_err
+            log.thread_id = thread_id_or_err if success else None
             
             if success:
                 db_client.emails_sent_today += 1
@@ -454,9 +469,27 @@ async def process_single_client(client_id: int, queued_email_ids: list[int], cam
                     else:
                         print(f"❌ WhatsApp failed for {phone}: {wa_err}")
                 
+                email_success, email_err, thread_id_or_err = False, "", None
+                log_id = None
+                
+                async with SessionLocal() as db:
+                    log = EmailLog(
+                        client_id=client_id,
+                        campaign_id=camp_id,
+                        recipient_email=email or phone,
+                        recipient_name=name,
+                        template_used=target_template.project_name,
+                        category_assigned=category,
+                        status="queued",
+                        is_follow_up=is_follow_up_run,
+                    )
+                    db.add(log)
+                    await db.commit()
+                    log_id = log.id
+
                 if has_valid_email:
                     print(f"📤 Sending '{target_template.project_name}' email to {email}...")
-                    email_success, thread_id_or_err = await send_email_via_gmail_api(email, name, target_template, access_token)
+                    email_success, thread_id_or_err = await send_email_via_gmail_api(email, name, target_template, access_token, log_id=log_id)
                     if email_success:
                         email_err = ""
                         print(f"✅ Email sent to {email}")
@@ -471,25 +504,18 @@ async def process_single_client(client_id: int, queued_email_ids: list[int], cam
                 err = " | ".join(err_msgs)
                 
                 async with SessionLocal() as db:
-                    log = EmailLog(
-                        client_id=client_id,
-                        campaign_id=camp_id,
-                        recipient_email=email or phone,
-                        recipient_name=name,
-                        template_used=target_template.project_name,
-                        category_assigned=category,
-                        status="sent" if success else "failed",
-                        error_message=err,
-                        sent_at=datetime.now(timezone.utc) if success else None,
-                        is_follow_up=is_follow_up_run,
-                        whatsapp_sent=wa_success,
-                        thread_id=thread_id_or_err if email_success else None
-                    )
-                    db.add(log)
-                    if email_success:
-                        db_client_inner = await db.get(Client, client_id)
-                        db_client_inner.emails_sent_today += 1
-                    await db.commit()
+                    log = await db.get(EmailLog, log_id)
+                    if log:
+                        log.status = "sent" if success else "failed"
+                        log.error_message = err
+                        log.sent_at = datetime.now(timezone.utc) if success else None
+                        log.whatsapp_sent = wa_success
+                        log.thread_id = thread_id_or_err if email_success else None
+                        
+                        if email_success:
+                            db_client_inner = await db.get(Client, client_id)
+                            db_client_inner.emails_sent_today += 1
+                        await db.commit()
                     
                 if not success:
                     new_status = "Failed"

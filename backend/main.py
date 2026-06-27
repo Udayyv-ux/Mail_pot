@@ -187,6 +187,7 @@ from backend.routers.client_api import router as client_router
 from backend.routers.templates_api import router as templates_router
 from backend.routers.payments import router as payments_router
 from backend.routers.public import router as public_router
+from backend.routers.tracking_api import router as tracking_router
 
 app.include_router(auth_router)
 app.include_router(admin_router)
@@ -194,6 +195,7 @@ app.include_router(client_router)
 app.include_router(templates_router)
 app.include_router(payments_router)
 app.include_router(public_router)
+app.include_router(tracking_router)
 
 # ── Static Files ──────────────────────────────────────────────────────────────
 

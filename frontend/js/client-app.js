@@ -159,6 +159,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (el('dash-total')) el('dash-total').textContent = data.total_emails_sent || 0;
             if (el('dash-failed')) el('dash-failed').textContent = data.total_emails_failed || 0;
             
+            if (el('dash-opened') && el('dash-opened-count')) {
+                const sent = data.total_emails_sent || 0;
+                const opened = data.total_emails_opened || 0;
+                const rate = sent > 0 ? Math.round((opened / sent) * 100) : 0;
+                el('dash-opened').textContent = rate + '%';
+                el('dash-opened-count').textContent = opened;
+            }
+            
             // Gamified Onboarding
             try {
                 const hasGoogle = document.getElementById('service-account-email') && !document.getElementById('service-account-email').innerText.includes('Not configured');
@@ -617,7 +625,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const data = window.dashboardData;
         let list = [];
         
-        if (type === 'today' || type === 'total' || type === 'failed') {
+        if (type === 'today' || type === 'total' || type === 'failed' || type === 'opened') {
             list = data.recent_activity || [];
             if (type === 'today') {
                 const today = new Date().toDateString();
@@ -626,6 +634,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else if (type === 'failed') {
                 list = list.filter(a => a.status === 'failed');
                 title.textContent = 'Recent Failed Emails';
+            } else if (type === 'opened') {
+                list = list.filter(a => a.opened === true);
+                title.textContent = 'Recently Opened Emails';
             } else {
                 title.textContent = 'Recent Emails Sent';
             }
@@ -633,6 +644,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             thead.innerHTML = `
                 <th>Recipient</th>
                 <th>Status</th>
+                <th>Opened</th>
                 <th>Sent At</th>
                 <th>Error (if any)</th>
             `;
@@ -645,6 +657,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <td>${item.recipient_email}</td>
                         <td>
                             <div class="badge badge-${item.status === 'sent' ? 'success' : 'error'} badge-sm">${item.status}</div>
+                        </td>
+                        <td>
+                            ${item.opened ? '<div class="badge badge-accent badge-sm">Opened</div>' : '<span class="text-gray-500">-</span>'}
                         </td>
                         <td>${new Date(item.sent_at).toLocaleString()}</td>
                         <td class="text-error/80 text-xs truncate max-w-xs">${item.error_message || '-'}</td>
