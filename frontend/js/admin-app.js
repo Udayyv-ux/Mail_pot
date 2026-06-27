@@ -100,6 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         router.on('landing', loadLandingContent);
         router.on('policies', loadPolicies);
         router.on('newsletter', loadNewsletter);
+        router.on('subadmins', renderSubAdmins);
         router.init();
     }
 

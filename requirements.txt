@@ -37,4 +37,4 @@ cryptography
 itsdangerous
 
 # Sub-Admin Auth
-passlib[bcrypt]
+bcrypt

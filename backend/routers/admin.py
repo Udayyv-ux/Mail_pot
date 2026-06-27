@@ -716,9 +716,7 @@ async def broadcast_newsletter_whatsapp(req: NewsletterWhatsappBroadcastReq, db:
 
 
 # --- SUB-ADMINS ---
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import bcrypt
 
 class SubAdminCreate(BaseModel):
     name: str
@@ -738,7 +736,7 @@ async def create_subadmin(data: SubAdminCreate, db: AsyncSession = Depends(get_d
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="User with this email already exists")
         
-    hashed_password = pwd_context.hash(data.password)
+    hashed_password = bcrypt.hashpw(data.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     
     new_user = User(
         name=data.name,

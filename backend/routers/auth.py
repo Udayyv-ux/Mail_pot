@@ -60,11 +60,9 @@ async def refresh_token():
 
 from pydantic import BaseModel
 from sqlalchemy import select
-from passlib.context import CryptContext
+import bcrypt
 from backend.models.user import User, UserRole
 from backend.middleware.auth_middleware import create_access_token, create_refresh_token
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class BasicLogin(BaseModel):
     email: str
@@ -82,7 +80,7 @@ async def login_basic(data: BasicLogin, db: AsyncSession = Depends(get_db)):
     if user.role != UserRole.SUB_ADMIN:
         raise HTTPException(status_code=403, detail="Basic login is only available for sub-admins. Please use Google Sign-In.")
         
-    if not user.hashed_password or not pwd_context.verify(data.password, user.hashed_password):
+    if not user.hashed_password or not bcrypt.checkpw(data.password.encode('utf-8'), user.hashed_password.encode('utf-8')):
         raise HTTPException(status_code=401, detail="Invalid email or password")
         
     if not user.is_active:
