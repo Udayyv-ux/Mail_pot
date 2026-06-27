@@ -135,28 +135,51 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="document.querySelector('[data-route=campaigns]').click()">
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="showStatDetails('today')">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Emails Sent Today</div>
                         <div class="stat-value text-primary mt-1" id="dash-emails-sent">0</div>
                         <div class="stat-desc mt-1">Daily Limit: <span id="dash-emails-limit">0</span></div>
                         <progress id="dash-meter" class="progress progress-primary w-full mt-4" value="0" max="100"></progress>
                     </div>
-                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="document.querySelector('[data-route=templates]').click()">
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="showStatDetails('campaigns')">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Active Templates</div>
                         <div class="stat-value text-secondary mt-1" id="dash-templates">0</div>
                         <div class="stat-desc mt-1 text-success">↗︎ Connected to AI</div>
                     </div>
-                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="document.querySelector('[data-route=campaigns]').click()">
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="showStatDetails('total')">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Total Sent All Time</div>
                         <div class="stat-value mt-1" id="dash-total">0</div>
                         <div class="stat-desc mt-1">Across all campaigns</div>
                     </div>
-                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-error/30 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-error/10 transition-all duration-300 cursor-pointer" onclick="document.querySelector('[data-route=campaigns]').click()">
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-error/30 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-error/10 transition-all duration-300 cursor-pointer" onclick="showStatDetails('failed')">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Failed Emails</div>
                         <div class="stat-value text-error mt-1" id="dash-failed">0</div>
                         <div class="stat-desc mt-1 text-error/80">Requires attention</div>
                     </div>
                 </div>
+
+                <!-- Dashboard Details Modal -->
+                <dialog id="dash-details-modal" class="modal">
+                    <div class="modal-box w-11/12 max-w-4xl bg-base-200/90 backdrop-blur-2xl border border-white/10">
+                        <form method="dialog">
+                            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                        </form>
+                        <h3 class="font-bold text-2xl mb-6" id="dash-details-title">Details</h3>
+                        <div class="overflow-x-auto">
+                            <table class="table w-full">
+                                <thead>
+                                    <tr class="text-gray-400 border-white/5" id="dash-details-thead">
+                                        <!-- populated dynamically -->
+                                    </tr>
+                                </thead>
+                                <tbody id="dash-details-tbody">
+                                    <!-- populated dynamically -->
+                                </tbody>
+                            </table>
+                            <div id="dash-details-empty" class="hidden text-center py-8 text-gray-400">No data available.</div>
+                        </div>
+                    </div>
+                </dialog>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2 space-y-6">
@@ -367,6 +390,18 @@
                 </div>
             </section>
 
+            <!-- Notifications Page -->
+            <section id="page-notifications" class="page-section hidden max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">Notifications & Announcements</h2>
+                    <button class="btn btn-outline" onclick="loadClientNotifications()"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Refresh</button>
+                </div>
+                <div class="grid grid-cols-1 gap-6" id="notifications-list">
+                    <!-- Populated by JS -->
+                    <div class="text-center py-12 text-gray-400">Loading notifications...</div>
+                </div>
+            </section>
+
             <!-- Settings Page -->
             <section id="page-settings" class="page-section max-w-7xl mx-auto">
                 <h2 class="text-3xl font-bold mb-8">Account Settings</h2>
@@ -530,6 +565,12 @@
                     <a class="nav-item" data-route="whatsapp">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                         WhatsApp
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-item" data-route="notifications">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        Notifications
                     </a>
                 </li>
                 <li>

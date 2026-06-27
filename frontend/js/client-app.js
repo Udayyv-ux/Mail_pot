@@ -145,6 +145,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 api.get('/client/profile', { background: isBackground }).catch(() => null)
             ]);
             
+            window.dashboardData = data;
+            window.templatesData = templatesReq;
+            
             if (profileData) {
                 window.hasAITemplates = profileData.has_ai_templates || false;
             }
@@ -598,6 +601,116 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    window.showStatDetails = (type) => {
+        const modal = document.getElementById('dash-details-modal');
+        const title = document.getElementById('dash-details-title');
+        const thead = document.getElementById('dash-details-thead');
+        const tbody = document.getElementById('dash-details-tbody');
+        const empty = document.getElementById('dash-details-empty');
+        
+        if (!modal || !window.dashboardData) return;
+        
+        tbody.innerHTML = '';
+        thead.innerHTML = '';
+        empty.classList.add('hidden');
+        
+        const data = window.dashboardData;
+        let list = [];
+        
+        if (type === 'today' || type === 'total' || type === 'failed') {
+            list = data.recent_activity || [];
+            if (type === 'today') {
+                const today = new Date().toDateString();
+                list = list.filter(a => new Date(a.sent_at).toDateString() === today);
+                title.textContent = 'Emails Sent Today';
+            } else if (type === 'failed') {
+                list = list.filter(a => a.status === 'failed');
+                title.textContent = 'Recent Failed Emails';
+            } else {
+                title.textContent = 'Recent Emails Sent';
+            }
+            
+            thead.innerHTML = `
+                <th>Recipient</th>
+                <th>Status</th>
+                <th>Sent At</th>
+                <th>Error (if any)</th>
+            `;
+            
+            if (list.length === 0) {
+                empty.classList.remove('hidden');
+            } else {
+                tbody.innerHTML = list.map(item => `
+                    <tr class="hover:bg-base-200/50 transition-colors">
+                        <td>${item.recipient_email}</td>
+                        <td>
+                            <div class="badge badge-${item.status === 'sent' ? 'success' : 'error'} badge-sm">${item.status}</div>
+                        </td>
+                        <td>${new Date(item.sent_at).toLocaleString()}</td>
+                        <td class="text-error/80 text-xs truncate max-w-xs">${item.error_message || '-'}</td>
+                    </tr>
+                `).join('');
+            }
+        } else if (type === 'campaigns') {
+            title.textContent = 'Active Templates';
+            list = window.templatesData || [];
+            thead.innerHTML = `
+                <th>Project Name</th>
+                <th>Subject</th>
+                <th>Status</th>
+            `;
+            
+            if (list.length === 0) {
+                empty.classList.remove('hidden');
+            } else {
+                tbody.innerHTML = list.map(item => `
+                    <tr class="hover:bg-base-200/50 transition-colors">
+                        <td class="font-bold">${item.project_name}</td>
+                        <td>${item.subject_line}</td>
+                        <td><div class="badge badge-primary badge-sm">Active</div></td>
+                    </tr>
+                `).join('');
+            }
+        }
+        
+        modal.showModal();
+    };
+
+    window.loadClientNotifications = async () => {
+        try {
+            const notifications = await api.get('/client/notifications');
+            const list = document.getElementById('notifications-list');
+            if(!list) return;
+            
+            if(!notifications || notifications.length === 0) {
+                list.innerHTML = `<div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg">
+                    <div class="card-body p-8 text-center text-gray-400">
+                        No active announcements from the system admins.
+                    </div>
+                </div>`;
+                return;
+            }
+            
+            list.innerHTML = notifications.map(n => `
+                <div class="card bg-base-200/50 backdrop-blur-xl border border-${n.type === 'error' ? 'error/50' : (n.type === 'success' ? 'success/50' : 'info/50')} shadow-lg hover:-translate-y-1 transition-transform">
+                    <div class="card-body p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="mt-1">
+                                ${n.type === 'info' ? '<svg class="w-6 h-6 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' : ''}
+                                ${n.type === 'success' ? '<svg class="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' : ''}
+                                ${n.type === 'error' ? '<svg class="w-6 h-6 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>' : ''}
+                            </div>
+                            <div class="flex-1 whitespace-pre-wrap">${n.message}</div>
+                            <div class="text-xs text-gray-500 shrink-0">${new Date(n.created_at).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch(e) {
+            console.error(e);
+        }
+    };
+
     window.loadQueue = async () => {
         try {
             var items = await api.get('/client/queue');
@@ -968,6 +1081,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     router.on('billing', loadBilling);
     router.on('whatsapp', loadWhatsapp);
     router.on('settings', loadSettings);
+    router.on('notifications', loadClientNotifications);
     router.on('instructions', () => {}); // No data loading required
 
     // Global Functions
