@@ -190,6 +190,7 @@ class PlanCreate(BaseModel):
     campaign_limit: int
     features_json: str
     has_ai_templates: bool = False
+    ai_limit: int = -1
 
 @router.get("/plans")
 async def list_plans(db: AsyncSession = Depends(get_db), admin = Depends(require_super_admin)):

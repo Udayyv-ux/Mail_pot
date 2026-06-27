@@ -24,6 +24,7 @@ class Plan(Base):
     is_active = Column(Boolean, default=True)
     is_featured = Column(Boolean, default=False)  # Highlighted on landing page
     has_ai_templates = Column(Boolean, default=False)  # Allows using AI generation in templates
+    ai_limit = Column(Integer, default=-1) # -1 means unlimited, 0 means none
     sort_order = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 

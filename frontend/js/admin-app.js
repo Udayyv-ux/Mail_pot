@@ -562,6 +562,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if(el('plan-price-yearly')) el('plan-price-yearly').value = plan.price_yearly || (plan.price_monthly * 12);
             if(el('plan-limit')) el('plan-limit').value = plan.email_limit_daily;
             if(el('plan-campaign-limit')) el('plan-campaign-limit').value = plan.campaign_limit || 3;
+            if(el('plan-has-ai')) el('plan-has-ai').checked = plan.has_ai_templates || false;
+            if(el('plan-ai-limit')) el('plan-ai-limit').value = (plan.ai_limit !== undefined && plan.ai_limit !== null) ? plan.ai_limit : -1;
             if(el('plan-features')) {
                 let feats = [];
                 try { feats = JSON.parse(plan.features_json); } catch(e){}
@@ -586,6 +588,8 @@ document.addEventListener('DOMContentLoaded', () => {
             price_yearly: parseFloat(document.getElementById('plan-price-yearly').value) || 0,
             email_limit_daily: parseInt(document.getElementById('plan-limit').value),
             campaign_limit: parseInt(document.getElementById('plan-campaign-limit').value) || 3,
+            has_ai_templates: document.getElementById('plan-has-ai') ? document.getElementById('plan-has-ai').checked : false,
+            ai_limit: parseInt(document.getElementById('plan-ai-limit')?.value) || -1,
             features_json: JSON.stringify(featuresArray)
         };
         try {

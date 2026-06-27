@@ -1015,6 +1015,10 @@
                             <span class="label-text-alt text-gray-400">Allows users on this plan to auto-generate templates using Groq AI.</span>
                         </div>
                     </label>
+                    <div class="mt-4 pl-12">
+                        <label class="label"><span class="label-text text-gray-400">AI Daily Limit (-1 for unlimited)</span></label>
+                        <input type="number" id="plan-ai-limit" class="input input-bordered bg-base-200 border-white/10 focus:border-secondary w-full max-w-xs" value="-1" min="-1" required>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-secondary text-white w-full mt-4">Save Plan</button>
             </form>

@@ -105,6 +105,23 @@ async def generate_template(req: AIGenerateRequest, db: AsyncSession = Depends(g
     if current_user.role != UserRole.ADMIN:
         if not plan or not getattr(plan, 'has_ai_templates', False):
             raise HTTPException(403, "Your plan does not support AI Generated Templates. Please upgrade to unlock this feature.")
+            
+        # Check daily AI limit
+        # Reset if new day
+        from datetime import datetime, timezone
+        today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        if client.last_reset_date != today_str:
+            client.emails_sent_today = 0
+            client.ai_requests_today = 0
+            client.last_reset_date = today_str
+            
+        ai_limit = getattr(plan, 'ai_limit', -1)
+        if ai_limit != -1 and client.ai_requests_today >= ai_limit:
+            raise HTTPException(429, f"You have reached your daily AI usage limit of {ai_limit} requests.")
+            
+        # Increment usage
+        client.ai_requests_today += 1
+        await db.commit()
         
     # 2. Get AI API Key
     groq_key = getattr(client, 'groq_api_key', None) or settings.GROQ_API_KEY
