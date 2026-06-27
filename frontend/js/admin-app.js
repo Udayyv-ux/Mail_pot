@@ -5,6 +5,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginScreen = document.getElementById('admin-login-screen');
 
     auth.getCurrentUser().then(user => {
+        const globalLoader = document.getElementById('admin-global-loader');
+        if (globalLoader) {
+            globalLoader.style.opacity = '0';
+            setTimeout(() => globalLoader.style.display = 'none', 300);
+        }
+
         if (!user || (user.role !== 'admin' && user.role !== 'sub_admin')) {
             if (user && user.role !== 'admin') {
                 window.location.href = '/client/';
