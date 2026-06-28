@@ -57,37 +57,49 @@ async def send_whatsapp_message(
                 lang_found = False
                 
                 for vars_list in var_combinations:
-                    payload = {
-                        "messaging_product": "whatsapp",
-                        "to": phone,
-                        "type": "template",
-                        "template": {
-                            "name": template_name.strip(),
-                            "language": {
-                                "code": lang
+                    for has_button in [True, False]:
+                        payload = {
+                            "messaging_product": "whatsapp",
+                            "to": phone,
+                            "type": "template",
+                            "template": {
+                                "name": template_name.strip(),
+                                "language": {
+                                    "code": lang
+                                }
                             }
                         }
-                    }
-                    
-                    if vars_list:
-                        payload["template"]["components"] = [
-                            {
+                        
+                        components = []
+                        if vars_list:
+                            components.append({
                                 "type": "body",
                                 "parameters": [{"type": "text", "text": str(v)} for v in vars_list]
-                            }
-                        ]
-                    
-                    response = await client.post(url, headers=headers, json=payload, timeout=10.0)
-                    
-                    if response.status_code in (200, 201):
-                        print(f"   ✅ Success with lang='{lang}' and {len(vars_list)} variables.")
-                        return True, None
-                    
-                    error_data = response.json()
-                    err_code = error_data.get("error", {}).get("code")
-                    last_err_msg = error_data.get("error", {}).get("message", "Unknown Meta API Error")
-                    last_status = response.status_code
-                    last_err_code = err_code
+                            })
+                            
+                        if has_button:
+                            components.append({
+                                "type": "button",
+                                "sub_type": "url",
+                                "index": "0",
+                                "parameters": [{"type": "text", "text": "action"}]
+                            })
+                            
+                        if components:
+                            payload["template"]["components"] = components
+                        
+                        response = await client.post(url, headers=headers, json=payload, timeout=10.0)
+                        
+                        if response.status_code in (200, 201):
+                            btn_text = " with Dynamic Button" if has_button else ""
+                            print(f"   ✅ Success with lang='{lang}' and {len(vars_list)} body variables{btn_text}.")
+                            return True, None
+                        
+                        error_data = response.json()
+                        err_code = error_data.get("error", {}).get("code")
+                        last_err_msg = error_data.get("error", {}).get("message", "Unknown Meta API Error")
+                        last_status = response.status_code
+                        last_err_code = err_code
                     
                     print(f"   ❌ Failed with lang='{lang}', {len(vars_list)} vars. Code: {err_code}, Msg: {last_err_msg}")
                     
