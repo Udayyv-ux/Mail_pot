@@ -286,6 +286,7 @@ async def run_247_engine():
                     elif ('inquiry' in hl or 'message' in hl or 'notes' in hl) and inquiry_idx == -1: inquiry_idx = i
                 
                 status_idx = get_col_index(headers, status_col_name)
+                print(f"📊 Column indices - Name: {name_idx}, Email: {email_idx}, Inquiry: {inquiry_idx}, Phone: {phone_idx}, Status: {status_idx}")
                 
                 if email_idx == -1 or status_idx == -1:
                     async with SessionLocal() as db:
@@ -382,7 +383,11 @@ async def run_247_engine():
                         
                         whatsapp_success = False
                         whatsapp_err = None
-                        if getattr(campaign, 'use_whatsapp', False) and phone:
+                        
+                        use_wa = getattr(campaign, 'use_whatsapp', False)
+                        print(f"🧐 WhatsApp Check -> use_whatsapp: {use_wa}, phone: '{phone}'")
+                        
+                        if use_wa and phone:
                             print(f"💬 Sending WhatsApp message to {phone}...")
                             wa_token = None
                             wa_phone_id = None
