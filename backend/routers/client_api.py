@@ -312,7 +312,7 @@ async def create_campaign(data: CampaignCreate, db: AsyncSession = Depends(get_d
     db.add(new_campaign)
     await db.commit()
     await db.refresh(new_campaign)
-    return {"status": "success", "campaign": new_campaign}
+    return {"status": "success", "campaign_id": new_campaign.id}
 
 @router.put("/campaigns/{campaign_id}")
 async def update_campaign(campaign_id: str, data: CampaignUpdate, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
@@ -337,7 +337,7 @@ async def update_campaign(campaign_id: str, data: CampaignUpdate, db: AsyncSessi
         
     await db.commit()
     await db.refresh(campaign)
-    return {"status": "success", "campaign": campaign}
+    return {"status": "success", "campaign_id": campaign.id}
 
 @router.delete("/campaigns/{campaign_id}")
 async def delete_campaign(campaign_id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
