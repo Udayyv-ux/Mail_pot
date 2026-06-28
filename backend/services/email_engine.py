@@ -306,11 +306,15 @@ async def process_single_campaign(campaign, groq_key):
                             await db.commit()
                         
                         # Mark as Queued on the sheet
-                        batch_updates.append({'row': i+1, 'col': status_idx + 1, 'value': 'Queued'})
+                        try:
+                            await update_sheet_cell(campaign.google_sheet_id, i+1, status_idx + 1, 'Queued')
+                        except Exception as e:
+                            print(f'❌ Failed to update sheet cell: {e}')
                         continue
                         
+                    log_id = str(uuid.uuid4())
                     print(f"📤 Sending '{target_template.project_name}' email to {email}...")
-                    success, err = await send_email_via_gmail_api(email, name, target_template, access_token)
+                    success, err = await send_email_via_gmail_api(email, name, target_template, access_token, log_id)
                     
                     whatsapp_success = False
                     whatsapp_err = None
