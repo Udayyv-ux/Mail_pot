@@ -2,6 +2,7 @@
 Autonomous 24/7 Engine — Handles Google Sheets polling, AI categorization, and HTTP Email Blasting.
 """
 import asyncio
+import uuid
 from datetime import datetime, timezone
 import httpx
 from groq import Groq
@@ -112,7 +113,7 @@ async def refresh_google_token(user, db) -> str | None:
         print(f"Token refresh failed: {e}")
         return user.google_access_token
 
-async def send_email_via_gmail_api(to_email: str, first_name: str, template, access_token: str) -> tuple[bool, str]:
+async def send_email_via_gmail_api(to_email: str, first_name: str, template, access_token: str, log_id: str = None) -> tuple[bool, str]:
     if not access_token:
         return False, "Client user has not authenticated with Google or access token is missing."
     
@@ -123,6 +124,10 @@ async def send_email_via_gmail_api(to_email: str, first_name: str, template, acc
         if banner_url.startswith("/"):
             banner_url = settings.APP_URL.rstrip('/') + banner_url
         html_body = f'<img src="{banner_url}" style="max-width:100%;"><br><br>' + html_body
+
+    if log_id:
+        tracking_pixel_url = f"{settings.APP_URL.rstrip('/')}/api/public/track/open/{log_id}"
+        html_body += f'<img src="{tracking_pixel_url}" width="1" height="1" style="display:none;" />'
 
     msg = EmailMessage()
     msg['To'] = to_email
@@ -149,6 +154,8 @@ async def send_email_via_gmail_api(to_email: str, first_name: str, template, acc
             return False, f"Gmail API Error: {resp.text}"
     except Exception as e:
         return False, f"HTTP Error: {str(e)}"
+
+_running_campaigns = set()
 
 async def process_single_campaign(campaign, groq_key):
 
@@ -237,7 +244,6 @@ async def process_single_campaign(campaign, groq_key):
                 print(f"🛑 Campaign '{campaign.name}' hit hourly limit ({campaign.max_emails_per_hour}/hr). Skipping.")
                 return
 
-            batch_updates = []
             for i, row in enumerate(rows[1:], start=1):
                 max_idx = max(name_idx, email_idx, inquiry_idx, phone_idx, status_idx)
                 while len(row) <= max_idx:
@@ -343,6 +349,7 @@ async def process_single_campaign(campaign, groq_key):
                     # Log to DB
                     async with SessionLocal() as db:
                         log = EmailLog(
+                                id=log_id,
                             client_id=campaign.client_id,
                             campaign_id=campaign.id,
                             recipient_email=email,
@@ -364,17 +371,14 @@ async def process_single_campaign(campaign, groq_key):
                     # Queue Sheet Update
                     new_status = "Followed Up" if is_follow_up_run else "Sent"
                     if not success: new_status = "Failed"
-                    batch_updates.append({'row': i+1, 'col': status_idx + 1, 'value': new_status})
+                    try:
+                        await update_sheet_cell(campaign.google_sheet_id, i+1, status_idx + 1, new_status)
+                    except Exception as e:
+                        print(f'❌ Failed to update sheet cell: {e}')
                     
                     if success:
                         await asyncio.sleep(1) # Delay between sends
             
-            if batch_updates:
-                try:
-                    print(f"📝 Batch updating {len(batch_updates)} sheet cells for '{campaign.name}'...")
-                    await update_sheet_cells_batch(campaign.google_sheet_id, batch_updates)
-                except Exception as e:
-                    print(f"❌ Failed to batch update sheet: {e}")
             
             async with SessionLocal() as db:
                 db_camp = await db.get(Campaign, campaign.id)
@@ -419,6 +423,7 @@ async def run_247_engine():
                     
                     # Update Log
                     log = EmailLog(
+                                id=log_id,
                         client_id=q.client_id,
                         campaign_id=q.campaign_id,
                         recipient_email=q.recipient_email,
@@ -462,9 +467,16 @@ async def run_247_engine():
                         camps.sort(key=lambda x: x.created_at)
                         allowed_campaigns.extend(camps[:limit])
 
-            tasks = [process_single_campaign(campaign, groq_key) for campaign in allowed_campaigns]
-            if tasks:
-                await asyncio.gather(*tasks)
+            async def run_and_cleanup(camp, g_key):
+                try:
+                    await process_single_campaign(camp, g_key)
+                finally:
+                    _running_campaigns.discard(camp.id)
+
+            for camp in allowed_campaigns:
+                if camp.id not in _running_campaigns:
+                    _running_campaigns.add(camp.id)
+                    asyncio.create_task(run_and_cleanup(camp, groq_key))
 
         except Exception as e:
             print(f"24/7 Engine Iteration Error: {e}")

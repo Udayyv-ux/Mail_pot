@@ -2,6 +2,7 @@
 Public API routes for landing page (no auth required).
 """
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel
@@ -10,8 +11,9 @@ from backend.database import get_db
 from backend.models.plan import Plan
 from backend.models.app_settings import Policy, AppSetting, DemoRequest
 from backend.models.appointment import Appointment
+from backend.models.email_log import EmailLog
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 router = APIRouter(prefix="/api/public", tags=["public"])
 
@@ -214,3 +216,16 @@ async def test_wa(data: WATestReq, db: AsyncSession = Depends(get_db)):
         return {"status": "success", "message": "Message sent!", "message_id": msg_id}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+@router.get("/track/open/{log_id}")
+async def track_email_open(log_id: str, db: AsyncSession = Depends(get_db)):
+    pixel = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+    try:
+        log = await db.get(EmailLog, log_id)
+        if log and not log.opened:
+            log.opened = True
+            log.opened_at = datetime.now(timezone.utc)
+            await db.commit()
+    except Exception:
+        pass
+    return Response(content=pixel, media_type="image/gif")

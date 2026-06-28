@@ -119,6 +119,20 @@ async def lifespan(app: FastAPI):
                 except Exception:
                     await conn.rollback()
                     pass
+                    
+                try:
+                    await conn.execute(text("ALTER TABLE email_logs ADD COLUMN opened BOOLEAN DEFAULT FALSE"))
+                    await conn.commit()
+                except Exception:
+                    await conn.rollback()
+                    pass
+
+                try:
+                    await conn.execute(text("ALTER TABLE email_logs ADD COLUMN opened_at TIMESTAMP WITH TIME ZONE"))
+                    await conn.commit()
+                except Exception:
+                    await conn.rollback()
+                    pass
             print("Schema migration completed successfully!")
             break # Success, break out of retry loop
         except Exception as e:
