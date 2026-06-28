@@ -14,6 +14,7 @@ from backend.models.template import Template
 from backend.models.email_log import EmailLog
 from backend.models.email_queue import EmailQueue
 from backend.models.app_settings import AppSetting
+from backend.models.campaign import Campaign
 from backend.services.sheets_service import get_sheet_data, update_sheet_cell, update_sheet_cells_batch
 from backend.services.whatsapp_service import send_whatsapp_message
 
