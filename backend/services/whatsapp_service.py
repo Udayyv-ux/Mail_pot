@@ -62,7 +62,7 @@ async def send_whatsapp_message(
                         "to": phone,
                         "type": "template",
                         "template": {
-                            "name": template_name,
+                            "name": template_name.strip(),
                             "language": {
                                 "code": lang
                             }
