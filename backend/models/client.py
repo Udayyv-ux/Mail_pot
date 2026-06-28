@@ -31,6 +31,7 @@ class Client(Base):
     # Usage tracking
     daily_email_limit = Column(Integer, default=50)
     emails_sent_today = Column(Integer, default=0)
+    ai_requests_today = Column(Integer, default=0)
     last_reset_date = Column(String, nullable=True)
 
     # Trial & Subscriptions

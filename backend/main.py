@@ -74,6 +74,7 @@ async def lifespan(app: FastAPI):
         ("policies", "icon", "VARCHAR DEFAULT '📜'"),
         ("policies", "description", "VARCHAR DEFAULT ''"),
         ("demo_requests", "inquiry_type", "VARCHAR DEFAULT 'Demo'"),
+        ("clients", "ai_requests_today", "INTEGER DEFAULT 0"),
     ]
 
     # Retry loop for Neon DB cold starts
