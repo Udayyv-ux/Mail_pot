@@ -15,7 +15,7 @@ from backend.models.email_log import EmailLog
 from backend.models.email_queue import EmailQueue
 from backend.models.app_settings import AppSetting
 from backend.services.sheets_service import get_sheet_data, update_sheet_cell, update_sheet_cells_batch
-from backend.services.whatsapp_service import send_whatsapp_template_message
+from backend.services.whatsapp_service import send_whatsapp_message
 
 def get_col_index(headers: list, target_name: str) -> int:
     for i, h in enumerate(headers):
@@ -393,7 +393,7 @@ async def run_247_engine():
                             wa_template = getattr(target_template, 'whatsapp_template_name', None) or getattr(campaign, 'default_whatsapp_template_name', None)
                             
                             if wa_token and wa_phone_id and wa_template:
-                                whatsapp_success, whatsapp_err = await send_whatsapp_template_message(phone, wa_template, wa_phone_id, wa_token)
+                                whatsapp_success, whatsapp_err = await send_whatsapp_message(phone, wa_template, wa_phone_id, wa_token)
                                 if whatsapp_success:
                                     print(f"✅ WhatsApp sent successfully to {phone}")
                                 else:

@@ -2,20 +2,22 @@ import httpx
 import json
 from typing import Tuple, Optional
 
-async def send_whatsapp_template_message(
-    phone_number: str,
+async def send_whatsapp_message(
+    phone: str,
     template_name: str,
     phone_number_id: str,
-    access_token: str
+    access_token: str,
+    variables: Optional[list] = None
 ) -> Tuple[bool, Optional[str]]:
     """
     Sends a WhatsApp template message using the Meta Graph API.
     
     Args:
-        phone_number: The recipient's phone number with country code (e.g., '916303488801')
+        phone: The recipient's phone number with country code (e.g., '916303488801')
         template_name: The name of the pre-approved WhatsApp template.
         phone_number_id: The Meta WhatsApp Phone Number ID.
         access_token: The Meta WhatsApp System User Access Token.
+        variables: Optional list of strings for template placeholders.
         
     Returns:
         (Success Boolean, Error Message String)
@@ -34,7 +36,7 @@ async def send_whatsapp_template_message(
     # Payload for a basic template message
     payload = {
         "messaging_product": "whatsapp",
-        "to": phone_number,
+        "to": phone,
         "type": "template",
         "template": {
             "name": template_name,
@@ -43,6 +45,14 @@ async def send_whatsapp_template_message(
             }
         }
     }
+    
+    if variables:
+        payload["template"]["components"] = [
+            {
+                "type": "body",
+                "parameters": [{"type": "text", "text": str(v)} for v in variables]
+            }
+        ]
     
     try:
         async with httpx.AsyncClient() as client:
