@@ -198,7 +198,7 @@ async def get_whatsapp_templates(db: AsyncSession = Depends(get_db), current_use
     if not client.whatsapp_business_account_id or not client.whatsapp_access_token:
         raise HTTPException(status_code=400, detail="WhatsApp Business Account ID and Access Token are required to fetch templates")
     
-    url = f"https://graph.facebook.com/v23.0/{client.whatsapp_business_account_id}/message_templates?limit=100"
+    url = f"https://graph.facebook.com/v25.0/{client.whatsapp_business_account_id}/message_templates?limit=100"
     headers = {"Authorization": f"Bearer {client.whatsapp_access_token}"}
     
     async with httpx.AsyncClient() as http_client:

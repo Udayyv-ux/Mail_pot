@@ -570,7 +570,7 @@ async def get_admin_whatsapp_templates(db: AsyncSession = Depends(get_db), admin
     if not access_token or not waba_id:
         raise HTTPException(status_code=400, detail="Global WhatsApp API credentials not configured in App Settings.")
 
-    url = f"https://graph.facebook.com/v23.0/{waba_id}/message_templates"
+    url = f"https://graph.facebook.com/v25.0/{waba_id}/message_templates"
     headers = {"Authorization": f"Bearer {access_token}"}
     
     async with httpx.AsyncClient() as client:

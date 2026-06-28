@@ -10,7 +10,7 @@ async def _fetch_template_structure(client: httpx.AsyncClient, waba_id: str, tem
     if cache_key in TEMPLATE_CACHE:
         return TEMPLATE_CACHE[cache_key]
 
-    url = f"https://graph.facebook.com/v19.0/{waba_id}/message_templates?name={template_name}"
+    url = f"https://graph.facebook.com/v25.0/{waba_id}/message_templates?name={template_name}"
     headers = {"Authorization": f"Bearer {access_token}"}
     
     response = await client.get(url, headers=headers, timeout=10.0)
@@ -49,7 +49,7 @@ async def send_whatsapp_message(
     if not phone_number_id or not access_token or not waba_id:
         return False, "WhatsApp credentials not configured for this client."
 
-    url = f"https://graph.facebook.com/v19.0/{phone_number_id}/messages"
+    url = f"https://graph.facebook.com/v25.0/{phone_number_id}/messages"
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
@@ -155,7 +155,15 @@ async def send_whatsapp_message(
             response = await client.post(url, headers=headers, json=payload, timeout=10.0)
             
             if response.status_code in (200, 201):
+                response_json = response.json()
                 print(f"✅ Smart Template '{template_name}' payload accepted by Meta!")
+                print("Meta Response:", json.dumps(response_json, indent=2))
+                
+                messages = response_json.get("messages", [])
+                if messages and len(messages) > 0:
+                    message_id = messages[0].get("id")
+                    print(f"Message ID: {message_id}")
+                    
                 return True, None
                 
             error_data = response.json()
