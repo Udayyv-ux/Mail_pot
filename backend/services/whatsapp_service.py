@@ -49,6 +49,8 @@ async def send_whatsapp_message(
     last_status = 400
     last_err_code = None
     
+    print(f"🔍 Starting WhatsApp Auto-Guesser for phone: {phone}, template: '{template_name}'")
+    
     try:
         async with httpx.AsyncClient() as client:
             for lang in languages_to_try:
@@ -78,6 +80,7 @@ async def send_whatsapp_message(
                     response = await client.post(url, headers=headers, json=payload, timeout=10.0)
                     
                     if response.status_code in (200, 201):
+                        print(f"   ✅ Success with lang='{lang}' and {len(vars_list)} variables.")
                         return True, None
                     
                     error_data = response.json()
@@ -86,8 +89,9 @@ async def send_whatsapp_message(
                     last_status = response.status_code
                     last_err_code = err_code
                     
+                    print(f"   ❌ Failed with lang='{lang}', {len(vars_list)} vars. Code: {err_code}, Msg: {last_err_msg}")
+                    
                     # 132000 = Number of parameters does not match.
-                    # This means the language IS correct, but our variables are wrong.
                     if err_code == 132000:
                         lang_found = True
                         continue # Try the next variable combination
@@ -100,8 +104,7 @@ async def send_whatsapp_message(
                         # Some other fatal error
                         return False, f"Meta API Error ({last_status}): {last_err_msg}"
                 
-                # If we found the language but none of the variable combinations worked,
-                # stop trying other languages, because we already found the right one!
+                # If we found the language but none of the variable combinations worked...
                 if lang_found:
                     return False, f"Meta API Error ({last_status}): (#132000) Template requires complex parameters (Header/Button) or more than 4 variables, which the auto-guesser cannot fulfill."
                         

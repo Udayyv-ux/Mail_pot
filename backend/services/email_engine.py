@@ -328,7 +328,9 @@ async def run_247_engine():
                         
                     name = row[name_idx] if name_idx != -1 else ""
                     inquiry = row[inquiry_idx] if inquiry_idx != -1 else ""
-                    phone = row[phone_idx] if phone_idx != -1 else ""
+                    
+                    raw_phone = str(row[phone_idx]) if phone_idx != -1 else ""
+                    phone = ''.join(filter(str.isdigit, raw_phone))
                     
                     target_template = None
                     category = "General"
