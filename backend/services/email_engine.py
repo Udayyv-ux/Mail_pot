@@ -275,14 +275,16 @@ async def run_247_engine():
                     continue
                 
                 headers = rows[0]
-                target_cols = [c.strip() for c in (campaign.target_columns or "Name, Email, Inquiry").split(',')]
                 status_col_name = campaign.status_column or "Status"
                 
-                name_idx = get_col_index(headers, target_cols[0] if len(target_cols)>0 else "Name")
-                email_idx = get_col_index(headers, target_cols[1] if len(target_cols)>1 else "Email")
-                inquiry_idx = get_col_index(headers, target_cols[2] if len(target_cols)>2 else "Inquiry")
-                phone_idx = get_col_index(headers, target_cols[3] if len(target_cols)>3 else "Phone")
-                if phone_idx == -1: phone_idx = get_col_index(headers, "Phone Number")
+                name_idx, email_idx, inquiry_idx, phone_idx = -1, -1, -1, -1
+                for i, h in enumerate(headers):
+                    hl = h.lower().strip()
+                    if 'email' in hl and email_idx == -1: email_idx = i
+                    elif 'name' in hl and name_idx == -1: name_idx = i
+                    elif ('phone' in hl or 'whatsapp' in hl or 'mobile' in hl) and phone_idx == -1: phone_idx = i
+                    elif ('inquiry' in hl or 'message' in hl or 'notes' in hl) and inquiry_idx == -1: inquiry_idx = i
+                
                 status_idx = get_col_index(headers, status_col_name)
                 
                 if email_idx == -1 or status_idx == -1:
