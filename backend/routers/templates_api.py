@@ -55,7 +55,7 @@ async def create_template(data: TemplateCreate, db: AsyncSession = Depends(get_d
     )
     db.add(template)
     await db.commit()
-    return template
+    return {"status": "success", "id": template.id}
 
 @router.put("/{id}")
 async def update_template(id: str, data: TemplateCreate, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
@@ -74,7 +74,7 @@ async def update_template(id: str, data: TemplateCreate, db: AsyncSession = Depe
     template.whatsapp_template_name = data.whatsapp_template_name
     
     await db.commit()
-    return template
+    return {"status": "success", "id": template.id}
 
 @router.delete("/{id}")
 async def delete_template(id: str, db: AsyncSession = Depends(get_db), current_user = Depends(require_active_subscription)):
