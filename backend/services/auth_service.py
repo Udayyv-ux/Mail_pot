@@ -91,37 +91,38 @@ async def google_callback(request: Request, db: AsyncSession):
         
         # If client, create client profile
         if role == UserRole.CLIENT:
-            # Check if there's a DemoRequest for this email
+            # Check if there's a DemoRequest for this email to link it (optional)
             demo_req_result = await db.execute(
                 select(DemoRequest).where(DemoRequest.email == email).order_by(DemoRequest.created_at.desc())
             )
             demo_req = demo_req_result.scalars().first()
             
+            # Fetch trial duration setting
+            setting = await db.execute(select(AppSetting).where(AppSetting.key == "trial_days"))
+            setting_obj = setting.scalar_one_or_none()
+            trial_days = int(setting_obj.value) if setting_obj and setting_obj.value.isdigit() else 5
+            
+            # Fetch Ultra Plan (default for new signups)
+            plan_result = await db.execute(select(Plan).where(Plan.name.ilike('%Ultra%')))
+            ultra_plan = plan_result.scalar_one_or_none()
+            
+            # Default company name based on user name if no demo request
+            company_name = demo_req.company if demo_req and demo_req.company else f"{name}'s Workspace"
+            
+            client = Client(
+                id=str(uuid.uuid4()),
+                user_id=user.id,
+                company_name=company_name,
+                is_demo=False, # Removed demo restriction
+                daily_email_limit=ultra_plan.email_limit_daily if ultra_plan else 1000,
+                plan_id=ultra_plan.id if ultra_plan else None,
+                trial_ends_at=datetime.now(timezone.utc) + timedelta(days=trial_days)
+            )
+            db.add(client)
+            
             if demo_req:
-                # Fetch trial duration setting
-                setting = await db.execute(select(AppSetting).where(AppSetting.key == "trial_days"))
-                setting_obj = setting.scalar_one_or_none()
-                trial_days = int(setting_obj.value) if setting_obj and setting_obj.value.isdigit() else 5
-                
-                # Fetch Ultra Plan
-                plan_result = await db.execute(select(Plan).where(Plan.name.ilike('%Ultra%')))
-                ultra_plan = plan_result.scalar_one_or_none()
-                
-                client = Client(
-                    id=str(uuid.uuid4()),
-                    user_id=user.id,
-                    company_name=demo_req.company or (name + " Company"),
-                    is_demo=True,
-                    daily_email_limit=ultra_plan.email_limit_daily if ultra_plan else 1000,
-                    plan_id=ultra_plan.id if ultra_plan else None,
-                    trial_ends_at=datetime.now(timezone.utc) + timedelta(days=trial_days)
-                )
                 demo_req.status = "approved"
                 demo_req.user_id = user.id
-                db.add(client)
-            else:
-                # Do NOT allow signups unless they requested a demo or are admin
-                raise HTTPException(status_code=403, detail="Signup not allowed without demo request.")
             
         await db.commit()
     else:

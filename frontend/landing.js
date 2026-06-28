@@ -320,17 +320,4 @@ if (formDemo) {
 }
 
 
-// --- Handle Unauthorized Signup Error ---
-window.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('error') === 'unauthorized_signup') {
-        if(window.showToast) {
-            window.showToast("You must request a demo before signing up. Please click 'Book a Demo'.", "error");
-        } else {
-            alert("You must request a demo before signing up. Please click 'Book a Demo'.");
-        }
-        // Clean URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
-});
-
+// Removed unauthorized signup error handler
