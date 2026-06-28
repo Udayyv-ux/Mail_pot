@@ -33,23 +33,27 @@ async def send_whatsapp_message(
         "Content-Type": "application/json"
     }
     
-    # Fallback languages in case the template was created in 'en' or 'en_GB' instead of 'en_US'
-    languages_to_try = ["en_US", "en", "en_GB"]
+    # Fallback languages
+    languages_to_try = ["en_US", "en", "en_GB", "en_IN"]
     
-    # Fallback variable combinations in case the template expects 0, 1, or 2 variables
-    # (Since we don't have a UI mapper, we intelligently brute-force the parameter count)
+    # Fallback variable combinations (0 to 4 parameters)
     var_combinations = [
-        [],                            # 0 params
-        [fallback_name],               # 1 param (Name)
-        [fallback_name, "Our Team"]    # 2 params (Name, Company/Sender)
+        [],                            
+        [fallback_name],               
+        [fallback_name, "Our Team"],
+        [fallback_name, "Our Team", "updates"],
+        [fallback_name, "Our Team", "updates", "more info"]
     ]
     
     last_err_msg = "Unknown Error"
     last_status = 400
+    last_err_code = None
     
     try:
         async with httpx.AsyncClient() as client:
             for lang in languages_to_try:
+                lang_found = False
+                
                 for vars_list in var_combinations:
                     payload = {
                         "messaging_product": "whatsapp",
@@ -80,16 +84,26 @@ async def send_whatsapp_message(
                     err_code = error_data.get("error", {}).get("code")
                     last_err_msg = error_data.get("error", {}).get("message", "Unknown Meta API Error")
                     last_status = response.status_code
+                    last_err_code = err_code
                     
-                    # 132000 = Number of parameters does not match. (Try next vars_list)
-                    # 132001 = Template does not exist in language. (Break inner loop, try next language)
-                    
-                    if err_code == 132001:
-                        break # Break out of var loop, try next language
+                    # 132000 = Number of parameters does not match.
+                    # This means the language IS correct, but our variables are wrong.
+                    if err_code == 132000:
+                        lang_found = True
+                        continue # Try the next variable combination
                         
-                    elif err_code != 132000:
-                        # Some other fatal error (e.g., number not found, invalid token)
+                    # 132001 = Template does not exist in this language.
+                    elif err_code == 132001:
+                        break # Break inner loop, try the next language
+                        
+                    else:
+                        # Some other fatal error
                         return False, f"Meta API Error ({last_status}): {last_err_msg}"
+                
+                # If we found the language but none of the variable combinations worked,
+                # stop trying other languages, because we already found the right one!
+                if lang_found:
+                    return False, f"Meta API Error ({last_status}): (#132000) Template requires complex parameters (Header/Button) or more than 4 variables, which the auto-guesser cannot fulfill."
                         
             return False, f"Meta API Error ({last_status}): {last_err_msg} (Tried languages and variable combinations)"
                 
