@@ -400,7 +400,7 @@ async def run_247_engine():
                             wa_template = getattr(target_template, 'whatsapp_template_name', None) or getattr(campaign, 'default_whatsapp_template_name', None)
                             
                             if wa_token and wa_phone_id and wa_template:
-                                whatsapp_success, whatsapp_err = await send_whatsapp_message(phone, wa_template, wa_phone_id, wa_token)
+                                whatsapp_success, whatsapp_err = await send_whatsapp_message(phone, wa_template, wa_phone_id, wa_token, fallback_name=name or "Customer")
                                 if whatsapp_success:
                                     print(f"✅ WhatsApp sent successfully to {phone}")
                                 else:
