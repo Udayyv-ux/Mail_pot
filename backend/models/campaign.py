@@ -47,8 +47,8 @@ class Campaign(Base):
 
     # Relationships
     client = relationship("Client", back_populates="campaigns", lazy="selectin")
-    follow_up_template = relationship("Template", foreign_keys=[follow_up_template_id], lazy="selectin")
-    default_template = relationship("Template", foreign_keys=[default_template_id], lazy="selectin")
+    follow_up_template = relationship("Template", foreign_keys="[Campaign.follow_up_template_id]", lazy="selectin")
+    default_template = relationship("Template", foreign_keys="[Campaign.default_template_id]", lazy="selectin")
     email_logs = relationship("EmailLog", back_populates="campaign", cascade="all, delete-orphan", lazy="selectin")
 
     def __repr__(self):
