@@ -393,16 +393,18 @@ async def run_247_engine():
                             print(f"💬 Sending WhatsApp message to {phone}...")
                             wa_token = None
                             wa_phone_id = None
+                            wa_waba_id = None
                             async with SessionLocal() as wa_db:
                                 wa_client = await wa_db.get(Client, campaign.client_id)
                                 if wa_client:
                                     wa_token = wa_client.whatsapp_access_token
                                     wa_phone_id = wa_client.whatsapp_phone_number_id
+                                    wa_waba_id = wa_client.whatsapp_business_account_id
                                     
                             wa_template = getattr(target_template, 'whatsapp_template_name', None) or getattr(campaign, 'default_whatsapp_template_name', None)
                             
-                            if wa_token and wa_phone_id and wa_template:
-                                whatsapp_success, whatsapp_err = await send_whatsapp_message(phone, wa_template, wa_phone_id, wa_token, fallback_name=name or "Customer")
+                            if wa_token and wa_phone_id and wa_waba_id and wa_template:
+                                whatsapp_success, whatsapp_err = await send_whatsapp_message(phone, wa_template, wa_phone_id, wa_waba_id, wa_token, fallback_name=name or "Customer")
                                 if whatsapp_success:
                                     print(f"✅ WhatsApp sent successfully to {phone}")
                                 else:

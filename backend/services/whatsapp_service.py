@@ -1,126 +1,168 @@
 import httpx
 import json
+import re
 from typing import Tuple, Optional
+
+TEMPLATE_CACHE = {}
+
+async def _fetch_template_structure(client: httpx.AsyncClient, waba_id: str, template_name: str, access_token: str) -> dict:
+    cache_key = f"{waba_id}_{template_name}"
+    if cache_key in TEMPLATE_CACHE:
+        return TEMPLATE_CACHE[cache_key]
+
+    url = f"https://graph.facebook.com/v19.0/{waba_id}/message_templates?name={template_name}"
+    headers = {"Authorization": f"Bearer {access_token}"}
+    
+    response = await client.get(url, headers=headers, timeout=10.0)
+    if response.status_code == 200:
+        data = response.json()
+        if "data" in data and len(data["data"]) > 0:
+            # Prefer 'en' or 'en_US' if available, otherwise just take the first approved one
+            templates = [t for t in data["data"] if t.get("status") == "APPROVED"]
+            if not templates:
+                templates = data["data"]
+                
+            selected = templates[0]
+            for t in templates:
+                lang = t.get("language", "")
+                if lang in ("en", "en_US"):
+                    selected = t
+                    break
+                    
+            TEMPLATE_CACHE[cache_key] = selected
+            return selected
+            
+    return {}
 
 async def send_whatsapp_message(
     phone: str,
     template_name: str,
     phone_number_id: str,
+    waba_id: str,
     access_token: str,
     fallback_name: str = "Customer"
 ) -> Tuple[bool, Optional[str]]:
     """
     Sends a WhatsApp template message using the Meta Graph API.
-    
-    Args:
-        phone: The recipient's phone number with country code
-        template_name: The name of the pre-approved WhatsApp template.
-        phone_number_id: The Meta WhatsApp Phone Number ID.
-        access_token: The Meta WhatsApp System User Access Token.
-        fallback_name: The name to use if the template expects 1 variable.
-        
-    Returns:
-        (Success Boolean, Error Message String)
+    Dynamically builds the payload by fetching the template structure.
     """
-    if not phone_number_id or not access_token:
+    if not phone_number_id or not access_token or not waba_id:
         return False, "WhatsApp credentials not configured for this client."
 
-    # Meta Graph API Endpoint (v19.0)
     url = f"https://graph.facebook.com/v19.0/{phone_number_id}/messages"
-    
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
     
-    # Fallback languages
-    languages_to_try = ["en_US", "en", "en_GB", "en_IN"]
-    
-    # Fallback variable combinations (0 to 4 parameters)
-    var_combinations = [
-        [],                            
-        [fallback_name],               
-        [fallback_name, "Our Team"],
-        [fallback_name, "Our Team", "updates"],
-        [fallback_name, "Our Team", "updates", "more info"]
-    ]
-    
-    last_err_msg = "Unknown Error"
-    last_status = 400
-    last_err_code = None
-    
-    print(f"🔍 Starting WhatsApp Auto-Guesser for phone: {phone}, template: '{template_name}'")
-    
+    fallback_vars = [fallback_name, "Our Team", "updates", "more info", "here", "today", "details", "contact us", "support"]
+
     try:
         async with httpx.AsyncClient() as client:
-            for lang in languages_to_try:
-                lang_found = False
+            template_def = await _fetch_template_structure(client, waba_id, template_name, access_token)
+            
+            if not template_def:
+                return False, f"Meta API Error: Template '{template_name}' not found or not approved in your Meta Dashboard."
                 
-                for vars_list in var_combinations:
-                    for has_button in [True, False]:
-                        payload = {
-                            "messaging_product": "whatsapp",
-                            "to": phone,
-                            "type": "template",
-                            "template": {
-                                "name": template_name.strip(),
-                                "language": {
-                                    "code": lang
-                                }
-                            }
-                        }
-                        
-                        components = []
-                        if vars_list:
-                            components.append({
-                                "type": "body",
-                                "parameters": [{"type": "text", "text": str(v)} for v in vars_list]
+            lang = template_def.get("language", "en_US")
+            
+            payload = {
+                "messaging_product": "whatsapp",
+                "to": phone,
+                "type": "template",
+                "template": {
+                    "name": template_name.strip(),
+                    "language": {
+                        "code": lang
+                    }
+                }
+            }
+            
+            components_payload = []
+            
+            # Parse template components to build the exact payload
+            for comp in template_def.get("components", []):
+                comp_type = comp.get("type", "").upper()
+                
+                if comp_type == "HEADER":
+                    format_type = comp.get("format", "").upper()
+                    if format_type == "TEXT":
+                        # Does it have variables? {{1}}
+                        text_val = comp.get("text", "")
+                        var_count = len(re.findall(r"\{\{\d+\}\}", text_val))
+                        if var_count > 0:
+                            components_payload.append({
+                                "type": "header",
+                                "parameters": [{"type": "text", "text": fallback_name} for _ in range(var_count)]
                             })
-                            
-                        if has_button:
-                            components.append({
-                                "type": "button",
-                                "sub_type": "url",
-                                "index": "0",
-                                "parameters": [{"type": "text", "text": "action"}]
-                            })
-                            
-                        if components:
-                            payload["template"]["components"] = components
+                    elif format_type == "IMAGE":
+                        components_payload.append({
+                            "type": "header",
+                            "parameters": [{
+                                "type": "image",
+                                "image": {"link": "https://images.unsplash.com/photo-1596524430615-b46475ddff6e?auto=format&fit=crop&q=80&w=1000"}
+                            }]
+                        })
+                    elif format_type == "DOCUMENT":
+                        components_payload.append({
+                            "type": "header",
+                            "parameters": [{
+                                "type": "document",
+                                "document": {"link": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"}
+                            }]
+                        })
+                    elif format_type == "VIDEO":
+                        components_payload.append({
+                            "type": "header",
+                            "parameters": [{
+                                "type": "video",
+                                "video": {"link": "https://www.w3schools.com/html/mov_bbb.mp4"}
+                            }]
+                        })
                         
-                        response = await client.post(url, headers=headers, json=payload, timeout=10.0)
+                elif comp_type == "BODY":
+                    text_val = comp.get("text", "")
+                    var_count = len(re.findall(r"\{\{\d+\}\}", text_val))
+                    if var_count > 0:
+                        params = []
+                        for i in range(var_count):
+                            val = fallback_vars[i] if i < len(fallback_vars) else "..."
+                            params.append({"type": "text", "text": val})
+                        components_payload.append({
+                            "type": "body",
+                            "parameters": params
+                        })
                         
-                        if response.status_code in (200, 201):
-                            btn_text = " with Dynamic Button" if has_button else ""
-                            print(f"   ✅ Success with lang='{lang}' and {len(vars_list)} body variables{btn_text}.")
-                            return True, None
-                        
-                        error_data = response.json()
-                        err_code = error_data.get("error", {}).get("code")
-                        last_err_msg = error_data.get("error", {}).get("message", "Unknown Meta API Error")
-                        last_status = response.status_code
-                        last_err_code = err_code
-                    
-                    print(f"   ❌ Failed with lang='{lang}', {len(vars_list)} vars. Code: {err_code}, Msg: {last_err_msg}")
-                    
-                    # 132000 = Number of parameters does not match.
-                    if err_code == 132000:
-                        lang_found = True
-                        continue # Try the next variable combination
-                        
-                    # 132001 = Template does not exist in this language.
-                    elif err_code == 132001:
-                        break # Break inner loop, try the next language
-                        
-                    else:
-                        # Some other fatal error
-                        return False, f"Meta API Error ({last_status}): {last_err_msg}"
+                elif comp_type == "BUTTONS":
+                    buttons = comp.get("buttons", [])
+                    for idx, btn in enumerate(buttons):
+                        if btn.get("type", "").upper() == "URL":
+                            url_val = btn.get("url", "")
+                            # If url contains {{1}}, it's dynamic
+                            if "{{" in url_val:
+                                components_payload.append({
+                                    "type": "button",
+                                    "sub_type": "url",
+                                    "index": str(idx),
+                                    "parameters": [{"type": "text", "text": "action"}]
+                                })
+            
+            if components_payload:
+                payload["template"]["components"] = components_payload
                 
-                # If we found the language but none of the variable combinations worked...
-                if lang_found:
-                    return False, f"Meta API Error ({last_status}): (#132000) Template requires complex parameters (Header/Button) or more than 4 variables, which the auto-guesser cannot fulfill."
-                        
-            return False, f"Meta API Error ({last_status}): {last_err_msg} (Tried languages and variable combinations)"
+            print(f"📦 Built Smart Payload for '{template_name}': {json.dumps(payload['template'].get('components', []), indent=2)}")
                 
+            response = await client.post(url, headers=headers, json=payload, timeout=10.0)
+            
+            if response.status_code in (200, 201):
+                print(f"✅ Smart Template '{template_name}' payload accepted by Meta!")
+                return True, None
+                
+            error_data = response.json()
+            err_code = error_data.get("error", {}).get("code")
+            last_err_msg = error_data.get("error", {}).get("message", "Unknown Meta API Error")
+            
+            return False, f"Meta API Error ({response.status_code}): {last_err_msg}"
+            
     except Exception as e:
         return False, f"Exception occurred while sending WhatsApp message: {str(e)}"
