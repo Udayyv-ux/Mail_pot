@@ -784,6 +784,31 @@
                     <label class="label"><span class="label-text-alt text-gray-400">If set, this WhatsApp template will be sent initially.</span></label>
                 </div>
                 
+                <div class="divider border-white/5 my-2">WhatsApp Automation</div>
+                <div class="form-control">
+                    <label class="label cursor-pointer justify-start gap-4">
+                        <input type="checkbox" id="camp-use-whatsapp" class="toggle toggle-success">
+                        <div>
+                            <span class="label-text font-medium text-gray-300 block">Enable WhatsApp Sending</span>
+                            <span class="label-text-alt text-gray-400">Send WhatsApp messages automatically alongside emails.</span>
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="form-control" id="whatsapp-template-group" style="display: none;">
+                    <label class="label"><span class="label-text font-medium text-gray-300">Default WhatsApp Template</span></label>
+                    <select id="camp-default-wa-template" class="select select-bordered bg-base-300 border-white/5 w-full">
+                        <option value="">Select a template...</option>
+                    </select>
+                    <label class="label"><span class="label-text-alt text-gray-400">Used if the AI category doesn't have a specific template mapped.</span></label>
+                </div>
+                
+                <script>
+                    document.getElementById('camp-use-whatsapp').addEventListener('change', function(e) {
+                        document.getElementById('whatsapp-template-group').style.display = e.target.checked ? 'block' : 'none';
+                    });
+                </script>
+
                 <div class="divider border-white/5 my-2">Follow-up Logic</div>
                 <div class="form-control">
                     <label class="label"><span class="label-text font-medium text-gray-300">Follow-up Days</span></label>

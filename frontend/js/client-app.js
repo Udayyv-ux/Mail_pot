@@ -582,6 +582,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         } catch (e) {}
 
+        // Populate WhatsApp templates
+        try {
+            var waTemplates = await api.get('/client/whatsapp/templates');
+            var waSel = document.getElementById('camp-default-wa-template');
+            waSel.innerHTML = '<option value="">-- None --</option>';
+            if (waTemplates && waTemplates.data) {
+                waTemplates.data.forEach(function (t) {
+                    var opt = document.createElement('option');
+                    opt.value = t.name;
+                    opt.textContent = t.name;
+                    waSel.appendChild(opt);
+                });
+            }
+        } catch (e) {}
+        
+        document.getElementById('whatsapp-template-group').style.display = 'none';
+
         document.getElementById('modal-campaign').showModal();
     });
 
@@ -628,6 +645,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 defaultSel.appendChild(optDefault);
             });
         } catch (e) {}
+
+        // Populate WhatsApp templates
+        try {
+            var waTemplates = await api.get('/client/whatsapp/templates');
+            var waSel = document.getElementById('camp-default-wa-template');
+            waSel.innerHTML = '<option value="">-- None --</option>';
+            if (waTemplates && waTemplates.data) {
+                waTemplates.data.forEach(function (t) {
+                    var opt = document.createElement('option');
+                    opt.value = t.name;
+                    opt.textContent = t.name;
+                    if (c.default_whatsapp_template_name === t.name) opt.selected = true;
+                    waSel.appendChild(opt);
+                });
+            }
+        } catch (e) {}
+        
+        document.getElementById('whatsapp-template-group').style.display = c.use_whatsapp ? 'block' : 'none';
 
         document.getElementById('modal-campaign').showModal();
     };

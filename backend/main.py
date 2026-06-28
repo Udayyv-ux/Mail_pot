@@ -79,41 +79,49 @@ async def lifespan(app: FastAPI):
     ]
 
     from sqlalchemy import text
-    try:
-        async with engine.connect() as conn:
-            for table, col, col_def in migrations:
+    import asyncio
+    
+    # Retry loop for Neon DB cold starts
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            async with engine.connect() as conn:
+                for table, col, col_def in migrations:
+                    try:
+                        await conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {col_def}"))
+                        await conn.commit()
+                    except Exception:
+                        await conn.rollback()
+                        pass
+    
                 try:
-                    await conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {col_def}"))
+                    await conn.execute(text("ALTER TABLE email_logs ALTER COLUMN campaign_id DROP NOT NULL"))
                     await conn.commit()
                 except Exception:
                     await conn.rollback()
                     pass
-
-            try:
-                await conn.execute(text("ALTER TABLE email_logs ALTER COLUMN campaign_id DROP NOT NULL"))
-                await conn.commit()
-            except Exception:
-                await conn.rollback()
-                pass
-
-            try:
-                await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS promo_codes (
-                    id VARCHAR PRIMARY KEY,
-                    code VARCHAR UNIQUE NOT NULL,
-                    discount_pct INTEGER NOT NULL,
-                    max_uses INTEGER DEFAULT 100,
-                    uses INTEGER DEFAULT 0,
-                    is_active BOOLEAN DEFAULT TRUE,
-                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-                )
-                """))
-                await conn.commit()
-            except Exception:
-                await conn.rollback()
-                pass
-    except Exception as e:
-        print(f"Schema migration error: {e}")
+    
+                try:
+                    await conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS promo_codes (
+                        id VARCHAR PRIMARY KEY,
+                        code VARCHAR UNIQUE NOT NULL,
+                        discount_pct INTEGER NOT NULL,
+                        max_uses INTEGER DEFAULT 100,
+                        uses INTEGER DEFAULT 0,
+                        is_active BOOLEAN DEFAULT TRUE,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    )
+                    """))
+                    await conn.commit()
+                except Exception:
+                    await conn.rollback()
+                    pass
+            break # Success, break out of retry loop
+        except Exception as e:
+            print(f"Schema migration error on attempt {attempt + 1}: {e}")
+            if attempt < max_retries - 1:
+                await asyncio.sleep(2)
 
     # Seed Policies
     try:
