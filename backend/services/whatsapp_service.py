@@ -1,65 +1,59 @@
 import httpx
-import re
+import json
+from typing import Tuple, Optional
 
-async def send_whatsapp_message(phone: str, template_name: str, access_token: str, phone_number_id: str, variables: list[str] = None) -> tuple[bool, str]:
+async def send_whatsapp_template_message(
+    phone_number: str,
+    template_name: str,
+    phone_number_id: str,
+    access_token: str
+) -> Tuple[bool, Optional[str]]:
     """
-    Send a WhatsApp template message using the Meta Cloud API.
-    """
-    if not phone or not template_name or not access_token or not phone_number_id:
-        return False, "Missing required WhatsApp credentials or parameters."
-        
-    # Clean the phone number to digits only (Meta API requires country code without '+')
-    clean_phone = str(phone).replace("+", "").replace(" ", "").replace("-", "").strip()
-    clean_phone = re.sub(r'\D', '', clean_phone)
+    Sends a WhatsApp template message using the Meta Graph API.
     
-    # Auto-add India country code if exactly 10 digits
-    if len(clean_phone) == 10:
-        clean_phone = "91" + clean_phone
+    Args:
+        phone_number: The recipient's phone number with country code (e.g., '916303488801')
+        template_name: The name of the pre-approved WhatsApp template.
+        phone_number_id: The Meta WhatsApp Phone Number ID.
+        access_token: The Meta WhatsApp System User Access Token.
         
-    if not clean_phone:
-        return False, "Invalid phone number."
-        
-    url = f"https://graph.facebook.com/v20.0/{phone_number_id}/messages"
+    Returns:
+        (Success Boolean, Error Message String)
+    """
+    if not phone_number_id or not access_token:
+        return False, "WhatsApp credentials not configured for this client."
+
+    # Meta Graph API Endpoint (v19.0)
+    url = f"https://graph.facebook.com/v19.0/{phone_number_id}/messages"
+    
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
     
-    template_data = {
-        "name": template_name,
-        "language": {
-            "code": "en" # Updated to 'en' per user spec
-        }
-    }
-    
-    if variables:
-        safe_params = []
-        for v in variables:
-            val = str(v) if v is not None else ""
-            if not val.strip():
-                val = "-" # Meta API might trim spaces, so use a hyphen to guarantee it's not empty
-            safe_params.append({"type": "text", "text": val})
-            
-        template_data["components"] = [
-            {
-                "type": "body",
-                "parameters": safe_params
-            }
-        ]
-    
+    # Payload for a basic template message
     payload = {
         "messaging_product": "whatsapp",
-        "to": clean_phone,
+        "to": phone_number,
         "type": "template",
-        "template": template_data
+        "template": {
+            "name": template_name,
+            "language": {
+                "code": "en_US" # Defaulting to en_US; can be made dynamic later
+            }
+        }
     }
     
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post(url, headers=headers, json=payload)
+            response = await client.post(url, headers=headers, json=payload, timeout=10.0)
+            
             if response.status_code in (200, 201):
-                return True, "Success"
+                return True, None
             else:
-                return False, f"Meta API Error ({response.status_code}): {response.text}"
+                error_data = response.json()
+                err_msg = error_data.get("error", {}).get("message", "Unknown Meta API Error")
+                return False, f"Meta API Error ({response.status_code}): {err_msg}"
+                
     except Exception as e:
-        return False, f"Request failed: {str(e)}"
+        return False, f"Exception occurred while sending WhatsApp message: {str(e)}"

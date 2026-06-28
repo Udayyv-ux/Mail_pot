@@ -19,18 +19,15 @@ class Campaign(Base):
     google_sheet_id = Column(String, nullable=False)
     target_columns = Column(String, default="Name, Email, Inquiry")
     status_column = Column(String, default="Status")
-    inquiry_column = Column(String, default="Inquiry")
     
-    # Template & AI
-    default_template_id = Column(String, ForeignKey("templates.id", ondelete="SET NULL"), nullable=True)
+    # WhatsApp Configuration
     use_whatsapp = Column(Boolean, default=False)
     default_whatsapp_template_name = Column(String, nullable=True)
+    follow_up_whatsapp_template_name = Column(String, nullable=True)
     
     # Follow-up Logic
     follow_up_days = Column(Integer, default=0) # 0 means no follow up
     follow_up_template_id = Column(String, ForeignKey("templates.id", ondelete="SET NULL"), nullable=True)
-    follow_up_whatsapp_template_name = Column(String, nullable=True)
-    follow_up_condition = Column(String, default="always") # always, opened, unopened
     
     # Smart Scheduling & Throttling
     max_emails_per_hour = Column(Integer, default=50) # default safe limit
@@ -47,8 +44,7 @@ class Campaign(Base):
 
     # Relationships
     client = relationship("Client", back_populates="campaigns", lazy="selectin")
-    follow_up_template = relationship("Template", foreign_keys=[follow_up_template_id], lazy="selectin")
-    default_template = relationship("Template", foreign_keys=[default_template_id], lazy="selectin")
+    follow_up_template = relationship("Template", lazy="selectin")
     email_logs = relationship("EmailLog", back_populates="campaign", cascade="all, delete-orphan", lazy="selectin")
 
     def __repr__(self):
