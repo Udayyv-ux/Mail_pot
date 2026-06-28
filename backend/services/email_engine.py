@@ -422,8 +422,9 @@ async def run_247_engine():
                     await db.refresh(db_client, ['user'])
                     access_token = await refresh_google_token(db_client.user, db) if db_client.user else None
                     
+                    log_id = str(uuid.uuid4())
                     print(f"📤 Sending QUEUED '{target_template.project_name}' email to {q.recipient_email}...")
-                    success, err = await send_email_via_gmail_api(q.recipient_email, q.recipient_name or "", target_template, access_token)
+                    success, err = await send_email_via_gmail_api(q.recipient_email, q.recipient_name or "", target_template, access_token, log_id)
                     
                     # Update Log
                     log = EmailLog(
