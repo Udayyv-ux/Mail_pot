@@ -82,7 +82,7 @@ async def lifespan(app: FastAPI):
     import asyncio
     
     # Retry loop for Neon DB cold starts
-    max_retries = 3
+    max_retries = 10
     for attempt in range(max_retries):
         try:
             async with engine.connect() as conn:
@@ -117,11 +117,12 @@ async def lifespan(app: FastAPI):
                 except Exception:
                     await conn.rollback()
                     pass
+            print("Schema migration completed successfully!")
             break # Success, break out of retry loop
         except Exception as e:
             print(f"Schema migration error on attempt {attempt + 1}: {e}")
             if attempt < max_retries - 1:
-                await asyncio.sleep(2)
+                await asyncio.sleep(3)
 
     # Seed Policies
     try:

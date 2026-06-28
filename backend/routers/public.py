@@ -188,3 +188,29 @@ async def subscribe_newsletter(data: NewsletterReq, db: AsyncSession = Depends(g
     await db.commit()
     return {"status": "success", "message": "Subscribed successfully!"}
 
+class WATestReq(BaseModel):
+    phone: str
+    template_name: str = "hello_world"
+
+@router.post("/test-wa")
+async def test_wa(data: WATestReq, db: AsyncSession = Depends(get_db)):
+    from backend.models.client import Client
+    from backend.services.whatsapp_service import send_whatsapp_message
+    
+    # Get the first active client (assuming single-tenant or just grabbing the user's config)
+    res = await db.execute(select(Client).where(Client.is_active == True))
+    client = res.scalars().first()
+    
+    if not client:
+        return {"status": "error", "message": "No active client found to fetch WhatsApp credentials from."}
+    
+    try:
+        msg_id = await send_whatsapp_message(
+            client_id=client.id,
+            to_phone=data.phone,
+            template_name=data.template_name,
+            db=db
+        )
+        return {"status": "success", "message": "Message sent!", "message_id": msg_id}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
