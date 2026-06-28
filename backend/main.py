@@ -21,11 +21,9 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
     # Startup
     print(f"Starting {settings.APP_NAME}...")
-    await init_db()  # Tables already exist, avoid duplicate table error
-    
     from backend.database import engine, Base
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    import asyncio
+
     try:
         from sqlalchemy import text
         async with engine.begin() as conn:
@@ -78,13 +76,16 @@ async def lifespan(app: FastAPI):
         ("demo_requests", "inquiry_type", "VARCHAR DEFAULT 'Demo'"),
     ]
 
-    from sqlalchemy import text
-    import asyncio
-    
     # Retry loop for Neon DB cold starts
     max_retries = 10
     for attempt in range(max_retries):
         try:
+            # 1. Initialize DB and create tables if missing
+            await init_db()
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+                
+            # 2. Run migrations
             async with engine.connect() as conn:
                 for table, col, col_def in migrations:
                     try:
