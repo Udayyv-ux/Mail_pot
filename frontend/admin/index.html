@@ -352,46 +352,6 @@
                                     <img id="admin-current-logo" src="/api/logo" class="h-12 object-contain bg-base-200 rounded p-1 hidden" onerror="this.classList.add('hidden')">
                                 </div>
                                 <div class="flex items-center gap-4">
-<div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
-                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Emails (24h)</div>
-                        <div class="stat-value text-primary mt-1" id="stat-emails">0</div>
-                    </div>
-                    <div class="stat bg-base-200 border border-white/5 rounded-2xl shadow-lg">
-                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Demos</div>
-                        <div class="stat-value text-accent mt-1" id="stat-demos">0</div>
-                    </div>
-                </div>
-
-                  <div class="grid grid-cols-1 gap-8">
-                      <div class="card bg-base-200 border border-white/5 shadow-lg">
-                        <div class="card-body p-6">
-                            <h3 class="card-title text-lg mb-4">Global Volume (Last 7 Days)</h3>
-                            <div class="relative h-64 w-full">
-                                <canvas id="admin-chart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-                      <div class="card bg-base-200 border border-white/5 shadow-lg">
-                          <div class="card-body p-6">
-                              <h3 class="card-title text-lg mb-4">Demo Requests</h3>
-                              <div id="demo-requests-list" class="space-y-4 max-h-80 overflow-y-auto pr-2"></div>
-                          </div>
-                      </div>
-                      <div class="card bg-base-200 border border-white/5 shadow-lg">
-                          <div class="card-body p-6">
-                              <h3 class="card-title text-lg mb-4">User Feedback</h3>
-                              <div id="feedback-list" class="space-y-4 max-h-80 overflow-y-auto pr-2"></div>
-                          </div>
-                      </div>
-                  </div>
-              </section>
-
-
-            <!-- Sub-Admins Page -->
-            <section id="page-subadmins" class="page-section max-w-7xl mx-auto">
-                <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-3xl font-bold">Sub-Admins</h1>
                     <button class="btn bg-white text-dark hover:bg-gray-200 border-none" onclick="document.getElementById('modal-subadmin').showModal()">+ Add Sub-Admin</button>
                 </div>
                 
