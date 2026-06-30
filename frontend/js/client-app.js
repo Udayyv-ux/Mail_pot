@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             this.currentRoute = null; // reset so navigate fires
             this.navigate(initialPath);
 
-            // Auto-refresh the current active route every 10 seconds to keep data live
+            // Auto-refresh the current active route every 5 minutes to keep data live
             setInterval(() => {
                 if (this.currentRoute === 'dashboard') {
                     loadDashboard(true);
@@ -1307,3 +1307,6 @@ window.generateTemplateAI = async function() {
 
 
 document.getElementById('btn-sync-data')?.addEventListener('click', () => { window.showToast('Syncing data...', 'info'); if(router.currentRoute) { router.showPage(router.currentRoute); } else { loadDashboard(); } });
+document.getElementById('btn-dashboard-sync')?.addEventListener('click', () => { window.showToast('Syncing dashboard data...', 'info'); loadDashboard(true); });
+
+});
