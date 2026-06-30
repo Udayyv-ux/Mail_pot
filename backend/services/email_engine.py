@@ -173,6 +173,22 @@ async def process_single_campaign(campaign, groq_key):
                 
             if not is_client_allowed(db_client):
                 print(f"🚫 Skipping campaign {campaign.id} - Trial/Subscription Expired")
+                try:
+                    await db.refresh(db_client, ['user'])
+                    if db_client.user:
+                        _, rows = await get_sheet_data(campaign.google_sheet_id)
+                        if rows and len(rows) > 1:
+                            headers = rows[0]
+                            status_col_name = campaign.status_column or "Status"
+                            status_idx = get_col_index(headers, status_col_name)
+                            for i, row in enumerate(rows):
+                                if i == 0: continue
+                                status = row[status_idx] if status_idx < len(row) else ""
+                                if not status.strip():
+                                    await update_sheet_cell(campaign.google_sheet_id, i+1, status_idx + 1, "Plan Expired")
+                                    await asyncio.sleep(1) # respect API rate limits
+                except Exception as e:
+                    print(f"Failed to notify sheet of expiration: {e}")
                 return
                 
             if db_client.emails_sent_today >= db_client.daily_email_limit:
