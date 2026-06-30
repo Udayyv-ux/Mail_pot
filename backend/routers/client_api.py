@@ -498,3 +498,7 @@ async def get_inbox(db: AsyncSession = Depends(get_db), current_user = Depends(r
     return inbox_items
 
 
+
+
+# --- WHATSAPP WEBHOOK ---
+@router.get(" /whatsapp/webhook\)
