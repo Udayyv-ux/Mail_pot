@@ -33,10 +33,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             const subEnd = profileData.subscription_ends_at ? new Date(profileData.subscription_ends_at) : null;
             const now = new Date();
             
-            if (trialEnd < now && (!subEnd || subEnd < now)) {
+            const isFree = profileData.plan_name === 'Free';
+            
+            if (isFree && trialEnd < now) {
                 const banner = document.getElementById('trial-lockout-banner');
                 if (banner) banner.classList.remove('hidden');
-            } else if (trialEnd >= now && (!subEnd || subEnd < now)) {
+            } else if (!isFree && subEnd && subEnd < now) {
+                const banner = document.getElementById('trial-lockout-banner');
+                if (banner) {
+                    banner.innerHTML = `Your subscription has expired. You cannot perform tasks. Please <a href="#billing" onclick="document.querySelector('[data-route=billing]').click(); return false;" class="font-bold underline hover:text-white">renew your plan</a> to continue.`;
+                    banner.classList.remove('hidden');
+                }
+            } else if (isFree && trialEnd >= now) {
                 const activeBanner = document.getElementById('trial-active-banner');
                 const textEl = document.getElementById('trial-countdown-text');
                 if (activeBanner && textEl) {

@@ -134,6 +134,10 @@ async def require_active_subscription(
     if client.subscription_ends_at and client.subscription_ends_at > now:
         return user
         
+    # Check if admin assigned a plan manually (lifetime / no expiration)
+    if client.plan_id and not client.subscription_ends_at:
+        return user
+        
     # Check trial
     if client.trial_ends_at and client.trial_ends_at > now:
         return user
