@@ -501,4 +501,20 @@ async def get_inbox(db: AsyncSession = Depends(get_db), current_user = Depends(r
 
 
 # --- WHATSAPP WEBHOOK ---
-@router.get(" /whatsapp/webhook\)
+@router.get("/whatsapp/webhook")
+async def verify_whatsapp_webhook(request: Request):
+    hub_mode = request.query_params.get("hub.mode")
+    hub_challenge = request.query_params.get("hub.challenge")
+    hub_verify_token = request.query_params.get("hub.verify_token")
+    if hub_verify_token == "sheetx_whatsapp":
+        from fastapi.responses import PlainTextResponse
+        return PlainTextResponse(hub_challenge)
+    return {"error": "Invalid token"}
+
+@router.post("/whatsapp/webhook")
+async def receive_whatsapp_webhook(payload: dict):
+    import json
+    print("\n================ WA WEBHOOK ================")
+    print(json.dumps(payload, indent=2))
+    print("============================================\n")
+    return {"status": "ok"}
