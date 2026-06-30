@@ -34,10 +34,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const now = new Date();
             
             const isFree = profileData.plan_name === 'Free';
+            const isTrialExpired = profileData.plan_name === 'Trial Expired';
             
-            if (isFree && trialEnd < now) {
+            if (isTrialExpired || (isFree && trialEnd < now)) {
                 const banner = document.getElementById('trial-lockout-banner');
-                if (banner) banner.classList.remove('hidden');
+                if (banner) {
+                    banner.innerHTML = `Your 5-day free trial has expired. You cannot perform tasks. Please <a href="#billing" onclick="document.querySelector('[data-route=billing]').click(); return false;" class="font-bold underline hover:text-white">upgrade your plan</a> to continue.`;
+                    banner.classList.remove('hidden');
+                }
             } else if (!isFree && subEnd && subEnd < now) {
                 const banner = document.getElementById('trial-lockout-banner');
                 if (banner) {

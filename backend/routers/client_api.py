@@ -152,7 +152,6 @@ async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends
     now = datetime.now(timezone.utc)
     is_expired = True
     if client.subscription_ends_at and client.subscription_ends_at > now: is_expired = False
-    elif client.plan_id and not client.subscription_ends_at: is_expired = False
     elif client.trial_ends_at and client.trial_ends_at > now: is_expired = False
     
     if is_expired:
@@ -168,6 +167,13 @@ async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends
             client.daily_email_limit = 99999999
             await db.commit()
 
+    def format_dt(dt):
+        if not dt: return None
+        s = dt.isoformat()
+        if not s.endswith('Z') and '+' not in s and '-' not in s[11:]:
+            return s + 'Z'
+        return s
+
     return {
         "company_name": client.company_name,
         "service_account_email": service_email,
@@ -177,8 +183,8 @@ async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends
         "whatsapp_access_token": client.whatsapp_access_token,
         "whatsapp_phone_number_id": client.whatsapp_phone_number_id,
         "whatsapp_business_account_id": client.whatsapp_business_account_id,
-        "trial_ends_at": client.trial_ends_at.isoformat() if client.trial_ends_at else None,
-        "subscription_ends_at": client.subscription_ends_at.isoformat() if client.subscription_ends_at else None
+        "trial_ends_at": format_dt(client.trial_ends_at),
+        "subscription_ends_at": format_dt(client.subscription_ends_at)
     }
 
 class ProfileUpdate(BaseModel):

@@ -203,7 +203,7 @@ async def update_client_plan(id: str, data: ClientPlanUpdate, db: AsyncSession =
     elif data.duration == "1_year":
         client.subscription_ends_at = now + timedelta(days=365)
     elif data.duration == "lifetime":
-        client.subscription_ends_at = None # Lifetime logic handles empty subscription_ends_at with a valid plan_id
+        client.subscription_ends_at = datetime(2099, 12, 31, tzinfo=timezone.utc)
         
     await db.commit()
     return {"status": "success"}

@@ -160,7 +160,6 @@ _running_campaigns = set()
 def is_client_allowed(client):
     now = datetime.now(timezone.utc)
     if client.subscription_ends_at and client.subscription_ends_at > now: return True
-    if client.plan_id and not client.subscription_ends_at: return True
     if client.trial_ends_at and client.trial_ends_at > now: return True
     return False
 
@@ -432,7 +431,6 @@ async def run_247_engine():
             def is_client_allowed(client):
                 now = datetime.now(timezone.utc)
                 if client.subscription_ends_at and client.subscription_ends_at > now: return True
-                if client.plan_id and not client.subscription_ends_at: return True
                 if client.trial_ends_at and client.trial_ends_at > now: return True
                 return False
 
