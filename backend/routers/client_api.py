@@ -147,6 +147,16 @@ async def get_profile(db: AsyncSession = Depends(get_db), current_user = Depends
         plan_name = client.plan.name
         daily_limit = client.plan.email_limit_daily
         has_ai = getattr(client.plan, 'has_ai_templates', False)
+        
+    # Check expiration
+    now = datetime.now(timezone.utc)
+    is_expired = True
+    if client.subscription_ends_at and client.subscription_ends_at > now: is_expired = False
+    elif client.plan_id and not client.subscription_ends_at: is_expired = False
+    elif client.trial_ends_at and client.trial_ends_at > now: is_expired = False
+    
+    if is_expired:
+        plan_name = "Trial Expired"
             
     from backend.models.user import UserRole
     if current_user.role == UserRole.ADMIN:

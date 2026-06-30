@@ -963,6 +963,40 @@
     </div> <!-- End drawer -->
 
     <!-- Modals (DaisyUI) -->
+    
+    <!-- Client Change Plan Modal -->
+    <dialog id="client-change-plan-modal" class="modal">
+        <div class="modal-box bg-base-100 border border-white/10 shadow-2xl">
+            <h3 class="font-bold text-lg mb-4 text-white">Change Client Plan</h3>
+            <form id="form-change-plan" class="space-y-4">
+                <input type="hidden" id="change-plan-client-id" />
+                
+                <div class="form-control">
+                    <label class="label"><span class="label-text text-gray-300">Select Plan</span></label>
+                    <select id="change-plan-select" class="select select-bordered w-full bg-dark text-white border-white/20" required>
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                
+                <div class="form-control">
+                    <label class="label"><span class="label-text text-gray-300">Subscription Duration</span></label>
+                    <select id="change-plan-duration" class="select select-bordered w-full bg-dark text-white border-white/20" required>
+                        <option value="1_month">1 Month</option>
+                        <option value="1_year">1 Year</option>
+                        <option value="lifetime">Lifetime</option>
+                    </select>
+                </div>
+
+                <div class="modal-action mt-6">
+                    <button type="button" class="btn btn-ghost text-gray-400 hover:text-white" onclick="document.getElementById('client-change-plan-modal').close()">Cancel</button>
+                    <button type="submit" class="btn btn-primary shadow-lg shadow-primary/30">Save Changes</button>
+                </div>
+            </form>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
 
     <!-- Plan Modal -->
     <dialog id="plan-modal" class="modal">

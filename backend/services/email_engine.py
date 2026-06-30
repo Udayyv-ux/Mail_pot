@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime, timezone
 import httpx
 from groq import Groq
-from sqlalchemy import select, func
+from sqlalchemy import select, func, update
 
 from backend.config import settings
 from backend.database import SessionLocal
@@ -157,27 +157,38 @@ async def send_email_via_gmail_api(to_email: str, first_name: str, template, acc
 
 _running_campaigns = set()
 
-async def process_single_campaign(campaign, groq_key):
+def is_client_allowed(client):
+    now = datetime.now(timezone.utc)
+    if client.subscription_ends_at and client.subscription_ends_at > now: return True
+    if client.plan_id and not client.subscription_ends_at: return True
+    if client.trial_ends_at and client.trial_ends_at > now: return True
+    return False
 
-            async with SessionLocal() as db:
-                db_client = await db.get(Client, campaign.client_id)
-                if not db_client or db_client.status != "active":
-                    return
-                    
-                if db_client.emails_sent_today >= db_client.daily_email_limit:
-                    print(f"⚠️ Skipping campaign {campaign.id} - Client daily limit reached ({db_client.emails_sent_today}/{db_client.daily_email_limit})")
-                    return
-                    
-                templates_res = await db.execute(select(Template).where(Template.client_id == campaign.client_id, Template.is_active == True))
-                templates = templates_res.scalars().all()
+async def process_single_campaign(campaign, groq_key):
+    """Processes a single campaign. Handles fetching data, AI matching, and sending."""
+    try:
+        async with SessionLocal() as db:
+            db_client = await db.get(Client, campaign.client_id)
+            if not db_client or db_client.status != "active":
+                return
                 
-                await db.refresh(db_client, ['user'])
-                client_user = db_client.user
+            if not is_client_allowed(db_client):
+                print(f"🚫 Skipping campaign {campaign.id} - Trial/Subscription Expired")
+                return
                 
-                access_token = None
-                if client_user:
-                    access_token = await refresh_google_token(client_user, db)
+            if db_client.emails_sent_today >= db_client.daily_email_limit:
+                print(f"🛑 Skipping campaign {campaign.id} - Client daily limit reached ({db_client.emails_sent_today}/{db_client.daily_email_limit})")
+                return
+                
+            templates_res = await db.execute(select(Template).where(Template.client_id == campaign.client_id, Template.is_active == True))
+            templates = templates_res.scalars().all()
             
+            await db.refresh(db_client, ['user'])
+            client_user = db_client.user
+            
+            access_token = None
+            if client_user:
+                access_token = await refresh_google_token(client_user, db)
             if not templates: return
             
             try:
@@ -389,12 +400,27 @@ async def process_single_campaign(campaign, groq_key):
                 if db_camp:
                     db_camp.last_run_at = datetime.now(timezone.utc)
                 await db.commit()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"💥 Unhandled error in process_single_campaign for campaign {campaign.id}: {e}")
 
 async def run_247_engine():
     """Background loop that polls all campaigns every 60 seconds."""
     print("🚀 24/7 Autonomous Engine Started...")
+    
+    last_reset_date = datetime.now(timezone.utc).date()
+    
     while True:
         try:
+            current_date = datetime.now(timezone.utc).date()
+            if current_date != last_reset_date:
+                print(f"🔄 Midnight reached ({current_date}). Resetting daily email limits for all clients...")
+                async with SessionLocal() as db:
+                    await db.execute(update(Client).values(emails_sent_today=0))
+                    await db.commit()
+                last_reset_date = current_date
+
             async with SessionLocal() as db:
                 from backend.models.campaign import Campaign
                 campaigns_res = await db.execute(select(Campaign).where(Campaign.is_active == True))
@@ -403,6 +429,13 @@ async def run_247_engine():
                 
             groq_key = global_settings.get("GROQ_API_KEY", settings.GROQ_API_KEY)
             
+            def is_client_allowed(client):
+                now = datetime.now(timezone.utc)
+                if client.subscription_ends_at and client.subscription_ends_at > now: return True
+                if client.plan_id and not client.subscription_ends_at: return True
+                if client.trial_ends_at and client.trial_ends_at > now: return True
+                return False
+
             # --- PROCESS APPROVED QUEUED EMAILS ---
             async with SessionLocal() as db:
                 queued_res = await db.execute(select(EmailQueue).where(EmailQueue.status == "approved"))
@@ -410,6 +443,10 @@ async def run_247_engine():
                 for q in queued_emails:
                     db_client = await db.get(Client, q.client_id)
                     if not db_client or db_client.status != "active" or db_client.emails_sent_today >= db_client.daily_email_limit:
+                        continue
+                        
+                    if not is_client_allowed(db_client):
+                        print(f"🚫 Skipping queued email for {db_client.company_name}: Trial/Subscription Expired.")
                         continue
                     
                     target_template = await db.get(Template, q.template_id)

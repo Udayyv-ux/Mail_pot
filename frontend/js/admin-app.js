@@ -272,6 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td class="p-4 text-gray-300">${c.company_name || 'N/A'}</td>
                     <td class="p-4 text-gray-300">${planHtml}</td>
                     <td class="p-4 text-right">
+                        <button onclick="openChangePlanModal('${c.id}')" class="text-xs bg-primary/20 hover:bg-primary/40 text-primary py-1 px-3 rounded transition-colors mr-2">Plan</button>
                         <button onclick="resetUsage('${c.id}')" class="text-xs bg-dark/50 hover:bg-white/10 text-gray-300 py-1 px-3 rounded transition-colors mr-2">Reset</button>
                         <button class="text-secondary hover:text-pink-400 font-semibold text-sm mr-2" onclick="viewClientDetails('${c.id}')">Details</button>
                         ${demoAction}
@@ -1255,6 +1256,52 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.getElementById('admin-email-modal')?.showModal();
     };
+
+    window.openChangePlanModal = async (clientId) => {
+        document.getElementById('change-plan-client-id').value = clientId;
+        const select = document.getElementById('change-plan-select');
+        select.innerHTML = '<option value="">Loading plans...</option>';
+        document.getElementById('client-change-plan-modal').showModal();
+        
+        try {
+            const plans = await api.get('/admin/plans');
+            select.innerHTML = '';
+            plans.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.name;
+                select.appendChild(opt);
+            });
+        } catch (e) {
+            console.error("Failed to load plans:", e);
+            select.innerHTML = '<option value="">Failed to load plans</option>';
+        }
+    };
+
+    document.getElementById('form-change-plan')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        if(!btn) return;
+        btn.innerHTML = '<span class="loading loading-spinner"></span> Saving...';
+        btn.disabled = true;
+        
+        const clientId = document.getElementById('change-plan-client-id').value;
+        const planId = document.getElementById('change-plan-select').value;
+        const duration = document.getElementById('change-plan-duration').value;
+        
+        try {
+            await api.put(`/admin/clients/${clientId}/plan`, { plan_id: planId, duration: duration });
+            if(window.showToast) showToast("Client plan updated successfully", "success");
+            document.getElementById('client-change-plan-modal').close();
+            loadUsers(); // Refresh the table
+        } catch(err) {
+            console.error(err);
+            if(window.showToast) showToast("Failed to update plan", "error");
+        } finally {
+            btn.innerHTML = 'Save Changes';
+            btn.disabled = false;
+        }
+    });
 
     window.openAdminEmailModal = (email, isDemo = false) => {
         document.getElementById('form-admin-email')?.reset();

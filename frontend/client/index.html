@@ -136,10 +136,16 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
                     <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="showStatDetails('today')">
-                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Emails Sent Today</div>
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Emails Sent (24 hrs)</div>
                         <div class="stat-value text-primary mt-1" id="dash-emails-sent">0</div>
                         <div class="stat-desc mt-1">Daily Limit: <span id="dash-emails-limit">0</span></div>
                         <progress id="dash-meter" class="progress progress-primary w-full mt-4" value="0" max="100"></progress>
+                    </div>
+                    
+                    <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="showStatDetails('lifetime')">
+                        <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Lifetime Emails Sent</div>
+                        <div class="stat-value text-secondary mt-1" id="dash-total">0</div>
+                        <div class="stat-desc mt-1">All time</div>
                     </div>
                     <div class="stat bg-base-200/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 cursor-pointer" onclick="showStatDetails('campaigns')">
                         <div class="stat-title text-gray-400 font-semibold uppercase tracking-wider text-xs">Active Templates</div>

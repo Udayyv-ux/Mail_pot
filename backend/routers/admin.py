@@ -179,6 +179,35 @@ async def update_client_features(id: str, features: ClientFeaturesUpdate, db: As
     await db.commit()
     return {"status": "success"}
 
+class ClientPlanUpdate(BaseModel):
+    plan_id: str
+    duration: str # "1_month", "1_year", "lifetime"
+
+@router.put("/clients/{id}/plan")
+async def update_client_plan(id: str, data: ClientPlanUpdate, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    from datetime import datetime, timedelta, timezone
+    client = await db.get(Client, id)
+    if not client:
+        raise HTTPException(404, "Client not found")
+        
+    plan = await db.get(Plan, data.plan_id)
+    if not plan:
+        raise HTTPException(404, "Plan not found")
+        
+    client.plan_id = plan.id
+    client.daily_email_limit = plan.email_limit_daily
+    
+    now = datetime.now(timezone.utc)
+    if data.duration == "1_month":
+        client.subscription_ends_at = now + timedelta(days=30)
+    elif data.duration == "1_year":
+        client.subscription_ends_at = now + timedelta(days=365)
+    elif data.duration == "lifetime":
+        client.subscription_ends_at = None # Lifetime logic handles empty subscription_ends_at with a valid plan_id
+        
+    await db.commit()
+    return {"status": "success"}
+
 # --- PLANS ---
 class PlanCreate(BaseModel):
     name: str
