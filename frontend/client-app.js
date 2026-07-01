@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Parse OAuth tokens from URL first, then check auth
     auth.checkUrlTokens();
     const user = await auth.getCurrentUser();
@@ -683,6 +683,80 @@
         }
     });
 
+    // ──────────────────────────────────────────────────────────────────────────────────
+    //  WHATSAPP
+    // ──────────────────────────────────────────────────────────────────────────────────
+    async function loadWhatsAppSettings() {
+        try {
+            var data = await api.get('/client/profile');
+            var el = (id) => document.getElementById(id);
+            if (el('wa-token')) el('wa-token').value = data.whatsapp_access_token || '';
+            if (el('wa-phone-id')) el('wa-phone-id').value = data.whatsapp_phone_number_id || '';
+            if (el('wa-business-id')) el('wa-business-id').value = data.whatsapp_business_account_id || '';
+            
+            // Also attempt to load approved templates if they have credentials
+            if (data.whatsapp_access_token && data.whatsapp_business_account_id) {
+                loadWhatsAppTemplates();
+            } else {
+                var tbody = document.getElementById('wa-templates-tbody');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8">Configure Meta API credentials first to load templates.</td></tr>';
+            }
+        } catch (e) {
+            console.error('WhatsApp settings load error:', e);
+        }
+    }
+
+    async function loadWhatsAppTemplates() {
+        var tbody = document.getElementById('wa-templates-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8">Loading templates...</td></tr>';
+        
+        try {
+            // Note: Make sure there's a backend route for this!
+            var templates = await api.get('/client/whatsapp/templates');
+            tbody.innerHTML = '';
+            
+            if (templates.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8">No WhatsApp templates found in your Meta account.</td></tr>';
+                return;
+            }
+            
+            templates.forEach(t => {
+                var tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="font-medium">₹{t.name}</td>
+                    <td>₹{t.category}</td>
+                    <td>₹{t.language}</td>
+                    <td><span class="badge badge-sm ₹{t.status === 'APPROVED' ? 'badge-success' : 'badge-warning'}">₹{t.status}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (e) {
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-error py-8">Failed to fetch templates from Meta. Check your credentials.</td></tr>';
+        }
+    }
+
+    document.getElementById('form-whatsapp')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        var payload = {
+            whatsapp_access_token: document.getElementById('wa-token').value,
+            whatsapp_phone_number_id: document.getElementById('wa-phone-id').value,
+            whatsapp_business_account_id: document.getElementById('wa-business-id').value
+        };
+        try {
+            await api.put('/client/profile', payload);
+            if (window.showToast) showToast('WhatsApp settings saved', 'success');
+            loadWhatsAppSettings();
+        } catch (err) {
+            if (window.showToast) showToast(err.message, 'error');
+        }
+    });
+
+    document.getElementById('btn-refresh-templates')?.addEventListener('click', () => {
+        loadWhatsAppTemplates();
+    });
+
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     //  NOTIFICATIONS
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -728,6 +802,8 @@
     router.on('billing', loadBilling);
     router.on('settings', loadSettings);
     router.on('instructions', () => {}); // No data loading required
+    router.on('whatsapp', loadWhatsAppSettings);
+    router.on('notifications', fetchNotifications);
 
     // Display user email
     var emailDisplay = document.getElementById('client-email-display');
