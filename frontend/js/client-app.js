@@ -24,9 +24,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  ROUTER â€” handles sidebar tab navigation
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Global Trial & Lockout Check
+    try {
+        const profileData = await api.get('/client/profile');
+        window.hasAITemplates = profileData.has_ai_templates || false;
+        if (profileData && profileData.trial_ends_at) {
+            const trialEnd = new Date(profileData.trial_ends_at);
+            const subEnd = profileData.subscription_ends_at ? new Date(profileData.subscription_ends_at) : null;
+            const now = new Date();
+            
+            const isFree = profileData.plan_name === 'Free';
+            const isTrialExpired = profileData.plan_name === 'Trial Expired';
+            
+            if (isTrialExpired || (isFree && trialEnd < now)) {
+                const banner = document.getElementById('trial-lockout-banner');
+                if (banner) {
+                    banner.innerHTML = `Your 5-day free trial has expired. You cannot perform tasks. Please <a href="#billing" onclick="document.querySelector('[data-route=billing]').click(); return false;" class="font-bold underline hover:text-white">upgrade your plan</a> to continue.`;
+                    banner.classList.remove('hidden');
+                }
+            } else if (!isFree && subEnd && subEnd < now) {
+                const banner = document.getElementById('trial-lockout-banner');
+                if (banner) {
+                    banner.innerHTML = `Your subscription has expired. You cannot perform tasks. Please <a href="#billing" onclick="document.querySelector('[data-route=billing]').click(); return false;" class="font-bold underline hover:text-white">renew your plan</a> to continue.`;
+                    banner.classList.remove('hidden');
+                }
+            } else if (isFree && trialEnd >= now) {
+                const activeBanner = document.getElementById('trial-active-banner');
+                const textEl = document.getElementById('trial-countdown-text');
+                if (activeBanner && textEl) {
+                    const diffMs = trialEnd - now;
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    const diffHrs = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    textEl.textContent = `Your free trial ends in ${diffDays} days and ${diffHrs} hours.`;
+                    activeBanner.classList.remove('hidden');
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Failed to check trial status", e);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  ROUTER — handles sidebar tab navigation
+    // ─────────────────────────────────────────────────────────────────────────
     const router = {
         routes: {},
         currentRoute: null,
@@ -57,6 +97,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const titleEl = document.getElementById('topbar-title');
             if (titleEl) titleEl.textContent = path.charAt(0).toUpperCase() + path.slice(1);
 
+            // Close drawer on mobile
+            const drawerToggle = document.getElementById('portal-drawer');
+            if (drawerToggle) drawerToggle.checked = false;
+
             // Fire route callback
             if (this.routes[path]) {
                 try {
@@ -86,17 +130,40 @@ document.addEventListener('DOMContentLoaded', async () => {
             const initialPath = window.location.hash.replace('#', '') || 'dashboard';
             this.currentRoute = null; // reset so navigate fires
             this.navigate(initialPath);
+
+            // Auto-refresh the current active route every 5 minutes to keep data live
+            setInterval(() => {
+                if (this.currentRoute === 'dashboard') {
+                    loadDashboard(true);
+                } else if (this.currentRoute === 'campaigns') {
+                    // loadCampaigns(); // uncomment if you want campaigns table to auto refresh
+                }
+            }, 300000);
         }
     };
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     //  DASHBOARD
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     let emailChart = null;
+    let whatsappChart = null;
 
-    async function loadDashboard() {
+    async function loadDashboard(isBackground = false) {
         try {
-            const data = await api.get('/client/dashboard');
+            // Fetch concurrently for 2x faster load times
+            const [data, templatesReq, profileData] = await Promise.all([
+                api.get('/client/dashboard', { background: isBackground }),
+                api.get('/client/templates', { background: isBackground }).catch(() => []),
+                api.get('/client/profile', { background: isBackground }).catch(() => null)
+            ]);
+            
+            window.dashboardData = data;
+            window.templatesData = templatesReq;
+            
+            if (profileData) {
+                window.hasAITemplates = profileData.has_ai_templates || false;
+            }
+            
             const el = (id) => document.getElementById(id);
 
             if (el('dash-emails-sent')) el('dash-emails-sent').textContent = data.emails_sent_today || 0;
@@ -104,27 +171,69 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (el('dash-total')) el('dash-total').textContent = data.total_emails_sent || 0;
             if (el('dash-failed')) el('dash-failed').textContent = data.total_emails_failed || 0;
             
+            if (el('dash-opened') && el('dash-opened-count')) {
+                const sent = data.total_emails_sent || 0;
+                const opened = data.total_emails_opened || 0;
+                const rate = sent > 0 ? Math.round((opened / sent) * 100) : 0;
+                el('dash-opened').textContent = rate + '%';
+                el('dash-opened-count').textContent = opened;
+            }
+            
+            // Gamified Onboarding
+            try {
+                const hasGoogle = document.getElementById('service-account-email') && !document.getElementById('service-account-email').innerText.includes('Not configured');
+                const hasTemplates = templatesReq && templatesReq.length > 0;
+                const hasCampaigns = data.total_campaigns > 0;
+                
+                let progress = 0;
+                if (hasGoogle) progress += 33;
+                if (hasTemplates) progress += 33;
+                if (hasCampaigns) progress += 34;
+                
+                const container = el('onboarding-progress-container');
+                if (container) {
+                    if (progress < 100) {
+                        container.classList.remove('hidden');
+                        el('onboarding-percent').textContent = progress + '%';
+                        el('onboarding-bar').value = progress;
+                        
+                        if (hasGoogle) el('step-google').classList.add('opacity-50', 'grayscale');
+                        if (hasTemplates) el('step-template').classList.add('opacity-50', 'grayscale');
+                        if (hasCampaigns) el('step-campaign').classList.add('opacity-50', 'grayscale');
+                    } else {
+                        container.classList.add('hidden');
+                    }
+                }
+            } catch(e) {}
+
             const recentList = el('recent-activity-list');
             if (recentList && data.recent_activity) {
                 if (data.recent_activity.length === 0) {
-                    recentList.innerHTML = '<div class="text-center text-gray-500 mt-10">No recent activity</div>';
+                    recentList.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center p-6">
+                            <div class="w-16 h-16 bg-base-300 rounded-full flex items-center justify-center mb-4 border border-white/5 shadow-inner">
+                                <span class="text-3xl opacity-50">😴</span>
+                            </div>
+                            <h4 class="font-bold text-gray-300 mb-1">It's quiet here...</h4>
+                            <p class="text-xs text-gray-400 max-w-xs">You don't have any recent activity. Launch a campaign to wake up the engine!</p>
+                            <button class="btn btn-sm btn-primary mt-4 text-white hover:scale-105 transition-transform" onclick="document.querySelector('[data-route=campaigns]').click(); return false;">Go to Campaigns</button>
+                        </div>`;;
                 } else {
                     recentList.innerHTML = data.recent_activity.map(a => {
                         const isSent = a.status === 'sent';
                         const colorClass = isSent ? 'text-success' : (a.status === 'failed' ? 'text-error' : 'text-warning');
-                        const icon = isSent ? 'âœ“' : (a.status === 'failed' ? 'âœ—' : 'âŸ³');
-                        const dateStr = a.sent_at ? new Date(a.sent_at).toLocaleString() : 'Just now';
-                        const errMsg = a.error_message ? `<div class="text-xs text-error/80 mt-1 truncate" title="${a.error_message}">₹{a.error_message}</div>` : '';
-                        
+                        const icon = isSent ? '✓' : (a.status === 'failed' ? '✗' : '⟳');
+                        const dateStr = a.sent_at ? components.timeAgo(a.sent_at) : 'Just now';
+                        const errMsg = a.error_message ? `<div class="text-xs text-error/80 mt-1 truncate" title="${a.error_message}">${a.error_message}</div>` : '';
+
                         return `
                         <div class="bg-base-300 rounded-lg p-3 border border-white/5 flex items-start gap-3">
-                            <div class="mt-0.5 ${colorClass} font-bold">₹{icon}</div>
+                            <div class="mt-0.5 ${colorClass} font-bold">${icon}</div>
                             <div class="flex-1 min-w-0">
-                                <div class="font-medium text-sm truncate" title="${a.recipient_email}">₹{a.recipient_email}</div>
-                                <div class="text-xs text-gray-500">₹{dateStr}</div>
+                                <div class="font-medium text-sm truncate" title="${a.recipient_email}">${a.recipient_email}</div>
+                                <div class="text-xs text-gray-400">${dateStr}</div>
                                 ${errMsg}
                             </div>
-                            <div class="text-xs font-semibold capitalize ${colorClass}">₹{a.status}</div>
+                            <div class="text-xs font-semibold capitalize ${colorClass}">${a.status}</div>
                         </div>
                         `;
                     }).join('');
@@ -155,6 +264,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const stats = await api.get('/client/analytics/chart');
             const canvas = document.getElementById('email-chart');
+            const waCanvas = document.getElementById('whatsapp-chart');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
 
@@ -166,7 +276,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     labels: stats.labels || [],
                     datasets: [{
                         label: 'Emails Sent',
-                        data: stats.email_data || stats.data || [],
+                        data: stats.email_data || [],
                         borderColor: '#4f46e5',
                         backgroundColor: 'rgba(79, 70, 229, 0.1)',
                         borderWidth: 3,
@@ -182,18 +292,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
+                    
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#8b5cf6',
+                            bodyColor: '#f8fafc',
+                            padding: 12,
+                            cornerRadius: 8,
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            displayColors: false
+                        }
+                    },
                     scales: {
                         y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', stepSize: 1 } },
                         x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
                     }
                 }
             });
-
-            const waCanvas = document.getElementById('whatsapp-chart');
+            
             if (!waCanvas) return;
             const waCtx = waCanvas.getContext('2d');
-            if (window.whatsappChart) window.whatsappChart.destroy();
-            window.whatsappChart = new Chart(waCtx, {
+            if (whatsappChart) whatsappChart.destroy();
+            whatsappChart = new Chart(waCtx, {
                 type: 'line',
                 data: {
                     labels: stats.labels || [],
@@ -215,6 +337,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
+                    
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#8b5cf6',
+                            bodyColor: '#f8fafc',
+                            padding: 12,
+                            cornerRadius: 8,
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            displayColors: false
+                        }
+                    },
                     scales: {
                         y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', stepSize: 1 } },
                         x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
@@ -226,9 +361,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     //  TEMPLATES
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     async function loadTemplates() {
         try {
             const templates = await api.get('/client/templates');
@@ -237,7 +372,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tbody.innerHTML = '';
 
             if (templates.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No templates found. Create your first one!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">No templates found. Create your first one!</td></tr>';
                 return;
             }
 
@@ -266,6 +401,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('tmpl-id').value = '';
         document.getElementById('tmpl-project').value = '';
         document.getElementById('tmpl-subject').value = '';
+        document.getElementById('tmpl-whatsapp-name').value = '';
         document.getElementById('tmpl-body').value = '<p>Hi {first_name},</p>\n\n<p>Your message here</p>';
         document.getElementById('tmpl-banner-url').value = '';
         document.getElementById('tmpl-banner-preview').classList.add('hidden');
@@ -273,8 +409,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updatePreview();
     });
 
-    document.getElementById('tmpl-body')?.addEventListener('input', updatePreview);
-    function updatePreview() {
+    window.updatePreview = function() {
         var bodyEl = document.getElementById('tmpl-body');
         var bannerUrlEl = document.getElementById('tmpl-banner-url');
         var previewEl = document.getElementById('tmpl-preview');
@@ -291,7 +426,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         doc.write(finalHtml);
         doc.close();
-    }
+    };
+    document.getElementById('tmpl-body')?.addEventListener('input', window.updatePreview);
 
     // Banner Upload Handler
     document.getElementById('tmpl-banner')?.addEventListener('change', async (e) => {
@@ -326,10 +462,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         var id = document.getElementById('tmpl-id').value;
         var project = document.getElementById('tmpl-project').value;
         var subject = document.getElementById('tmpl-subject').value;
+        var whatsapp_name = document.getElementById('tmpl-whatsapp-name').value;
         var body = document.getElementById('tmpl-body').value;
         var banner_url = document.getElementById('tmpl-banner-url').value;
 
-        var payload = { project_name: project, subject: subject, body_html: body, banner_url: banner_url };
+        var payload = { project_name: project, subject: subject, body_html: body, banner_url: banner_url, whatsapp_template_name: whatsapp_name || null };
 
         try {
             if (id) {
@@ -354,6 +491,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('tmpl-id').value = t.id;
             document.getElementById('tmpl-project').value = t.project_name;
             document.getElementById('tmpl-subject').value = t.subject;
+            document.getElementById('tmpl-whatsapp-name').value = t.whatsapp_template_name || '';
             document.getElementById('tmpl-body').value = t.body_html;
             document.getElementById('tmpl-banner-url').value = t.banner_url || '';
 
@@ -375,9 +513,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         try { await api.delete('/client/templates/' + id); loadTemplates(); } catch (e) {}
     };
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     //  CAMPAIGNS
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     async function loadCampaigns() {
         try {
             var campaigns = await api.get('/client/campaigns');
@@ -386,11 +524,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             tbody.innerHTML = '';
 
             if (campaigns.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No campaigns yet. Click "+ New Campaign" to get started!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">No campaigns yet. Click "+ New Campaign" to get started!</td></tr>';
                 return;
             }
 
             campaigns.forEach(function (c) {
+                window.campaignList = window.campaignList || {};
+                window.campaignList[c.id] = c;
                 var tr = document.createElement('tr');
                 var followUpText = (c.follow_up_days && c.follow_up_days > 0) ? ('Wait ' + c.follow_up_days + ' days') : 'Disabled';
                 
@@ -403,7 +543,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     statusHtml = '<span class="badge badge-success badge-sm">Running</span>';
                 }
                 
-                let runText = c.last_run_at ? `<div class="text-xs text-gray-500 mt-1">Last run: ${new Date(c.last_run_at).toLocaleString()}</div>` : '';
+                let runText = c.last_run_at ? `<div class="text-xs text-gray-400 mt-1">Last run: ${components.timeAgo(c.last_run_at)}</div>` : '';
 
                 tr.innerHTML =
                     '<td class="p-4 font-bold text-white">' + c.name + '</td>' +
@@ -411,6 +551,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     '<td class="p-4 text-gray-400 text-sm">' + followUpText + '</td>' +
                     '<td class="p-4">' + statusHtml + runText + '</td>' +
                     '<td class="p-4 text-right space-x-2">' +
+                        '<button class="text-primary hover:text-indigo-400 font-semibold text-sm" onclick="editCampaign(\'' + c.id + '\')">Edit</button>' +
                         '<button class="text-red-400 hover:text-red-300 font-semibold text-sm" onclick="deleteCampaign(\'' + c.id + '\')">Delete</button>' +
                     '</td>';
                 tbody.appendChild(tr);
@@ -422,47 +563,157 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     document.getElementById('btn-new-campaign')?.addEventListener('click', async () => {
+        document.getElementById('camp-id').value = '';
+        document.getElementById('modal-campaign-title').textContent = 'New AI Campaign';
         document.getElementById('camp-name').value = '';
         document.getElementById('camp-sheet').value = '';
         document.getElementById('camp-followup-days').value = '0';
+        document.getElementById('camp-followup-condition').value = 'always';
+        document.getElementById('camp-default-wa-template').value = '';
+        document.getElementById('camp-followup-wa-template').value = '';
 
         // Populate follow-up template dropdown from existing templates
         try {
             var templates = await api.get('/client/templates');
             var sel = document.getElementById('camp-followup-template');
             sel.innerHTML = '<option value="">-- None --</option>';
+            
+            var defaultSel = document.getElementById('camp-default-template');
+            defaultSel.innerHTML = '<option value="">-- Let AI Decide (Blank Inquiry skips) --</option>';
+
             templates.forEach(function (t) {
                 var opt = document.createElement('option');
                 opt.value = t.id;
                 opt.textContent = t.project_name;
                 sel.appendChild(opt);
+                
+                var optDefault = document.createElement('option');
+                optDefault.value = t.id;
+                optDefault.textContent = t.project_name;
+                defaultSel.appendChild(optDefault);
             });
         } catch (e) {}
 
+        // Populate WhatsApp templates
+        try {
+            var waTemplates = await api.get('/client/whatsapp/templates');
+            var waSel = document.getElementById('camp-default-wa-template');
+            waSel.innerHTML = '<option value="">-- None --</option>';
+            if (waTemplates && waTemplates.data) {
+                waTemplates.data.forEach(function (t) {
+                    var opt = document.createElement('option');
+                    opt.value = t.name;
+                    opt.textContent = t.name;
+                    waSel.appendChild(opt);
+                });
+            }
+        } catch (e) {}
+        
+        document.getElementById('whatsapp-template-group').style.display = 'none';
+
         document.getElementById('modal-campaign').showModal();
     });
+
+    window.editCampaign = async (id) => {
+        const c = window.campaignList ? window.campaignList[id] : null;
+        if (!c) return;
+
+        document.getElementById('camp-id').value = c.id;
+        document.getElementById('modal-campaign-title').textContent = 'Edit Campaign';
+        document.getElementById('camp-name').value = c.name;
+        document.getElementById('camp-sheet').value = c.google_sheet_id;
+        document.getElementById('camp-target-cols').value = c.target_columns;
+        document.getElementById('camp-inquiry-col').value = c.inquiry_column;
+        document.getElementById('camp-status-col').value = c.status_column;
+        document.getElementById('camp-use-whatsapp').checked = c.use_whatsapp;
+        document.getElementById('camp-followup-days').value = c.follow_up_days;
+        document.getElementById('camp-followup-condition').value = c.follow_up_condition || 'always';
+        document.getElementById('camp-throttle-rate').value = c.max_emails_per_hour;
+        document.getElementById('camp-review-mode').checked = c.review_mode;
+        
+        document.getElementById('camp-default-wa-template').value = c.default_whatsapp_template_name || '';
+        document.getElementById('camp-followup-wa-template').value = c.follow_up_whatsapp_template_name || '';
+
+        // Populate follow-up template dropdown from existing templates
+        try {
+            var templates = await api.get('/client/templates');
+            var sel = document.getElementById('camp-followup-template');
+            sel.innerHTML = '<option value="">-- None --</option>';
+            
+            var defaultSel = document.getElementById('camp-default-template');
+            defaultSel.innerHTML = '<option value="">-- Let AI Decide (Blank Inquiry skips) --</option>';
+
+            templates.forEach(function (t) {
+                var opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.project_name;
+                if (c.follow_up_template_id === t.id) opt.selected = true;
+                sel.appendChild(opt);
+                
+                var optDefault = document.createElement('option');
+                optDefault.value = t.id;
+                optDefault.textContent = t.project_name;
+                if (c.default_template_id === t.id) optDefault.selected = true;
+                defaultSel.appendChild(optDefault);
+            });
+        } catch (e) {}
+
+        // Populate WhatsApp templates
+        try {
+            var waTemplates = await api.get('/client/whatsapp/templates');
+            var waSel = document.getElementById('camp-default-wa-template');
+            waSel.innerHTML = '<option value="">-- None --</option>';
+            if (waTemplates && waTemplates.data) {
+                waTemplates.data.forEach(function (t) {
+                    var opt = document.createElement('option');
+                    opt.value = t.name;
+                    opt.textContent = t.name;
+                    if (c.default_whatsapp_template_name === t.name) opt.selected = true;
+                    waSel.appendChild(opt);
+                });
+            }
+        } catch (e) {}
+        
+        document.getElementById('whatsapp-template-group').style.display = c.use_whatsapp ? 'block' : 'none';
+
+        document.getElementById('modal-campaign').showModal();
+    };
 
     document.getElementById('form-campaign')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         var payload = {
             name: document.getElementById('camp-name').value,
             sheet_url_or_id: document.getElementById('camp-sheet').value,
+            target_columns: document.getElementById('camp-target-cols').value || "Name, Email, Phone",
+            inquiry_column: document.getElementById('camp-inquiry-col').value || "Inquiry",
+            status_column: document.getElementById('camp-status-col').value || "Status",
+            use_whatsapp: document.getElementById('camp-use-whatsapp').checked,
+            default_template_id: document.getElementById('camp-default-template').value || null,
+            default_whatsapp_template_name: document.getElementById('camp-default-wa-template').value || null,
             follow_up_days: parseInt(document.getElementById('camp-followup-days').value) || 0,
+            follow_up_condition: document.getElementById('camp-followup-condition').value,
             follow_up_template_id: document.getElementById('camp-followup-template').value || null,
+            follow_up_whatsapp_template_name: document.getElementById('camp-followup-wa-template').value || null,
             max_emails_per_hour: parseInt(document.getElementById('camp-throttle-rate').value) || 50,
-            send_hours_start: parseInt(document.getElementById('camp-throttle-start').value) || 9,
-            send_hours_end: parseInt(document.getElementById('camp-throttle-end').value) || 17,
+            send_hours_start: 0,
+            send_hours_end: 24,
             review_mode: document.getElementById('camp-review-mode').checked
         };
 
+        var campId = document.getElementById('camp-id').value;
         try {
-            await api.post('/client/campaigns', payload);
+            if (campId) {
+                await api.put('/client/campaigns/' + campId, payload);
+                if (window.showToast) showToast('Campaign updated!', 'success');
+            } else {
+                await api.post('/client/campaigns', payload);
+                if (window.showToast) showToast('Campaign created!', 'success');
+            }
             document.getElementById('modal-campaign').close();
-            if (window.showToast) showToast('Campaign created!', 'success');
             loadCampaigns();
             loadDashboard();
         } catch (e) {
-            if (window.showToast) showToast(e.message || 'Failed to create campaign', 'error');
+            if (window.showToast) showToast(e.message || 'Failed to save campaign', 'error');
         }
     });
 
@@ -478,6 +729,123 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    window.showStatDetails = (type) => {
+        const modal = document.getElementById('dash-details-modal');
+        const title = document.getElementById('dash-details-title');
+        const thead = document.getElementById('dash-details-thead');
+        const tbody = document.getElementById('dash-details-tbody');
+        const empty = document.getElementById('dash-details-empty');
+        
+        if (!modal || !window.dashboardData) return;
+        
+        tbody.innerHTML = '';
+        thead.innerHTML = '';
+        empty.classList.add('hidden');
+        
+        const data = window.dashboardData;
+        let list = [];
+        
+        if (type === 'today' || type === 'total' || type === 'failed' || type === 'opened') {
+            list = data.recent_activity || [];
+            if (type === 'today') {
+                const today = new Date().toDateString();
+                list = list.filter(a => new Date(a.sent_at).toDateString() === today);
+                title.textContent = 'Emails Sent Today';
+            } else if (type === 'failed') {
+                list = list.filter(a => a.status === 'failed');
+                title.textContent = 'Recent Failed Emails';
+            } else if (type === 'opened') {
+                list = list.filter(a => a.opened === true);
+                title.textContent = 'Recently Opened Emails';
+            } else {
+                title.textContent = 'Recent Emails Sent';
+            }
+            
+            thead.innerHTML = `
+                <th>Recipient</th>
+                <th>Status</th>
+                <th>Opened</th>
+                <th>Sent At</th>
+                <th>Error (if any)</th>
+            `;
+            
+            if (list.length === 0) {
+                empty.classList.remove('hidden');
+            } else {
+                tbody.innerHTML = list.map(item => `
+                    <tr class="hover:bg-base-200/50 transition-colors">
+                        <td>${item.recipient_email}</td>
+                        <td>
+                            <div class="badge badge-${item.status === 'sent' ? 'success' : 'error'} badge-sm">${item.status}</div>
+                        </td>
+                        <td>
+                            ${item.opened ? '<div class="badge badge-accent badge-sm">Opened</div>' : '<span class="text-gray-500">-</span>'}
+                        </td>
+                        <td>${new Date(item.sent_at).toLocaleString()}</td>
+                        <td class="text-error/80 text-xs truncate max-w-xs">${item.error_message || '-'}</td>
+                    </tr>
+                `).join('');
+            }
+        } else if (type === 'campaigns') {
+            title.textContent = 'Active Templates';
+            list = window.templatesData || [];
+            thead.innerHTML = `
+                <th>Project Name</th>
+                <th>Subject</th>
+                <th>Status</th>
+            `;
+            
+            if (list.length === 0) {
+                empty.classList.remove('hidden');
+            } else {
+                tbody.innerHTML = list.map(item => `
+                    <tr class="hover:bg-base-200/50 transition-colors">
+                        <td class="font-bold">${item.project_name}</td>
+                        <td>${item.subject_line}</td>
+                        <td><div class="badge badge-primary badge-sm">Active</div></td>
+                    </tr>
+                `).join('');
+            }
+        }
+        
+        modal.showModal();
+    };
+
+    window.loadClientNotifications = async () => {
+        try {
+            const notifications = await api.get('/client/notifications');
+            const list = document.getElementById('notifications-list');
+            if(!list) return;
+            
+            if(!notifications || notifications.length === 0) {
+                list.innerHTML = `<div class="card bg-base-200/50 backdrop-blur-xl border border-white/10 shadow-lg">
+                    <div class="card-body p-8 text-center text-gray-400">
+                        No active announcements from the system admins.
+                    </div>
+                </div>`;
+                return;
+            }
+            
+            list.innerHTML = notifications.map(n => `
+                <div class="card bg-base-200/50 backdrop-blur-xl border border-${n.type === 'error' ? 'error/50' : (n.type === 'success' ? 'success/50' : 'info/50')} shadow-lg hover:-translate-y-1 transition-transform">
+                    <div class="card-body p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="mt-1">
+                                ${n.type === 'info' ? '<svg class="w-6 h-6 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' : ''}
+                                ${n.type === 'success' ? '<svg class="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' : ''}
+                                ${n.type === 'error' ? '<svg class="w-6 h-6 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>' : ''}
+                            </div>
+                            <div class="flex-1 whitespace-pre-wrap">${n.message}</div>
+                            <div class="text-xs text-gray-500 shrink-0">${new Date(n.created_at).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch(e) {
+            console.error(e);
+        }
+    };
+
     window.loadQueue = async () => {
         try {
             var items = await api.get('/client/queue');
@@ -486,11 +854,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 tbody.innerHTML = items.map(q => `
                     <tr>
                         <td class="p-4">
-                            <div class="font-medium">₹{q.recipient_name || 'N/A'}</div>
-                            <div class="text-xs text-gray-500">₹{q.recipient_email}</div>
+                            <div class="font-medium">${q.recipient_name || 'N/A'}</div>
+                            <div class="text-xs text-gray-400">${q.recipient_email}</div>
                         </td>
-                        <td class="p-4">₹{q.campaign_name}</td>
-                        <td class="p-4">₹{q.template_name}</td>
+                        <td class="p-4">${q.campaign_name}</td>
+                        <td class="p-4">${q.template_name}</td>
                         <td class="p-4 text-right">
                             <button class="btn btn-xs btn-success text-white mr-2" onclick="approveQueue('${q.id}')">Approve</button>
                             <button class="btn btn-xs btn-error text-white" onclick="rejectQueue('${q.id}')">Reject</button>
@@ -498,7 +866,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </tr>
                 `).join('');
                 if (items.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">No emails pending review.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">No emails pending review.</td></tr>';
                 }
                 
                 var badge = document.getElementById('queue-badge');
@@ -536,16 +904,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (tbody) {
                 tbody.innerHTML = items.map(m => `
                     <tr>
-                        <td class="p-4 font-medium text-white">₹{m.from.replace(/<.*>/, '')}</td>
+                        <td class="p-4 font-medium text-white">${m.from.replace(/<.*>/, '')}</td>
                         <td class="p-4">
-                            <div class="font-medium text-white">₹{m.subject}</div>
-                            <div class="text-xs text-gray-500 truncate max-w-xs">₹{m.snippet}</div>
+                            <div class="font-medium text-white">${m.subject}</div>
+                            <div class="text-xs text-gray-400 truncate max-w-xs">${m.snippet}</div>
                         </td>
-                        <td class="p-4 text-xs text-gray-400 whitespace-nowrap">₹{new Date(m.date).toLocaleString()}</td>
+                        <td class="p-4 text-xs text-gray-400 whitespace-nowrap">${components.timeAgo(m.date)}</td>
                     </tr>
                 `).join('');
                 if (items.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-500">No recent messages in Inbox.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-400">No recent messages in Inbox.</td></tr>';
                 }
             }
         } catch (e) {
@@ -553,9 +921,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     //  BILLING
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     let currentBillingCycle = 'monthly';
     let cachedPlans = [];
 
@@ -598,7 +966,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }).join('');
 
             let displayPrice = plan.price_monthly;
-            let totalBilled = '<div class="text-xs text-gray-500 font-medium mb-4">Billed monthly</div>';
+            let totalBilled = '<div class="text-xs text-gray-400 font-medium mb-4">Billed monthly</div>';
             
             if (currentBillingCycle === 'half_yearly') {
                 let totalAmount = Math.round((plan.price_monthly * 6) * 0.85);
@@ -689,9 +1057,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     //  SETTINGS
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     async function loadSettings() {
         try {
             var data = await api.get('/client/profile');
@@ -716,10 +1084,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // ──────────────────────────────────────────────────────────────────────────────────
-    //  WHATSAPP
-    // ──────────────────────────────────────────────────────────────────────────────────
-    async function loadWhatsAppSettings() {
+    // --- WhatsApp ---
+    async function loadWhatsapp() {
         try {
             var data = await api.get('/client/profile');
             var el = (id) => document.getElementById(id);
@@ -727,47 +1093,67 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (el('wa-phone-id')) el('wa-phone-id').value = data.whatsapp_phone_number_id || '';
             if (el('wa-business-id')) el('wa-business-id').value = data.whatsapp_business_account_id || '';
             
-            // Also attempt to load approved templates if they have credentials
+            // Update the Meta Template Creation Link if we have a WABA ID
+            var metaLink = document.getElementById('link-meta-templates');
+            if (metaLink && data.whatsapp_business_account_id) {
+                metaLink.href = `https://business.facebook.com/wa/manage/message-templates/?waba_id=${data.whatsapp_business_account_id}`;
+            }
+            
+            // Fetch templates automatically if credentials exist
             if (data.whatsapp_access_token && data.whatsapp_business_account_id) {
-                loadWhatsAppTemplates();
+                fetchWhatsappTemplates();
             } else {
                 var tbody = document.getElementById('wa-templates-tbody');
-                if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8">Configure Meta API credentials first to load templates.</td></tr>';
+                if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8">Save your Meta API credentials to view templates.</td></tr>';
             }
         } catch (e) {
-            console.error('WhatsApp settings load error:', e);
+            console.error('WhatsApp load error:', e);
         }
     }
 
-    async function loadWhatsAppTemplates() {
+    async function fetchWhatsappTemplates() {
         var tbody = document.getElementById('wa-templates-tbody');
+        var refreshBtn = document.getElementById('btn-refresh-templates');
         if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8">Loading templates...</td></tr>';
         
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8"><span class="loading loading-spinner text-primary"></span> Fetching from Meta...</td></tr>';
+        if (refreshBtn) refreshBtn.classList.add('animate-spin');
+
         try {
-            var templates = await api.get('/client/whatsapp/templates');
+            var response = await api.get('/client/whatsapp/templates');
+            var templates = response.data || [];
             tbody.innerHTML = '';
             
             if (templates.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8">No WhatsApp templates found in your Meta account.</td></tr>';
-                return;
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-8">No templates found in your Meta account.</td></tr>';
+            } else {
+                templates.forEach(t => {
+                    var statusColor = 'text-gray-400';
+                    var badgeColor = 'bg-gray-800';
+                    if (t.status === 'APPROVED') { statusColor = 'text-green-400'; badgeColor = 'bg-green-900/30'; }
+                    else if (t.status === 'PENDING') { statusColor = 'text-yellow-400'; badgeColor = 'bg-yellow-900/30'; }
+                    else if (t.status === 'REJECTED') { statusColor = 'text-red-400'; badgeColor = 'bg-red-900/30'; }
+
+                    var tr = document.createElement('tr');
+                    tr.className = "border-white/5 hover:bg-white/5 transition-colors";
+                    tr.innerHTML = `
+                        <td class="font-medium">${t.name}</td>
+                        <td class="text-sm text-gray-400">${t.category}</td>
+                        <td class="text-sm text-gray-400">${t.language}</td>
+                        <td><span class="px-2 py-1 rounded text-xs border border-white/10 ${badgeColor} ${statusColor}">${t.status}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
             }
-            
-            templates.forEach(t => {
-                var tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="font-medium">₹{t.name}</td>
-                    <td>₹{t.category}</td>
-                    <td>₹{t.language}</td>
-                    <td><span class="badge badge-sm ₹{t.status === 'APPROVED' ? 'badge-success' : 'badge-warning'}">₹{t.status}</span></td>
-                `;
-                tbody.appendChild(tr);
-            });
         } catch (e) {
-            console.error(e);
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-error py-8">Failed to fetch templates from Meta. Check your credentials.</td></tr>';
+            console.error('Template fetch error:', e);
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-red-400 py-8">Failed to load templates: ${e.message}</td></tr>`;
+        } finally {
+            if (refreshBtn) refreshBtn.classList.remove('animate-spin');
         }
     }
+
+    document.getElementById('btn-refresh-templates')?.addEventListener('click', fetchWhatsappTemplates);
 
     document.getElementById('form-whatsapp')?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -778,20 +1164,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
         try {
             await api.put('/client/profile', payload);
-            if (window.showToast) showToast('WhatsApp settings saved', 'success');
-            loadWhatsAppSettings();
+            if (window.showToast) showToast('WhatsApp settings updated', 'success');
+            fetchWhatsappTemplates(); // Reload templates with new creds
         } catch (err) {
             if (window.showToast) showToast(err.message, 'error');
         }
     });
 
-    document.getElementById('btn-refresh-templates')?.addEventListener('click', () => {
-        loadWhatsAppTemplates();
-    });
-
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     //  NOTIFICATIONS
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     async function fetchNotifications() {
         try {
             var notifs = await api.get('/client/notifications');
@@ -806,36 +1188,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                 notifs.forEach(function (n) {
                     var div = document.createElement('div');
                     div.className = 'p-3 border-b border-white/10 text-sm text-gray-300';
-                    div.innerHTML = '<span class="block text-white font-bold mb-1">' + new Date(n.created_at).toLocaleString() + '</span>' + n.message;
+                    div.innerHTML = '<span class="block text-white font-bold mb-1">' + components.timeAgo(n.created_at) + '</span>' + n.message;
                     list.appendChild(div);
                 });
             } else {
                 badge.classList.add('hidden');
-                list.innerHTML = '<div class="p-4 text-center text-gray-500">No new announcements.</div>';
+                list.innerHTML = '<div class="p-4 text-center text-gray-400">No new announcements.</div>';
             }
         } catch (e) {}
     }
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     //  LOGOUT
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     document.getElementById('btn-logout')?.addEventListener('click', () => {
         auth.logout();
     });
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     //  REGISTER ROUTES & BOOT
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────
     router.on('dashboard', loadDashboard);
     router.on('templates', loadTemplates);
     router.on('campaigns', loadCampaigns);
     router.on('queue', loadQueue);
     router.on('inbox', loadInbox);
     router.on('billing', loadBilling);
+    router.on('whatsapp', loadWhatsapp);
     router.on('settings', loadSettings);
+    router.on('notifications', loadClientNotifications);
     router.on('instructions', () => {}); // No data loading required
-    router.on('whatsapp', loadWhatsAppSettings);
-    router.on('notifications', fetchNotifications);
+
+    // Global Functions
 
     // Display user email
     var emailDisplay = document.getElementById('client-email-display');
@@ -844,4 +1228,85 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Start the app
     router.init();
     fetchNotifications();
+});
+
+
+window.copyServiceEmail = function() {
+    const emailTxt = document.getElementById('service-account-email').innerText;
+    navigator.clipboard.writeText(emailTxt).then(() => {
+        const btn = document.querySelector('button[onclick="copyServiceEmail()"]');
+        if (btn) {
+            btn.innerHTML = '<span class="text-xs text-green-400 font-bold px-1">Copied!</span>';
+            setTimeout(() => {
+                btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>';
+            }, 2000);
+        }
+    });
+};
+
+
+// --- AI Templates Logic ---
+window.toggleTemplateMode = function(mode) {
+    const tabManual = document.getElementById('tab-manual');
+    const tabAI = document.getElementById('tab-ai');
+    const panelAI = document.getElementById('panel-ai');
+    
+    // Check access
+    if (mode === 'ai' && !window.hasAITemplates) {
+        alert("Your current plan does not support AI Generated Templates. Please upgrade to unlock this feature.");
+        return;
+    }
+    const panelManual = document.getElementById('panel-manual');
+
+    if (mode === 'manual') {
+        tabManual.classList.add('tab-active', 'text-white');
+        tabManual.classList.remove('text-gray-400');
+        
+        tabAI.classList.remove('tab-active', 'text-white');
+        tabAI.classList.add('text-gray-400');
+        
+        panelAI.classList.add('hidden');
+        if (panelManual) panelManual.classList.remove('hidden');
+    } else {
+        tabAI.classList.add('tab-active', 'text-white');
+        tabAI.classList.remove('text-gray-400');
+        
+        tabManual.classList.remove('tab-active', 'text-white');
+        tabManual.classList.add('text-gray-400');
+        
+        panelAI.classList.remove('hidden');
+        if (panelManual) panelManual.classList.add('hidden');
+    }
+};
+
+window.generateTemplateAI = async function() {
+    const prompt = document.getElementById('ai-prompt').value;
+    if (!prompt) return;
+    
+    const btn = document.getElementById('btn-generate-ai');
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Generating...';
+    btn.disabled = true;
+    
+    try {
+        const res = await api.post('/client/templates/generate', { prompt });
+        document.getElementById('tmpl-subject').value = res.subject || '';
+        document.getElementById('tmpl-body').value = res.html_body || '';
+        window.updatePreview(); // Force live preview update
+        
+        // Switch back to manual mode so they can edit the generated text
+        toggleTemplateMode('manual');
+        document.getElementById('ai-prompt').value = '';
+    } catch (e) {
+        alert("AI Generation failed: " + e.message);
+    } finally {
+        btn.innerHTML = oldText;
+        btn.disabled = false;
+    }
+};
+
+
+document.getElementById('btn-sync-data')?.addEventListener('click', () => { window.showToast('Syncing data...', 'info'); if(router.currentRoute) { router.showPage(router.currentRoute); } else { loadDashboard(); } });
+document.getElementById('btn-dashboard-sync')?.addEventListener('click', () => { window.showToast('Syncing dashboard data...', 'info'); loadDashboard(true); });
+
 });
