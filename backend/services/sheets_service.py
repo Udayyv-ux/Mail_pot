@@ -31,6 +31,8 @@ async def get_gspread_client():
         if _gspread_client is None or creds_str != _cached_creds_str:
             try:
                 creds_dict = json.loads(creds_str)
+                if 'private_key' in creds_dict:
+                    creds_dict['private_key'] = creds_dict['private_key'].replace('\\n', '\n')
                 _gspread_client = gspread.service_account_from_dict(creds_dict)
                 _cached_creds_str = creds_str
             except Exception as e:
