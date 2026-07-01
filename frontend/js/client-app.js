@@ -1309,4 +1309,3 @@ window.generateTemplateAI = async function() {
 document.getElementById('btn-sync-data')?.addEventListener('click', () => { window.showToast('Syncing data...', 'info'); if(router.currentRoute) { router.showPage(router.currentRoute); } else { loadDashboard(); } });
 document.getElementById('btn-dashboard-sync')?.addEventListener('click', () => { window.showToast('Syncing dashboard data...', 'info'); loadDashboard(true); });
 
-});
